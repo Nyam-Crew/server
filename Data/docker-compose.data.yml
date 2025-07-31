@@ -1,0 +1,16 @@
+
+services:
+  database:
+    image: postgres:17
+    container_name: everydayDB
+    ports:
+      - "5432:5432"
+#    env_file:
+#      - ./.env
+    environment:
+      POSTGRES_DB: everyday
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 1234
+    volumes:
+      - ./volumes/postgresql-data:/var/lib/postgresql/data
+    restart: unless-stopped
