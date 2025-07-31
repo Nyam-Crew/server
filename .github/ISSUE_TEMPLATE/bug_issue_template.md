@@ -1,6 +1,6 @@
 ---
 name: "🐞 버그 리포트"
-about: "발생한 버그 발생의 해결을 요청합니다."
+about: "발생한 버그의 해결을 요청합니다."
 title: "[BUG] "
 labels: ["bug"]
 assignees: ''
