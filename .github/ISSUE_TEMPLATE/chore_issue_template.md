@@ -1,6 +1,6 @@
 ---
 name: "🛠 개발 환경 설정"
-about: "CI/CD 설정, 의존성 업데이트, 기타 개발 환경 설정을 위한 작업 요청"
+about: "CI/CD 설정, 의존성 업데이트, 기타 개발 환경 설정을 위한 작업울 요청합니다"
 title: "[CHORE] "
 labels: ["chore"]
 assignees: ''

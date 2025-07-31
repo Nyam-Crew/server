@@ -1,6 +1,6 @@
 ---
 name: "🔨 리팩토링 요청"
-about: "기존 코드의 개선을 요청할 때 사용하는 템플릿입니다."
+about: "기존 코드의 개선을 요청합니다."
 title: "[REFACTOR] "
 labels: ["refactor"]
 assignees: ''

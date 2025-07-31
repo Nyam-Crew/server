@@ -1,8 +1,8 @@
 ---
 name: "🐞 버그 리포트"
-about: "버그가 발생했을 때 작성하는 템플릿입니다."
-title: "[BUGFIX] "
-labels: ["bugfix"]
+about: "발생한 버그 발생의 해결을 요청합니다."
+title: "[BUG] "
+labels: ["bug"]
 assignees: ''
 ---
 
