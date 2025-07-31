@@ -1,10 +1,9 @@
 ---
-name: 버그 리포트 이슈 템플릿
-about: "\U0001F41B bug"
-title: ''
-labels: ''
-assignees: 
-
+name: "🐞 버그 리포트"
+about: "버그가 발생했을 때 작성하는 템플릿입니다."
+title: "[BUGFIX] "
+labels: ["bugfix"]
+assignees: ''
 ---
 
 ## 💭 작업 브랜치

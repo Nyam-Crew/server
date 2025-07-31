@@ -1,11 +1,11 @@
 ---
-name: 기능 구현 이슈 템플릿
-about: "\U0001F31Ffeature"
-title: ''
-labels: ''
+name: "⚙️ 기능 개발"
+about: "새로운 기능 개발을 요청합니다."
+title: "[FEAT] "
+labels: ["feat"]
 assignees: ''
-
 ---
+
 
 ## 💭 작업 브랜치
 > 브랜치를 적어주세요
