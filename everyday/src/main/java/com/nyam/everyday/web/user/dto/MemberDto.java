@@ -13,7 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "회원 정보")
-public class UserDto {
+public class MemberDto {
 
   @Schema(description = "아이디")
   private Long id;
