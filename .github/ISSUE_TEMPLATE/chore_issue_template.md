@@ -11,9 +11,6 @@ assignees: ''
 ## 🛠 작업 목적
 > 이 작업이 필요한 이유나 배경을 설명해주세요 (예: GitHub Actions 도입, ESLint 설정 통일 등)
 
-## 🧩 변경 내용 요약
-> 작업 항목을 간단히 정리해주세요 (예: `package.json` 의존성 업데이트, `.github/workflows/test.yml` 생성 등)
-
 ## 🗂 관련 파일/경로
 > 주요 변경 파일 또는 폴더 경로를 적어주세요
 
