@@ -32,6 +32,9 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0" //swagger
 	implementation 'org.postgresql:postgresql'
+	implementation("org.mapstruct:mapstruct:1.5.5.Final")
+	annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
+
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -39,4 +42,10 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+java {
+	toolchain {
+		languageVersion.set(JavaLanguageVersion.of(17))
+	}
 }
