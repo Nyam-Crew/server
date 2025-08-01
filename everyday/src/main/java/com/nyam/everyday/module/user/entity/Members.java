@@ -21,7 +21,7 @@ import org.hibernate.annotations.Comment;
 @Entity
 @Table(name = "users")
 @Builder
-public class Users  extends BaseEntity {
+public class Members extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

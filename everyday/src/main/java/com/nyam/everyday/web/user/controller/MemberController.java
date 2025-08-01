@@ -1,6 +1,6 @@
 package com.nyam.everyday.web.user.controller;
 
-import com.nyam.everyday.web.user.dto.UserDto;
+import com.nyam.everyday.web.user.dto.MemberDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
-public class UserController {
+public class MemberController {
 
   @Operation(summary = "회원 정보", description = "로그인한 회원의 정보를 조회합니다.")
   @GetMapping
-  public ResponseEntity<UserDto> getUserInfo() {
+  public ResponseEntity<MemberDto> getUserInfo() {
     log.info("회원 정보 호출! ");
     return null;
   }
