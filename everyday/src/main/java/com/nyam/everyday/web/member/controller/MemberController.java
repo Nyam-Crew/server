@@ -1,6 +1,6 @@
-package com.nyam.everyday.web.user.controller;
+package com.nyam.everyday.web.member.controller;
 
-import com.nyam.everyday.web.user.dto.MemberDto;
+import com.nyam.everyday.web.member.dto.MemberDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
