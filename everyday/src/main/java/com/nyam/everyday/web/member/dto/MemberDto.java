@@ -1,4 +1,4 @@
-package com.nyam.everyday.web.user.dto;
+package com.nyam.everyday.web.member.dto;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;

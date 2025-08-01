@@ -1,4 +1,4 @@
-package com.nyam.everyday.module.user.entity;
+package com.nyam.everyday.module.member.entity;
 
 import com.nyam.everyday.common.entity.BaseEntity;
 import jakarta.persistence.Column;
@@ -19,9 +19,9 @@ import org.hibernate.annotations.Comment;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "users")
+@Table(name = "member")
 @Builder
-public class Members extends BaseEntity {
+public class Member extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
