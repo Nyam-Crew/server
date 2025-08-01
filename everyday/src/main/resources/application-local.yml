@@ -26,3 +26,9 @@ spring:
         jdbc:
           batch_size: 500
     show_sql: true
+
+# MongoDB
+  data:
+    mongodb:
+      uri: mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@nyamnyammongo.aqx4bi5.mongodb.net/?retryWrites=true&w=majority&appName=nyamnyamMongo
+      database: ${MONGO_DBNAME}
