@@ -113,7 +113,7 @@ CREATE TABLE nutrition_detail (
                                   food_cate_id BIGINT NOT NULL,
                                   nutrition_nm VARCHAR(50) NOT NULL,
                                   amount NUMERIC(4,1) NOT NULL,
-                                  unit_wegiht BIGINT NOT NULL,
+                                  unit_weight BIGINT NOT NULL,
                                   PRIMARY KEY (nutrition_id)
 );
 
