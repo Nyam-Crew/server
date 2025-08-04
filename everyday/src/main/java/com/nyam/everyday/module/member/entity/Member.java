@@ -52,6 +52,7 @@ public class Member extends BaseEntity {
   private String memberImg;
 
   @Comment("성별")
+  @Builder.Default
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private Gender gender = Gender.UNKNOWN;
@@ -70,6 +71,7 @@ public class Member extends BaseEntity {
 
   @Comment("회원상태")
   @Column(nullable = false)
+  @Builder.Default
   @Enumerated(EnumType.STRING)
   private Status memberStatus = Status.ACTIVATED;
 

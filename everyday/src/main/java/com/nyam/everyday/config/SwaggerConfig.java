@@ -21,13 +21,13 @@ public class SwaggerConfig {
         .name("Authorization");
 
     // Security Requirement 정의
-//    SecurityRequirement securityRequirement = new SecurityRequirement().addList("BearerAuth");
+    SecurityRequirement securityRequirement = new SecurityRequirement().addList("BearerAuth");
 
     return new OpenAPI()
         .info(new Info().title("Like everyday API")
             .description("매일같이 Application API Documentation")
-            .version("v1.0"));
-//        .addSecurityItem(securityRequirement)  // Security Requirement 추가
-//        .schemaRequirement("BearerAuth", securityScheme);  // Security Scheme 추가
+            .version("v1.0"))
+        .addSecurityItem(securityRequirement)  // Security Requirement 추가
+        .schemaRequirement("BearerAuth", securityScheme);  // Security Scheme 추가
   }
 }
