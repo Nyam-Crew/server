@@ -27,22 +27,22 @@ import org.hibernate.annotations.Comment;
 @NoArgsConstructor
 public class Bookmark {
 
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Id
-  private Long bookmark_id;
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long bookmarkId;
 
   @Comment("회원 아이디")
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "member_id", nullable = false)
-  private Member member_id;
+  private Member member;
 
   @Comment("게시글 아이디")
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "board_id", nullable = false)
-  private Board board_id;
+  private Board board;
 
   @Column(nullable = false)
-  private LocalDateTime created_date;
+  private LocalDateTime createdDate;
 
 
 }

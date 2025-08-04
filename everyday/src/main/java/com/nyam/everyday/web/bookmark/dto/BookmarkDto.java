@@ -15,26 +15,26 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BookmarkDto {
 
-  private Long bookmark_id;
-  private Member member_id;
-  private Board board_id;
-  private LocalDateTime created_date;
+  private Long bookmarkId;
+  private Member memberId;
+  private Board boardId;
+  private LocalDateTime createdDate;
 
   //dto->entity로 변환하는 메서드
   public Bookmark toEntity(Member member,Board board) {
     return Bookmark.builder()
-        .bookmark_id(bookmark_id)
-        .member_id(member)
-        .board_id(board)
+        .bookmarkId(bookmarkId)
+        .member(member)
+        .board(board)
         .build();
   }
 
 
   public static BookmarkDto toDto(Bookmark entity) {
     return BookmarkDto.builder()
-        .bookmark_id(entity.getBookmark_id())
-        .member_id(entity.getMember_id())
-        .board_id(entity.getBoard_id())
+        .bookmarkId(entity.getBookmarkId())
+        .memberId(entity.getMember())
+        .boardId(entity.getBoard())
         .build();
   }
 }

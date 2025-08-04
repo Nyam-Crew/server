@@ -6,14 +6,15 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Mappings;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface MemberMapper {
   MemberDto toDto(Member member); // Entity → DTO
   Member toEntity(MemberDto dto); // DTO → Entity
 
   @Mappings({
-      @Mapping(target = "id", ignore = true // 수정 시 ID는 유지
+      @Mapping(target = "memberId", ignore = true // 수정 시 ID는 유지
       )}
   )
   Member modify(MemberDto dto, @MappingTarget Member member);

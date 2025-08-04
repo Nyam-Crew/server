@@ -1,6 +1,9 @@
 package com.nyam.everyday.module.board.entity;
 
+import com.nyam.everyday.common.entity.BaseEntity;
+import com.nyam.everyday.module.bookmark.entity.Bookmark;
 import com.nyam.everyday.module.member.entity.Member;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -9,7 +12,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import java.time.LocalDateTime;
+import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,47 +25,44 @@ import org.hibernate.annotations.Comment;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-@Builder
-public class Board {
+@Builder(toBuilder = true)
+public class Board extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Comment("아이디")
-  private Long board_id;
+  private Long boardId;
 
   @Comment("회원 아이디")
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "member_id", nullable = false)
-  private Member member_id;
+  private Member member;
 
   @Comment("게시글명")
   @Column(nullable = false)
-  private String board_title;
+  private String boardTitle;
 
   @Comment("게시글 내용")
   @Column(nullable = false)
-  private String board_comment;
+  private String boardComment;
 
   @Comment("조회수")
   @Column(nullable = false)
-  private Long view_count;
+  private Long viewCount;
 
   @Comment("좋아요 수")
   @Column(nullable = false)
-  private Long like_count;
+  private Long likeCount;
 
+  @Comment("댓글 수")
+  @Column(nullable = false)
+  private Long commentCount;
 
   @Column(nullable = false)
-  private Long comment_count;
+  private String boardType;
 
-  @Column(nullable = false)
-  private String board_type;
-
-  @Column(nullable = false)
-  private LocalDateTime created_date;
-
-  @Column(nullable = false)
-  private LocalDateTime modified_date;
-
+  @Builder.Default
+  @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Bookmark> bookmarks = new ArrayList<>();
 
 }

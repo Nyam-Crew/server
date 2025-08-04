@@ -16,13 +16,29 @@ import lombok.Setter;
 public class MemberDto {
 
   @Schema(description = "아이디")
-  private Long id;
+  private Long memberId;
 
   @Schema(description = "회원아이디") //@kakao
-  private String userId;
+  private String providerId;
 
   @Schema(description = "회원 닉네임")
   private String nickname;
+
+  @Schema(description = "회원 프로필 이미지")
+  private String memberImg;
+
+  @Schema(description = "회원 성별")
+  private String gender;
+
+  @Schema(description = "회원 성별")
+  private float height;
+
+  @Schema(description = "회원 몸무게")
+  private float weight;
+
+  @Schema(description = "회원 나이")
+  private int age;
+
 
   @Schema(description = "이메일")
   private String email;

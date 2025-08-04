@@ -17,45 +17,43 @@ import lombok.Setter;
 public class BoardDto {
 
 
-  private Long board_id;
-  private Member member_id;
-  private String board_title;
-  private String board_comment;
-  private Long view_count;
-  private Long like_count;
-  private Long comment_count;
-  private String board_type;
-  private LocalDateTime created_date;
-  private LocalDateTime modified_date;
+  private Long boardId;
+  private Member member;
+  private String boardTitle;
+  private String boardComment;
+  private Long viewCount;
+  private Long likeCount;
+  private Long commentCount;
+  private String boardType;
+  private LocalDateTime createdDate;
+  private LocalDateTime modifiedDate;
 
 
   public Board toEntity(Board board, Member member){
     return Board.builder()
-        .board_id(board_id)
-        .member_id(member)
-        .board_title(board_title)
-        .board_comment(board_comment)
-        .view_count(view_count)
-        .like_count(like_count)
-        .comment_count(comment_count)
-        .board_type(board_type)
-        .created_date(created_date)
-        .modified_date(modified_date)
+        .boardId(boardId)
+        .member(member)
+        .boardTitle(boardTitle)
+        .boardComment(boardComment)
+        .viewCount(viewCount)
+        .likeCount(likeCount)
+        .commentCount(commentCount)
+        .boardType(boardType)
         .build();
   }
 
-  public static BoardDto toDto(Board entity,Member member){
+  public static BoardDto toDto(Board entity, Member member){
     return BoardDto.builder()
-        .board_id(entity.getBoard_id())
-        .member_id(member)
-        .board_title(entity.getBoard_title())
-        .board_comment(entity.getBoard_comment())
-        .view_count(entity.getView_count())
-        .like_count(entity.getLike_count())
-        .comment_count(entity.getComment_count())
-        .board_type(entity.getBoard_type())
-        .created_date(entity.getCreated_date())
-        .modified_date(entity.getModified_date())
+        .boardId(entity.getBoardId())
+        .member(member)
+        .boardTitle(entity.getBoardTitle())
+        .boardComment(entity.getBoardComment())
+        .viewCount(entity.getViewCount())
+        .likeCount(entity.getLikeCount())
+        .commentCount(entity.getCommentCount())
+        .boardType(entity.getBoardType())
+        .createdDate(entity.getCreatedDate())
+        .modifiedDate(entity.getModifiedDate())
         .build();
   }
 
