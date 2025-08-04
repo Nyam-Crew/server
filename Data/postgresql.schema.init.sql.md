@@ -5,6 +5,7 @@
   - user_global_ranking 전체 사용자 월간 랭킹 — 월간 (YYYY-MM)
   - user_group_ranking 특정 그룹 내 사용자 랭킹 — 주간 or 월간
   - group_global_ranking 그룹 단위 총점 랭킹 — 주간 or 월간
+
 ### member_daily_summary 수정
 쿼리속도 이슈로 인하여 아래 컬럼 추가
 - total_carbohydrate  (탄수화물)
@@ -29,3 +30,5 @@
 ### 오탈자 수정
 - food
   - unit_weight -> unit_weight
+- nutrition_detail
+  - unit_wegiht -> unit_weight
