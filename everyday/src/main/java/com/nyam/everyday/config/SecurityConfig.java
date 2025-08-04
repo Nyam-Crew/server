@@ -37,7 +37,7 @@ public class SecurityConfig {
   private static final String[] PUBLIC_API_ROUTES = {
       "/api/auth/sign-up", "/api/auth/login", "/api/auth/logout",
       "/oauth2/**", "/login/**", "/actuator/prometheus", "/exception",
-      "/api/member/**"
+      "/api/member/**", "/api/chat/**"
   };
 
   @Bean
