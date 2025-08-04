@@ -14,3 +14,29 @@ services:
     volumes:
       - ./volumes/postgresql-data:/var/lib/postgresql/data
     restart: unless-stopped
+
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - nyam_server
+    restart: unless-stopped
+
+#  mongodb:
+#    image: mongo:6.0
+#    container_name: everydayMongo
+#    ports:
+#      - "27017:27017"
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: root
+#      MONGO_INITDB_ROOT_PASSWORD: 1234
+#    volumes:
+#      - ./volumes/mongo-data:/data/db
+#    restart: unless-stopped
+
+
+networks:
+  nyam_server:
+    external: true
