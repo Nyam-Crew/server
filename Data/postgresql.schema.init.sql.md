@@ -25,3 +25,7 @@
   - team_role 
 - member
   - email
+
+### 오탈자 수정
+- food
+  - unit_weight -> unit_weight
