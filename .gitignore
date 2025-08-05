@@ -1,9 +1,10 @@
 HELP.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
+
+### Project-specific ###
+everyday/.gradle/
+everyday/build/
+!everyday/src/main/**/build/
+!everyday/src/test/**/build/
 
 ### STS ###
 .apt_generated
@@ -18,7 +19,7 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -27,14 +28,20 @@ out/
 !**/src/test/**/out/
 
 ### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
 
 ### VS Code ###
 .vscode/
 
-../Data/volumes
-../Data/volumes/*
+### Docker Volumes ###
+Data/volumes/
+Data/volumes/*
+
+### etc ###
+.env
+everyday/.env
+everyday/.env.*
