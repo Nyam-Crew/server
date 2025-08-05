@@ -1,7 +1,7 @@
-package com.nyam.everyday.web.groub.mapper;
+package com.nyam.everyday.web.team.mapper;
 
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
-import com.nyam.everyday.web.groub.dto.TeamMemberStatusDTO;
+import com.nyam.everyday.web.team.dto.TeamMemberStatusDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

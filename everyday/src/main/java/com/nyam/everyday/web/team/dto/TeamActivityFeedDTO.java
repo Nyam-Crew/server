@@ -1,4 +1,4 @@
-package com.nyam.everyday.web.groub.dto;
+package com.nyam.everyday.web.team.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -9,20 +9,20 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * 그룹 내부 랭킹 기록 DTO
+ * 그룹 실시간 현황 DTO
  *
  * @author : 이지은
- * @fileName : TeamRankingHistoryDTO
+ * @fileName : TeamActivityFeedDTO
  * @since : 25. 8. 4.
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamRankingHistoryDTO {
+public class TeamActivityFeedDTO {
 
     @Schema(name = "", example = "")
-    private Long teamRankingId;
+    private Long feedId;
 
     @Schema(name = "", example = "")
     private Long teamId;
@@ -31,14 +31,11 @@ public class TeamRankingHistoryDTO {
     private Long memberId;
 
     @Schema(name = "", example = "")
-    private String weekCode;
+    private String activityType;
 
     @Schema(name = "", example = "")
-    private int point;
+    private String activityContent;
 
     @Schema(name = "", example = "")
-    private String field;
-
-    @Schema(name = "", example = "")
-    private LocalDateTime teamRankingCreatedDate;
+    private LocalDateTime feedCreatedDate;
 }

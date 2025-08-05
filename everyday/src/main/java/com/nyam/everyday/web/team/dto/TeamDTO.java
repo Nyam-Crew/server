@@ -1,4 +1,4 @@
-package com.nyam.everyday.web.groub.dto;
+package com.nyam.everyday.web.team.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;

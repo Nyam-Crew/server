@@ -1,4 +1,4 @@
-package com.nyam.everyday.web.groub.dto;
+package com.nyam.everyday.web.team.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -9,20 +9,21 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * 그룹 참여 현황 DTO
+ * 그룹 알림 DTO
  *
  * @author : 이지은
- * @fileName : TeamMemberStatusDTO
+ * @fileName : TeamNotificationDTO
  * @since : 25. 8. 4.
  */
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamMemberStatusDTO {
+public class TeamNotificationDTO {
 
     @Schema(name = "", example = "")
-    private Long teamMemberId;
+    private Long teamAlarmId;
 
     @Schema(name = "", example = "")
     private Long teamId;
@@ -31,14 +32,8 @@ public class TeamMemberStatusDTO {
     private Long memberId;
 
     @Schema(name = "", example = "")
-    private String status;
+    private String notificationType;
 
     @Schema(name = "", example = "")
-    private String teamRole;
-
-    @Schema(name = "", example = "")
-    private LocalDateTime teamStatusCreatedDate;
-
-    @Schema(name = "", example = "")
-    private LocalDateTime teamStatusModifiedDate;
+    private LocalDateTime teamAlarmCreatedDate;
 }
