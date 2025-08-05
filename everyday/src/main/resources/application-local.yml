@@ -29,5 +29,18 @@ spring:
 # MongoDB 관련 설정
   data:
     mongodb:
-      uri: mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@nyamnyammongo.aqx4bi5.mongodb.net/?retryWrites=true&w=majority&appName=nyamnyamMongo
+      uri: mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST_ADDRESS}/?retryWrites=true&w=majority&appName=nyamnyamMongo
       database: ${MONGO_DBNAME}
+
+# AWS S3 적용을 위한 세팅
+cloud:
+  aws:
+    s3:
+      bucketName : ${AWSS3_BUCKETNAME}
+    stack:
+      auto: false
+    region:
+      static: ${AWSS3_REGION}
+    credentials:
+      secret-key: ${AWSS3_SECRET_KEY}
+      access-key: ${AWSS3_ACCESS_KEY}
