@@ -1,4 +1,4 @@
-package com.nyam.everyday.common.aws.s3;
+package com.nyam.everyday.common.aws.s3.controller;
 
 import com.nyam.everyday.common.aws.s3.dto.AwsS3Response;
 import com.nyam.everyday.common.aws.s3.service.AwsS3Service;
