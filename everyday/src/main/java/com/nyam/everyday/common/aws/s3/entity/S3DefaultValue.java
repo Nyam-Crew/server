@@ -1,4 +1,4 @@
-package com.nyam.everyday.common.entity;
+package com.nyam.everyday.common.aws.s3.entity;
 
 import java.util.Arrays;
 import lombok.Getter;

@@ -1,6 +1,6 @@
-package com.nyam.everyday.common.aws.s3.controller;
+package com.nyam.everyday.module.awsS3.controller;
 
-import com.nyam.everyday.common.aws.s3.dto.AwsS3Response;
+import com.nyam.everyday.module.awsS3.dto.AwsS3Response;
 import com.nyam.everyday.common.aws.s3.service.AwsS3Service;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +19,7 @@ class AdminS3Controller {
 
   private final AwsS3Service awsS3Service;
 
-  @Operation(summary = "파일 업로드", description = "파일 업로드를 위해 사용하는 endpoint입니다. 파일 업로드 후 나온 URL값을 Default로 지정하였습니다.")
+  @Operation(summary = "어드민 전용 파일 업로드", description = "기본 파일 파일 업로드를 위해 사용하는 endpoint입니다. 일반 파일 업로드는 AwsS3Service.replaceFile을 사용해주세요")
   @PostMapping("/upload")
   public AwsS3Response uploadFile(MultipartFile newImage) {
     return awsS3Service.uploadFile(newImage);
