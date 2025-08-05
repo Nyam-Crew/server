@@ -41,6 +41,10 @@ dependencies {
 
 	// MongoDB를 위한 Dependency 설정
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+	// AWS S3 전용 Dependency
+	implementation platform("software.amazon.awssdk:bom:2.25.0")
+	implementation "software.amazon.awssdk:s3"
 }
 
 tasks.named('test') {
