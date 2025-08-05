@@ -13,6 +13,7 @@ CREATE TABLE member (
                         age BIGINT NOT NULL,
                         member_status BIGINT,
                         basal_metabolic_rate NUMERIC(6,1),
+                        activity_factor NUMERIC(3, 2),
                         created_date TIMESTAMP NOT NULL,
                         modified_date TIMESTAMP NOT NULL,
                         PRIMARY KEY (member_id)
