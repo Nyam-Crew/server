@@ -26,6 +26,8 @@ public class BaseException extends RuntimeException {
   public static final BaseException POST_NOT_FOUND = new BaseException(ErrorCode.POST_NOT_FOUND);
   public static final BaseException COMMENT_NOT_FOUND = new BaseException(ErrorCode.COMMENT_NOT_FOUND);
   public static final BaseException INTERNAL_SERVER_ERROR = new BaseException(ErrorCode.INTERNAL_SERVER_ERROR);
+  public static final BaseException AWSS3_UPLOAD_ERROR =  new  BaseException(ErrorCode.AWSS3_UPLOAD_ERROR);
+  public static final BaseException AWSS3_DELETE_ERROR = new  BaseException(ErrorCode.AWSS3_DELETE_ERROR);
 
   private final ErrorCode errorCode;
 
