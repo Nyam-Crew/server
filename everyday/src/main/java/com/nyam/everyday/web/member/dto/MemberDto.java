@@ -24,13 +24,16 @@ public class MemberDto {
   @Schema(description = "회원 닉네임")
   private String nickname;
 
+  @Schema(description = "이메일")
+  private String email;
+
   @Schema(description = "회원 프로필 이미지")
   private String memberImg;
 
-  @Schema(description = "회원 성별")
+  @Schema(description = "회원 성별", allowableValues = {"U", "M", "F"}, example = "U" )
   private String gender;
 
-  @Schema(description = "회원 성별")
+  @Schema(description = "회원 키")
   private float height;
 
   @Schema(description = "회원 몸무게")
@@ -39,9 +42,20 @@ public class MemberDto {
   @Schema(description = "회원 나이")
   private int age;
 
+  @Schema(description = "기초대사량", nullable = true)
+  private int basalMetabolicRate;
 
-  @Schema(description = "이메일")
-  private String email;
+  @Schema(description = "활동레벨")
+  private String activityLevel;
+
+  @Schema(description = "총 일일 에너지 소비량" , nullable = true)
+  private String tdee;
+
+  @Schema(description = "BMI" , nullable = true)
+  private String bmi;
+
+  @Schema(description = "회원상태")
+  private String memberStatus;
 
   @Schema(description = "회원 생성일")
   private LocalDateTime createdDate;

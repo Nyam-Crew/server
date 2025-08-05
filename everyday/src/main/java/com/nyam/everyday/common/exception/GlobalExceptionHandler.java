@@ -12,9 +12,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestControllerAdvice //모든 컨트롤러의 예외를 한 곳에서 처리하기 위한 어노테이션
+
 @Slf4j
-public class ErrorController {
+@RestControllerAdvice
+public class GlobalExceptionHandler {
 
 
   /**

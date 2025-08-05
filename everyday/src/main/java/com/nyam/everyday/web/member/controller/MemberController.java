@@ -24,20 +24,23 @@ public class MemberController {
 
   private final MemberService memberService;
 
-  @Operation(summary = "회원 정보", description = "로그인한 회원의 정보를 조회합니다.")
+
   @GetMapping("/{id}")
+  @Operation(summary = "회원 정보", description = "로그인한 회원의 정보를 조회합니다.")
   public ResponseEntity<MemberDto> getMember(@PathVariable Long id) {
     MemberDto memberDto = memberService.getMemberById(id);
     return ResponseEntity.ok(memberDto);
   }
 
   @PostMapping
+  @Operation(summary = "회원 추가", description = "회원을 신규 추가합니다.")
   public ResponseEntity<MemberDto> create(@RequestBody MemberDto dto) {
     MemberDto saved = memberService.create(dto);
     return ResponseEntity.ok(saved);
   }
 
   @PutMapping("/{id}")
+  @Operation(summary = "회원 정보 수정", description = "회원 정보를 수정합니다.")
   public ResponseEntity<MemberDto> update(@PathVariable Long id, @RequestBody MemberDto dto) {
     MemberDto updated = memberService.update(id, dto);
     return ResponseEntity.ok(updated);
