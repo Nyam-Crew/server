@@ -1,5 +1,6 @@
-package com.nyam.everyday.module.group.entity;
+package com.nyam.everyday.module.team.entity;
 
+import com.nyam.everyday.common.entity.BaseEntity;
 import com.nyam.everyday.module.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,25 +10,25 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
+
 /**
- * 그룹 내 랭킹 캐시
+ * 그룹 참여 현황 entity
  *
  * @author : 이지은
- * @fileName : GroupRankingHistory
+ * @fileName : teamMemberStatus
  * @since : 25. 8. 4.
  */
-
 @Entity
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "group_ranking_history")
-public class GroupRankingHistory {
+@Table(name = "team_member_status")
+public class TeamMemberStatus extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "group_ranking_id")
+    @Column(name = "team_member_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,19 +36,12 @@ public class GroupRankingHistory {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_id", nullable = false)
-    private Group group;
+    @JoinColumn(name = "team_id", nullable = false)
+    private Team team;
 
-    @Column(name = "week_code", nullable = false)
-    private String weekCode;
+    @Column(nullable = false, length = 10)
+    private String status;
 
-    @Column(nullable = false)
-    private int point;
-
-    @Column(nullable = false)
-    private String field;
-
-    @CreatedDate
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "team_role", length = 10)
+    private String teamRole; // 예: MEMBER, LEADER
 }

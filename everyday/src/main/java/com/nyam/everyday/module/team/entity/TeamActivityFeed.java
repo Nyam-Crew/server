@@ -1,4 +1,4 @@
-package com.nyam.everyday.module.group.entity;
+package com.nyam.everyday.module.team.entity;
 
 import com.nyam.everyday.module.member.entity.Member;
 import jakarta.persistence.*;
@@ -7,13 +7,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import java.time.LocalDateTime;
 /**
- * 그룹 공지 관련 entity
+ * 그룹 멤버 실시간 현황 관련 entity
  *
  * @author : 이지은
- * @fileName : GroupNotice
+ * @fileName : teamActivityFeed
  * @since : 25. 8. 4.
  */
 
@@ -22,12 +24,13 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "group_notice")
-public class GroupNotice {
+@EntityListeners(AuditingEntityListener.class)
+@Table(name = "team_activity_feed")
+public class TeamActivityFeed {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "group_notice_id")
+    @Column(name = "feed_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,19 +38,16 @@ public class GroupNotice {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_id", nullable = false)
-    private Group group;
+    @JoinColumn(name = "team_id", nullable = false)
+    private Team team;
 
-    @Column(nullable = false)
-    private String title;
+    @Column(name = "activity_type", nullable = false)
+    private String activityType;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String content;
+    @Column(name = "activity_content")
+    private String activityContent;
 
     @CreatedDate
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    @Column(name = "modified_at")
-    private LocalDateTime modifiedAt;
 }
