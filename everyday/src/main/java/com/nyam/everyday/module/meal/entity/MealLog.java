@@ -11,7 +11,7 @@ import org.hibernate.annotations.Comment;
  * MealLog
  *
  * @author : 장소희
- * @fileName : MealLog
+ * @fileName : MealLog entity
  * @since : 25. 8. 5.
  */
 

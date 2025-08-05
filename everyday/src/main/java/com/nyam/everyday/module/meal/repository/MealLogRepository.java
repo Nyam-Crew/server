@@ -8,7 +8,7 @@ import java.util.List;
  * MealLogRepository
  *
  * @author : 장소희
- * @fileName : MealLogRepository
+ * @fileName : MealLog Repository
  * @since : 25. 8. 5.
  */
 
