@@ -1,4 +1,4 @@
-package com.nyam.everyday.module.group.entity;
+package com.nyam.everyday.module.team.entity;
 
 import com.nyam.everyday.module.member.entity.Member;
 import jakarta.persistence.*;
@@ -7,47 +7,44 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 /**
- * 그룹 참여 현황 entity
+ * 그룹 내 알림 Entity
  *
  * @author : 이지은
- * @fileName : GroupMemberStatus
+ * @fileName : Team_Notification
  * @since : 25. 8. 4.
  */
+
 @Entity
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "group_member_status")
-public class GroupMemberStatus {
+@EntityListeners(AuditingEntityListener.class)
+@Table(name = "team_notification")
+public class TeamNotification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "group_member_id")
-    private Long id;
+    @Column(name = "team_alarm_id")
+    private Long teamAlarmId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id", nullable = false)
+    private Team team;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_id", nullable = false)
-    private Group group;
-
-    @Column(nullable = false, length = 10)
-    private String status;
+    @Column(name = "notification_type", nullable = false)
+    private String notificationType;
 
     @CreatedDate
     @Column(name = "created_date")
     private LocalDateTime createdDate;
-
-    @Column(name = "modified_date")
-    private LocalDateTime modifiedDate;
-
-    @Column(name = "group_role", length = 10)
-    private String groupRole; // 예: MEMBER, LEADER
 }

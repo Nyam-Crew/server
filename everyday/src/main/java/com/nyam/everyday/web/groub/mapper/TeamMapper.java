@@ -1,7 +1,7 @@
 package com.nyam.everyday.web.groub.mapper;
 
-import com.nyam.everyday.module.group.entity.Group;
-import com.nyam.everyday.web.groub.dto.GroupDTO;
+import com.nyam.everyday.module.team.entity.Team;
+import com.nyam.everyday.web.groub.dto.TeamDTO;
 import org.mapstruct.Builder;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -11,18 +11,18 @@ import org.mapstruct.factory.Mappers;
  * 그룹 crud 관련 mapper
  *
  * @author : 이지은
- * @fileName : GroupMapper
+ * @fileName : TeamMapper
  * @since : 25. 8. 4.
  */
 @Mapper(componentModel = "spring", builder = @Builder(disableBuilder = false))
-public interface GroupMapper {
+public interface TeamMapper {
 
-    GroupMapper INSTANCE = Mappers.getMapper(GroupMapper.class);
+    TeamMapper INSTANCE = Mappers.getMapper(TeamMapper.class);
 
     // DTO → Entity
-    @Mapping(target = "groupCreatedAt", ignore = true) // 자동 생성 필드는 무시
-    Group toEntity(GroupDTO dto);
+    @Mapping(target = "TeamCreatedAt", ignore = true) // 자동 생성 필드는 무시
+    Team toEntity(TeamDTO dto);
 
     // Entity → DTO
-    GroupDTO toDto(Group entity);
+    TeamDTO toDto(Team entity);
 }
