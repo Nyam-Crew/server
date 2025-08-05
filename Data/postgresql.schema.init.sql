@@ -11,7 +11,7 @@ CREATE TABLE member (
                         height NUMERIC(4,1) NOT NULL,
                         weight NUMERIC(4,1) NOT NULL,
                         age BIGINT NOT NULL,
-                        member_status BIGINT,
+                        member_status VARCHAR(20),
                         basal_metabolic_rate NUMERIC(6,1),
                         activity_level VARCHAR(20),
                         created_date TIMESTAMP NOT NULL,
@@ -36,9 +36,9 @@ CREATE TABLE member_meal_log (
                                  food_id BIGINT NOT NULL,
                                  intake_amount INT NOT NULL,
                                  intake_kcal NUMERIC(6,1) NOT NULL,
-                                 meal_type VARCHAR(2) NOT NULL,
+                                 meal_type VARCHAR(16) NOT NULL,
                                  created_date TIMESTAMP NOT NULL,
-                                 modifed_date TIMESTAMP NOT NULL,
+                                 modified_date TIMESTAMP NOT NULL,
                                  PRIMARY KEY (meal_log_id)
 );
 
@@ -317,6 +317,8 @@ CREATE TABLE member_behavior_log (
                                      created_date TIMESTAMP NOT NULL
 );
 
+CREATE UNIQUE INDEX ON team_member_status (member_id, team_id);
+
 CREATE INDEX idx_member_global_ranking_month ON member_global_ranking (year_month);
 
 CREATE INDEX idx_member_team_ranking ON member_team_ranking (team_id, period_value);
@@ -359,17 +361,13 @@ COMMENT ON COLUMN notification.notification_type IS '그룹 공지, 서버 공�
 
 ALTER TABLE team ADD CONSTRAINT FK_member_team FOREIGN KEY (member_id) REFERENCES member (member_id);
 
-ALTER TABLE team_activity_feed ADD CONSTRAINT FK_member_TO_team_cativity_feed FOREIGN KEY (member_id) REFERENCES member (member_id);
+ALTER TABLE team_notification ADD CONSTRAINT FK_team_member_stauts_TO_team_notification FOREIGN KEY (team_id, member_id) REFERENCES team_member_status (team_id, member_id);
 
-ALTER TABLE team_activity_feed ADD CONSTRAINT FK_team_TO_team_activity_feed FOREIGN KEY (team_id) REFERENCES team (team_id);
+ALTER TABLE team_activity_feed ADD CONSTRAINT FK_team_member_stauts_TO_team_activity_feed FOREIGN KEY (member_id, team_id) REFERENCES team_member_status (member_id, team_id);
 
-ALTER TABLE team_ranking_history ADD CONSTRAINT FK_member_TO_team_ranking_history FOREIGN KEY (member_id) REFERENCES member (member_id);
+ALTER TABLE team_ranking_history ADD CONSTRAINT FK_team_member_status_TO_team_ranking_history FOREIGN KEY (member_id, team_id) REFERENCES team_member_status (member_id, team_id);
 
-ALTER TABLE team_ranking_history ADD CONSTRAINT FK_team_TO_team_ranking_history FOREIGN KEY (team_id) REFERENCES team (team_id);
-
-ALTER TABLE team_notice ADD CONSTRAINT FK_member_TO_team_notice FOREIGN KEY (member_id) REFERENCES member (member_id);
-
-ALTER TABLE team_notice ADD CONSTRAINT FK_team_TO_team_notice FOREIGN KEY (team_id) REFERENCES team (team_id);
+ALTER TABLE team_notice ADD CONSTRAINT FK_team_member_status_TO_team_notice FOREIGN KEY (member_id, team_id) REFERENCES team_member_status (member_id, team_id);
 
 ALTER TABLE member_stamp_status ADD CONSTRAINT FK_member_TO_member_stamp_status FOREIGN KEY (member_id) REFERENCES member (member_id);
 
@@ -402,10 +400,6 @@ ALTER TABLE nutrition_detail ADD CONSTRAINT FK_ncategory_TO_ndetail FOREIGN KEY 
 ALTER TABLE team_member_status ADD CONSTRAINT FK_member_TO_gmstatus FOREIGN KEY (member_id) REFERENCES member (member_id);
 
 ALTER TABLE team_member_status ADD CONSTRAINT FK_team_TO_gmstatus FOREIGN KEY (team_id) REFERENCES team (team_id);
-
-ALTER TABLE team_notification ADD CONSTRAINT FK_team_TO_gnotification FOREIGN KEY (team_id) REFERENCES team (team_id);
-
-ALTER TABLE team_notification ADD CONSTRAINT FK_member_TO_gnotification FOREIGN KEY (member_id) REFERENCES member (member_id);
 
 ALTER TABLE chatroom ADD CONSTRAINT FK_team_TO_chatroom FOREIGN KEY (team_id) REFERENCES team (team_id);
 
