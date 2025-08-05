@@ -42,5 +42,5 @@ cloud:
     region:
       static: ${AWSS3_REGION}
     credentials:
-      secret-key: ${AWSS3_SECRET_KEY}
-      access-key: ${AWSS3_ACCESS_KEY}
+      secret-key: ${IAM_SECRET_KEY}
+      access-key: ${IAM_ACCESS_KEY}
