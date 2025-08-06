@@ -9,6 +9,8 @@ import com.nyam.everyday.module.team.repository.TeamRepository;
 import com.nyam.everyday.web.team.dto.TeamDto;
 import com.nyam.everyday.web.team.mapper.TeamMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 /**
@@ -36,5 +38,17 @@ public class TeamService {
         teamRepository.save(team);
 
         return teamMapper.toDto(team);
+    }
+
+    public Page<TeamDto> getTeamList(String keyword, Pageable pageable) {
+        Page<Team> teams;
+
+        if (keyword != null && !keyword.isBlank()) {
+            teams = teamRepository.findByTeamNameContainingIgnoreCase(keyword, pageable);
+        } else {
+            teams = teamRepository.findAll(pageable);
+        }
+
+        return teams.map(teamMapper::toDto);
     }
 }
