@@ -10,6 +10,7 @@ import com.nyam.everyday.web.team.dto.TeamSearchDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -18,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  *
@@ -36,22 +38,25 @@ public class TeamController {
     private final TeamService teamService;
     private final TeamSearchQueryService teamSearchService;
 
+
     @Operation(summary = "그룹 생성", description = "그룹을 생성합니다.")
     @PostMapping
     public ResponseEntity<TeamDto> createTeam(
-            @RequestBody TeamDto teamDTO, @AuthenticationPrincipal CustomUserDetails userDetails) {
+            @RequestBody TeamDto teamDTO,
+            @RequestPart(required = false) MultipartFile imageFile,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
         //파라미터 그룹 이름, 그룹 설명, 그룹 이미지, 최대인원수(최소인원수==2), memberId 받아서 해당 ID를 owner(방장)으로
         Long memberId = userDetails.getId(); // 인증된 사용자로부터 방장 ID 추출
 
-        TeamDto response = teamService.createTeam(teamDTO, memberId);
+        TeamDto response = teamService.createTeam(teamDTO, imageFile, memberId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(summary = "그룹 조회", description = "그룹 리스트를 조회합니다.")
     @GetMapping
     public Page<TeamDto> getTeamList(
-            @RequestParam String keyword,
-            @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable){
+            @RequestParam(required = false) String keyword,
+            @ParameterObject @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable){
         return teamService.getTeamList(keyword, pageable);
     }
 

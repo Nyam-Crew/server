@@ -47,7 +47,4 @@ public class TeamMemberStatus extends BaseEntity {
     @Column(name = "team_role", length = 10)
     private String teamRole; // 예: MEMBER, LEADER
 
-    @CreatedDate
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
 }

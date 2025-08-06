@@ -35,8 +35,8 @@ public class TeamMemberStatusDto {
     private String teamRole;
 
     @Schema(name = "", example = "")
-    private LocalDateTime teamStatusCreatedDate;
+    private LocalDateTime createdDate;
 
     @Schema(name = "", example = "")
-    private LocalDateTime teamStatusModifiedDate;
+    private LocalDateTime modifiedDate;
 }

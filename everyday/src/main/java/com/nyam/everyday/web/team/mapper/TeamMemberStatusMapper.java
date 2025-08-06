@@ -1,10 +1,11 @@
 package com.nyam.everyday.web.team.mapper;
 
+import com.nyam.everyday.module.member.entity.Member;
+import com.nyam.everyday.module.team.entity.Team;
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
+import com.nyam.everyday.web.team.dto.TeamDto;
 import com.nyam.everyday.web.team.dto.TeamMemberStatusDto;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 
 /**
  * 그룹 참여 현황 Builder mapper
@@ -16,11 +17,20 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TeamMemberStatusMapper {
 
-    @Mapping(source = "team.teamId", target = "teamId", ignore = true)
-    @Mapping(source = "member.memberId", target = "memberId", ignore = true)
+    @Mapping(target = "teamId", source = "team.teamId")
+    @Mapping(target = "memberId", source = "member.memberId")
     TeamMemberStatusDto toDTO(TeamMemberStatus entity);
 
-    @Mapping(source = "teamId", target = "team.teamId", ignore = true)
-    @Mapping(source = "memberId", target = "member.memberId", ignore = true)
-    TeamMemberStatus toEntity(TeamMemberStatusDto dto);
+    @Mapping(target = "team", source = "team")
+    @Mapping(target = "member", source = "member")
+    TeamMemberStatus toEntity(TeamMemberStatusDto dto, Team team, Member member);
+
+    // DTO로 기존 Entity 수정 (선택사항)
+    @Mappings({
+            @Mapping(target = "team", ignore = true),
+            @Mapping(target = "member", ignore = true),
+            @Mapping(target = "createdDate", ignore = true),
+            @Mapping(target = "modifiedDate", ignore = true)
+    })
+    TeamMemberStatus modify(TeamMemberStatusDto dto, @MappingTarget TeamMemberStatus entity);
 }

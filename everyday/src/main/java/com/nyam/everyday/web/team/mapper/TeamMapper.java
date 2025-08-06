@@ -16,7 +16,10 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TeamMapper {
 
+    @Mappings({@Mapping(source = "owner.memberId", target = "ownerId")})
     TeamDto toDto(Team team);// Entity → DTO
+
+    @Mapping(target = "owner", source = "owner")
     Team toEntity(TeamDto dto, Member owner);// DTO + owner → Entity
 
     // DTO로 기존 Entity 수정 (선택사항)
