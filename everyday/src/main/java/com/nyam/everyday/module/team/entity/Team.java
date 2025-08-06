@@ -26,14 +26,20 @@ public class Team extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name= "_id")
+    @Column(name= "team_id")
     private Long teamId;
 
     @Column(name="team_title")
-    private String teamName;
+    private String teamTitle;
 
     @Column(name = "team_description")
     private String teamDescription;
+
+    @Column(name = "team_img")
+    private String teamImg;
+
+    @Column(name="team_current_members")
+    private int teamCurrentMembers;
 
     @Column(name="team_max_members")
     private int teamMaxMembers;

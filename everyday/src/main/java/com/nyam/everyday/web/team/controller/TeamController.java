@@ -4,6 +4,7 @@ import com.nyam.everyday.module.team.service.TeamSearchQueryService;
 import com.nyam.everyday.module.team.service.TeamSearchService;
 import com.nyam.everyday.module.team.service.TeamService;
 import com.nyam.everyday.security.core.CustomUserDetails;
+import com.nyam.everyday.web.team.dto.TeamDetailDto;
 import com.nyam.everyday.web.team.dto.TeamDto;
 import com.nyam.everyday.web.team.dto.TeamSearchDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
  * @since           : 25. 8. 5.
  * 
  */
-@Tag(name="", description = "")
+@Tag(name="Team-Controller", description = "그룹의 전반적인 기본 흐름을 확인할 수있는 컨트롤러입니다.")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/teams")
@@ -37,7 +38,8 @@ public class TeamController {
 
     @Operation(summary = "그룹 생성", description = "그룹을 생성합니다.")
     @PostMapping
-    public ResponseEntity<TeamDto> createTeam(@RequestBody TeamDto teamDTO, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<TeamDto> createTeam(
+            @RequestBody TeamDto teamDTO, @AuthenticationPrincipal CustomUserDetails userDetails) {
         //파라미터 그룹 이름, 그룹 설명, 그룹 이미지, 최대인원수(최소인원수==2), memberId 받아서 해당 ID를 owner(방장)으로
         Long memberId = userDetails.getId(); // 인증된 사용자로부터 방장 ID 추출
 
@@ -45,7 +47,7 @@ public class TeamController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    //@Operation(summary = "", description = "")
+    @Operation(summary = "그룹 조회", description = "그룹 리스트를 조회합니다.")
     @GetMapping
     public Page<TeamDto> getTeamList(
             @RequestParam String keyword,
@@ -53,7 +55,7 @@ public class TeamController {
         return teamService.getTeamList(keyword, pageable);
     }
 
-    // TODO: 추후 ElasticSearch 확장 대비하여 검색 조건 분리 예정
+    // TODO: 추후 ElasticSearch 확장 대비하여 검색 조건 분리 설계
     // ↓ 아래 방식으로 리팩토링할 수 있음
     /*
     @GetMapping("/teams")
@@ -72,6 +74,17 @@ public class TeamController {
         return teamSearchService.searchTeams(condition, pageable);
     }
     */
+
+    //@Operation(summary = "", description = "")
+    @Operation(summary = "그룹 정보 상세 조회", description = "사용자가 선택(클릭)한 그룹의 상세정보를 조회해옵니다.")
+    @GetMapping("/{teamId}")
+    public ResponseEntity<TeamDetailDto> getTeam(
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal CustomUserDetails userDetails){
+        Long memberId = userDetails.getId();
+        TeamDetailDto teamDetail = teamService.getTeam(teamId, memberId);
+        return ResponseEntity.ok(teamDetail);
+    }
 
 
 }

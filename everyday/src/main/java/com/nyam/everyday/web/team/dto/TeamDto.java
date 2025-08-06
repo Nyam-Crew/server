@@ -23,10 +23,16 @@ public class TeamDto {
     private Long teamId;
 
     @Schema(name = "", example = "")
-    private String teamName;
+    private String teamTitle;
 
     @Schema(name = "", example = "")
     private String teamDescription;
+
+    @Schema(name = "", example = "")
+    private String teamImg;
+
+    @Schema(name="",example = "")
+    private int teamCurrentMembers;
 
     @Schema(name = "", example = "")
     private int teamMaxMembers;

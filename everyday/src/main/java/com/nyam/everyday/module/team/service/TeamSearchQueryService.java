@@ -31,7 +31,7 @@ public class TeamSearchQueryService implements TeamSearchService {
 
         // 현재는 keyword만 처리, 추후 category, sort 확장 가능
         if (searchDto.getKeyword() != null && !searchDto.getKeyword().isBlank()) {
-            teams = teamRepository.findByTeamNameContainingIgnoreCase(searchDto.getKeyword(), pageable);
+            teams = teamRepository.findByTeamTitleContainingIgnoreCase(searchDto.getKeyword(), pageable);
         } else {
             teams = teamRepository.findAll(pageable);
         }

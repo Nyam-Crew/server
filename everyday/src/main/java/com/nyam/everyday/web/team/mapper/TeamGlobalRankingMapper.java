@@ -4,6 +4,7 @@ import com.nyam.everyday.module.team.entity.TeamGlobalRanking;
 import com.nyam.everyday.web.team.dto.TeamGlobalRankingDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 import org.mapstruct.ReportingPolicy;
 
 /**
@@ -16,10 +17,12 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TeamGlobalRankingMapper {
 
-    @Mapping(source = "team.teamId", target = "teamId", ignore = true)
-       TeamGlobalRankingDto toDto(TeamGlobalRanking entity);
+    TeamGlobalRankingDto toDto(TeamGlobalRanking entity);
 
-    @Mapping(source = "team.teamId", target = "teamId", ignore = true)
     TeamGlobalRanking toEntity(TeamGlobalRankingDto dto);
+
+    @Mapping(target = "team.teamId", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    TeamGlobalRanking toEntityIgnoreIds(TeamGlobalRankingDto dto);
 
 }

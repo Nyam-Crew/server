@@ -4,6 +4,8 @@ import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * 그룹 멤버 현황 관련 Repository
  *
@@ -13,5 +15,7 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface TeamMemberStatusRepository extends JpaRepository<TeamMemberStatus, Long> {
+
+    Optional<TeamMemberStatus> findByTeam_TeamIdAndMember_MemberId(Long teamId, Long memberId);
 
 }

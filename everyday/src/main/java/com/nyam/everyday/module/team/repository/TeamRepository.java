@@ -1,10 +1,13 @@
 package com.nyam.everyday.module.team.repository;
 
 import com.nyam.everyday.module.team.entity.Team;
+import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 /**
  * @author : 이지은
@@ -14,5 +17,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TeamRepository extends JpaRepository<Team, Long> {
 
-    Page<Team> findByTeamNameContainingIgnoreCase(String keyword, Pageable pageable);
+    Page<Team> findByTeamTitleContainingIgnoreCase(String keyword, Pageable pageable);
+
 }
