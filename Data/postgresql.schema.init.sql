@@ -127,6 +127,7 @@ CREATE TABLE team (
                       team_title VARCHAR(100) NOT NULL,
                       team_description VARCHAR(255),
                       team_img VARCHAR(255) NOT NULL,
+                      team_current_members BIGINT NOT NULL DEFAULT 1,
                       team_max_members BIGINT NOT NULL DEFAULT 6,
                       created_date TIMESTAMP NOT NULL,
                       modified_date TIMESTAMP NOT NULL,
