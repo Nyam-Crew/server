@@ -2,7 +2,7 @@ package com.nyam.everyday.module.challenge.checker;
 
 
 import com.nyam.everyday.module.challenge.entity.Challenge;
-import com.nyam.everyday.module.challenge.repository.MemberChallengeRepository;
+import com.nyam.everyday.module.challenge.repository.MemberChallengeStatusRepository;
 import com.nyam.everyday.module.member.entity.Member;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public abstract class AbstractChallengeChecker implements ChallengeChecker {
 
-  protected final MemberChallengeRepository memberChallengeRepository;
+  protected final MemberChallengeStatusRepository memberChallengeRepository;
 
   // 해당 챌린지의 달성 여부 확인이 필요한지 확인하는 함수
   protected boolean needToCheckChallenge(Member member, Challenge challenge) {

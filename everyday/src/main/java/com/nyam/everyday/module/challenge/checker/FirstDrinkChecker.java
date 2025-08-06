@@ -4,7 +4,7 @@ import com.nyam.everyday.module.challenge.entity.Challenge;
 import com.nyam.everyday.module.challenge.entity.ChallengeTitle;
 import com.nyam.everyday.module.challenge.entity.ChallengeType;
 import com.nyam.everyday.module.challenge.repository.ChallengeRepository;
-import com.nyam.everyday.module.challenge.repository.MemberChallengeRepository;
+import com.nyam.everyday.module.challenge.repository.MemberChallengeStatusRepository;
 import com.nyam.everyday.module.member.entity.Member;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 public class FirstDrinkChecker extends AbstractChallengeChecker {
 
   // 상속구조 구현을 위한 생성자
-  public FirstDrinkChecker(MemberChallengeRepository memberChallengeRepository,
+  public FirstDrinkChecker(MemberChallengeStatusRepository memberChallengeRepository,
       ChallengeRepository challengeRepository) {
     super(memberChallengeRepository);
     this.challengeRepository = challengeRepository;
