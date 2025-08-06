@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+
+<head>
+    <meta charset="UTF-8">
+    <title>Main</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f7f8fa; }
+        .container {
+            width: 350px; margin: 60px auto; background: #fff; padding: 40px 32px;
+            border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            display: flex; flex-direction: column; align-items: center;
+        }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 36px; }
+        .main-btn {
+            width: 100%; background: #4078c0; color: white; font-weight: bold;
+            border: none; border-radius: 8px; padding: 17px 0;
+            font-size: 18px; cursor: pointer; transition: background 0.18s;
+            margin-bottom: 24px;
+        }
+        .main-btn:last-child { margin-bottom: 0; }
+        .main-btn:hover { background: #285690; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <button type="button" class="main-btn" id="logout-btn">
+<!--            onclick="location.href='/api/auth/logout'"-->
+    Logout</button>
+
+
+    <h2>메인 메뉴</h2>
+    <p id="nickname"></p>
+
+</div>
+
+
+<script>
+    // URL 쿼리스트링에서 accessToken, refreshToken, 기타 정보 추출
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    const accessToken = getCookie("accessToken");
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+
+
+    if (accessToken) {
+        localStorage.setItem("accessToken", accessToken);
+        // 쿠키에서 accessToken 제거 (보안상)
+        document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    }
+
+
+    const memberId = localStorage.getItem("memberId");
+    //id 값으로 username 받아오기
+    fetch("/api/member/me", {
+        credentials: "include", // 쿠키도 항상 보냄 (로컬, CORS 모두 안전)
+        headers: (localStorage.getItem("accessToken"))
+            ? { "Authorization": "Bearer " + localStorage.getItem("accessToken") }
+            : {}
+    })
+    .then(res => res.json())
+    .then(user => {
+        localStorage.setItem("username", user.username);
+        localStorage.setItem("memberId", user.memberId);
+        localStorage.setItem("nickname", user.nickname);
+        localStorage.setItem("providerId", user.providerId);
+        let name = user.nickname.length > 0? user.nickname :user.providerId
+        document.getElementById("nickname").innerText = `환영합니다, ${name}님!`;
+    });
+
+
+    document.getElementById('logout-btn').onclick = function() {
+
+        // 쿠키 삭제 accessToken, refreshToken 모두 삭제
+        function deleteCookie(name) {
+            document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+        }
+
+        // 로그아웃 서버 요청(POST)
+        fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "include", // 쿠키 같이 전송
+            headers: (localStorage.getItem("accessToken"))
+                ? { "Authorization": "Bearer " + localStorage.getItem("accessToken") }
+                : {}
+
+        })
+        .then(res => {
+            if(res.ok) {
+                deleteCookie("accessToken");
+                deleteCookie("refreshToken");
+                // localStorage도 싹 정리!
+                localStorage.removeItem("accessToken");
+                localStorage.removeItem("refreshToken");
+                localStorage.removeItem("nickname");
+                localStorage.removeItem("memberId");
+                localStorage.clear();
+                // 홈으로 이동 등
+                location.href = "/";
+            } else {
+                alert("로그아웃 실패");
+            }
+        });
+    };
+
+    // 필요시 userid, username 등도 쿼리스트링에 담아 같이 전달해서 저장 가능
+
+    // 이후 인증이 필요한 요청에서 localStorage의 accessToken을 Authorization 헤더로 사용
+</script>
+
+</body>
+</html>
