@@ -57,9 +57,9 @@ public class MemberDto {
   @Schema(description = "회원상태")
   private String memberStatus;
 
-  @Schema(description = "회원 생성일")
+  @Schema(description = "회원 생성일", example = "2025-01-01T00:00:00")
   private LocalDateTime createdDate;
 
-  @Schema(description = "회원정보 수정일")
+  @Schema(description = "회원정보 수정일", example = "2025-01-01T00:00:00")
   private LocalDateTime modifiedDate;
 }

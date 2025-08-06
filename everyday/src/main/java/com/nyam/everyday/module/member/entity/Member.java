@@ -1,8 +1,10 @@
 package com.nyam.everyday.module.member.entity;
 
 import com.nyam.everyday.common.entity.BaseEntity;
+import com.nyam.everyday.module.auth.entity.Auth;
 import com.nyam.everyday.module.board.entity.Board;
 import com.nyam.everyday.module.bookmark.entity.Bookmark;
+import com.nyam.everyday.security.core.Role;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +14,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -42,16 +45,16 @@ public class Member extends BaseEntity {
   private String providerId;
 
   @Comment("닉네임")
-  @Column(nullable = false, unique = true)
-  private String nickname;
+  @Column(nullable = false)
+  private String nickname = "";
 
   @Comment("이메일")
-  @Column(nullable = false)
+  @Column
   private String email;
 
   @Comment("회원 사진")
-  @Column(nullable = false)
-  private String memberImg;
+  @Column
+  private String memberImg = "";
 
   @Comment("성별")
   @Builder.Default
@@ -60,20 +63,30 @@ public class Member extends BaseEntity {
   private Gender gender = Gender.U;
 
   @Comment("키")
-  @Column(nullable = false)
-  private BigDecimal height;
+  @Column
+  private BigDecimal height = BigDecimal.ZERO;
 
   @Comment("몸무게")
-  @Column(nullable = false)
-  private BigDecimal weight;
+  @Column
+  private BigDecimal weight = BigDecimal.ZERO;
 
   @Comment("나이")
-  @Column(nullable = false)
-  private int age;
+  @Column
+  private int age = 0;
 
   @Comment("기초대사량") // BMR
-  @Column(nullable = false)
+  @Column
   private int basalMetabolicRate;
+
+  @Comment("권한")
+  @Builder.Default
+  @Enumerated(EnumType.STRING)
+  private Role role = Role.ROLE_USER;
+
+
+  @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+  private Auth auth;
+
 
   @Comment("회원상태")
   @Column(nullable = false)
