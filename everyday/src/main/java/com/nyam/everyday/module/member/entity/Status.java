@@ -1,4 +1,4 @@
-package com.nyam.everyday.common.entity;
+package com.nyam.everyday.module.member.entity;
 
 public enum Status {
   ACTIVATED, DEACTIVATED

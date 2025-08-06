@@ -2,8 +2,10 @@ package com.nyam.everyday.common.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 
+@Slf4j
 @Getter
 @RequiredArgsConstructor
 public class BaseException extends RuntimeException {
@@ -31,6 +33,11 @@ public class BaseException extends RuntimeException {
 
   private final ErrorCode errorCode;
 
+  public BaseException(ErrorCode errorCode, String customMessage) {
+    super(customMessage);
+    this.errorCode = errorCode;
+    log.error("[BaseException] {} ==> {}", errorCode.getCode(), customMessage);
+  }
 
   // 의도적인 예외이므로 stack trace 제거 (불필요한 예외처리 비용 제거)
   @Override

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f7f8fa; }
+        .container {
+            width: 350px; margin: 60px auto; background: #fff; padding: 32px 28px;
+            border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 26px;}
+        label {
+            display: block;
+            margin: 18px 0 7px 0;
+            color: #444;
+            text-align: left;         /* 왼쪽 정렬 */
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            box-sizing: border-box;   /* width가 padding, border 포함 */
+            padding: 9px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            margin-bottom: 2px;
+        }
+        button {
+            width: 100%; background: #4078c0; color: white; font-weight: bold;
+            border: none; border-radius: 6px; padding: 11px; margin-top: 24px;
+            font-size: 16px; cursor: pointer; transition: background 0.2s;
+        }
+        button:hover { background: #285690; }
+        .signup-btn {
+            width: 100%; background: #eee; color: #285690; font-weight: bold;
+            border: none; border-radius: 6px; padding: 11px; margin-top: 12px;
+            font-size: 16px; cursor: pointer; transition: background 0.2s;
+        }
+        .signup-btn:hover { background: #e0e8f5; }
+        .msg { margin-top: 18px; text-align: center; font-weight: bold;}
+        .success { color: #27ae60; }
+        .error { color: #e74c3c; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>로그인</h2>
+
+    <!-- 소셜 로그인 버튼들 -->
+    <button type="button" onclick="location.href='/oauth2/authorization/google'">Google 로그인</button>
+    <button type="button" onclick="location.href='/oauth2/authorization/kakao'">Kakao 로그인</button>
+
+    <div class="msg" id="msg"></div>
+</div>
+<script>
+
+    //sessionStorage 창 닫으면 모든 데이터 없어짐
+    //localStorage 직접 삭제해야 없어짐
+    if (!sessionStorage.getItem('logoutOnce')) {
+        fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "include" // 쿠키 같이 전송
+        })
+        .then(res => {
+            if(res.ok) {
+                // localStorage도 싹 정리!
+                localStorage.removeItem("accessToken");
+                localStorage.removeItem("refreshToken");
+                localStorage.removeItem("username");
+                localStorage.removeItem("user_id");
+                sessionStorage.setItem('logoutOnce', 'true'); // 이제 다시 안 함!
+                // 홈으로 이동 등
+                location.href = "index.html";
+            } else {
+                alert("로그아웃 실패");
+            }
+        });
+    }
+
+
+
+
+</script>
+</body>
+</html>

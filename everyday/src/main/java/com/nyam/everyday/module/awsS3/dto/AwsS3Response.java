@@ -1,4 +1,4 @@
-package com.nyam.everyday.common.aws.s3.dto;
+package com.nyam.everyday.module.awsS3.dto;
 
 import lombok.Builder;
 import lombok.Getter;
