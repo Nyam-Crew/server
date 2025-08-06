@@ -3,6 +3,7 @@ package com.nyam.everyday.web.team.controller;
 import com.nyam.everyday.module.team.service.TeamSearchQueryService;
 import com.nyam.everyday.module.team.service.TeamSearchService;
 import com.nyam.everyday.module.team.service.TeamService;
+import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.web.team.dto.TeamDto;
 import com.nyam.everyday.web.team.dto.TeamSearchDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,7 +39,7 @@ public class TeamController {
     @PostMapping
     public ResponseEntity<TeamDto> createTeam(@RequestBody TeamDto teamDTO, @AuthenticationPrincipal CustomUserDetails userDetails) {
         //파라미터 그룹 이름, 그룹 설명, 그룹 이미지, 최대인원수(최소인원수==2), memberId 받아서 해당 ID를 owner(방장)으로
-        Long memberId = userDetails.getMemberId(); // 인증된 사용자로부터 방장 ID 추출
+        Long memberId = userDetails.getId(); // 인증된 사용자로부터 방장 ID 추출
 
         TeamDto response = teamService.createTeam(teamDTO, memberId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
