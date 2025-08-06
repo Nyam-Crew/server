@@ -1,11 +1,9 @@
 package com.nyam.everyday.web.team.mapper;
 
+import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.team.entity.Team;
-import com.nyam.everyday.web.team.dto.TeamDTO;
-import org.mapstruct.Builder;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
+import com.nyam.everyday.web.team.dto.TeamDto;
+import org.mapstruct.*;
 
 /**
  * 그룹 crud 관련 mapper
@@ -14,15 +12,19 @@ import org.mapstruct.factory.Mappers;
  * @fileName : TeamMapper
  * @since : 25. 8. 4.
  */
-@Mapper(componentModel = "spring", builder = @Builder(disableBuilder = false))
+
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TeamMapper {
 
-    TeamMapper INSTANCE = Mappers.getMapper(TeamMapper.class);
+    TeamDto toDto(Team team);// Entity → DTO
+    Team toEntity(TeamDto dto, Member owner);// DTO + owner → Entity
 
-    // DTO → Entity
-    @Mapping(target = "TeamCreatedAt", ignore = true) // 자동 생성 필드는 무시
-    Team toEntity(TeamDTO dto);
-
-    // Entity → DTO
-    TeamDTO toDto(Team entity);
+    // DTO로 기존 Entity 수정 (선택사항)
+    @Mappings({
+            @Mapping(target = "teamId", ignore = true),
+            @Mapping(target = "owner", ignore = true),
+            @Mapping(target = "createdDate", ignore = true),
+            @Mapping(target = "modifiedDate", ignore = true)
+    })
+    Team modify(TeamDto dto, @MappingTarget Team team);
 }
