@@ -98,21 +98,12 @@ public class TeamService {
         Optional<TeamMemberStatus> memberStatusOpt =
                 teamMemberStatusRepository.findByTeam_TeamIdAndMember_MemberId(teamId, memberId);
 
-        // String → Enum 안전 변환
         TeamDetailDto.ParticipationStatus participationStatus = memberStatusOpt
-                .map(s -> safeValueOf(
-                        TeamDetailDto.ParticipationStatus.class,
-                        s.getStatus(),
-                        TeamDetailDto.ParticipationStatus.NOT_JOINED
-                ))
+                .map(s -> TeamDetailDto.ParticipationStatus.valueOf(s.getStatus().name()))
                 .orElse(TeamDetailDto.ParticipationStatus.NOT_JOINED);
 
         TeamDetailDto.TeamRole teamRole = memberStatusOpt
-                .map(s -> safeValueOf(
-                        TeamDetailDto.TeamRole.class,
-                        s.getTeamRole(),
-                        null
-                ))
+                .map(s -> TeamDetailDto.TeamRole.valueOf(s.getTeamRole().name()))
                 .orElse(null);
 
         return teamMapper.toDetailDto(team, participationStatus, teamRole);
@@ -129,9 +120,9 @@ public class TeamService {
 
         if (existing.isPresent()) {
             TeamMemberStatus status = existing.get();
-            if (status.getStatus().equals("APPROVED")) {
+            if (status.getStatus() == TeamMemberStatus.ParticipationStatus.APPROVED) {
                 throw new BaseException(ErrorCode.ALREADY_JOINED_GROUP);
-            } else if (status.getStatus().equals("PENDING")) {
+            } else if (status.getStatus() == TeamMemberStatus.ParticipationStatus.PENDING) {
                 throw new BaseException(ErrorCode.ALREADY_EXIST_JOIN);
             }
         }
@@ -146,8 +137,8 @@ public class TeamService {
                 .team(team)
                 .member(memberRepository.findById(memberId)
                         .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND)))
-                .status("PENDING")
-                .teamRole("MEMBER")
+                .status(TeamMemberStatus.ParticipationStatus.PENDING)
+                .teamRole(TeamMemberStatus.TeamRole.MEMBER)
                 .build();
 
         teamMemberStatusRepository.save(request);

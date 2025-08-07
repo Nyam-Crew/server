@@ -42,9 +42,23 @@ public class TeamMemberStatus extends BaseEntity {
     private Team team;
 
     @Column(nullable = false, length = 10)
-    private String status;
+    private ParticipationStatus status;
 
     @Column(name = "team_role", length = 10)
-    private String teamRole; // 예: MEMBER, LEADER
+    private TeamRole teamRole; // 예: MEMBER, LEADER
+
+    public enum ParticipationStatus {
+        NOT_JOINED,    // 가입 요청 안함
+        PENDING,       // 가입 요청 중
+        APPROVED,      // 가입 완료
+        REJECTED,      // 거절됨
+        BANNED         // 강퇴됨
+    }
+
+    public enum TeamRole {
+        LEADER,
+        SUBLEADER,
+        MEMBER
+    }
 
 }
