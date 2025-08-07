@@ -127,5 +127,12 @@ public class TeamController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "그룹 멤버 목록 조회", description = "그룹에 속한 멤버들의 목록과 역할을 조회합니다.")
+    @GetMapping("/{teamId}/members")
+    public ResponseEntity<List<TeamMemberDTO>> getTeamMembers(@PathVariable Long teamId) {
+        List<TeamMemberDTO> members = teamService.getApprovedTeamMembers(teamId);
+        return ResponseEntity.ok(members);
+    }
+
 
 }

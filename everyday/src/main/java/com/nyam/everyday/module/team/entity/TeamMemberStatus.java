@@ -2,15 +2,14 @@ package com.nyam.everyday.module.team.entity;
 
 import com.nyam.everyday.common.entity.BaseEntity;
 import com.nyam.everyday.module.member.entity.Member;
+import com.nyam.everyday.module.team.enums.ParticipationStatus;
+import com.nyam.everyday.module.team.enums.TeamRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
 
 /**
  * 그룹 참여 현황 entity
@@ -48,24 +47,6 @@ public class TeamMemberStatus extends BaseEntity {
     @Column(name = "team_role", length = 10)
     @Enumerated(EnumType.STRING)
     private TeamRole teamRole; // 예: MEMBER, LEADER
-
-    public enum ParticipationStatus {
-        NOT_JOINED,    // 가입 요청 안함
-        PENDING,       // 가입 요청 중
-        APPROVED,      // 가입 완료
-        REJECTED,      // 거절됨
-        BANNED         // 강퇴됨
-    }
-
-    public enum TeamRole {
-        LEADER,
-        SUBLEADER,
-        MEMBER;
-
-        public boolean isManager() {
-            return this == LEADER || this == SUBLEADER;
-        }
-    }
 
     public void approve() {
         if (this.status != ParticipationStatus.PENDING) {

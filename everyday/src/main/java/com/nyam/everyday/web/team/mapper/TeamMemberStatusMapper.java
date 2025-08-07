@@ -4,6 +4,7 @@ import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.team.entity.Team;
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import com.nyam.everyday.web.team.dto.TeamDto;
+import com.nyam.everyday.web.team.dto.TeamMemberDTO;
 import com.nyam.everyday.web.team.dto.TeamMemberStatusDto;
 import org.mapstruct.*;
 
@@ -21,9 +22,16 @@ public interface TeamMemberStatusMapper {
 
     @Mapping(target = "teamId", source = "team.teamId")
     @Mapping(target = "memberId", source = "member.memberId")
-    TeamMemberStatusDto toDTO(TeamMemberStatus entity);
+    TeamMemberStatusDto toStatusDto(TeamMemberStatus entity);
 
-    List<TeamMemberStatusDto> toDtoList(List<TeamMemberStatus> list);
+    @Mapping(source = "member.memberId", target = "memberId")
+    @Mapping(source = "member.nickname", target = "nickname")
+    @Mapping(source = "member.memberImg", target = "memberImg")
+    @Mapping(source = "teamRole", target = "teamRole")
+    TeamMemberDTO totoMemberDto(TeamMemberStatus status);
+
+    List<TeamMemberStatusDto> toStatusDtoList(List<TeamMemberStatus> list);
+    List<TeamMemberDTO> toMemberDtoList(List<TeamMemberStatus> list);
 
     @Mapping(target = "team", source = "team")
     @Mapping(target = "member", source = "member")
@@ -37,4 +45,5 @@ public interface TeamMemberStatusMapper {
             @Mapping(target = "modifiedDate", ignore = true)
     })
     TeamMemberStatus modify(TeamMemberStatusDto dto, @MappingTarget TeamMemberStatus entity);
+
 }

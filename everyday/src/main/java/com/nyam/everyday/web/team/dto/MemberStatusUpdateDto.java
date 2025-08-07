@@ -1,6 +1,6 @@
 package com.nyam.everyday.web.team.dto;
 
-import com.nyam.everyday.module.team.entity.TeamMemberStatus;
+import com.nyam.everyday.module.team.enums.ParticipationStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -21,5 +21,5 @@ import lombok.*;
 public class MemberStatusUpdateDto {
 
     @Schema(description = "변경할 참여 상태", example = "APPROVED")
-    private TeamMemberStatus.ParticipationStatus status;
+    private ParticipationStatus status;
 }

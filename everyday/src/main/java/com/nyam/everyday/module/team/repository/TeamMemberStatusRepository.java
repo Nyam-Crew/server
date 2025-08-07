@@ -1,7 +1,10 @@
 package com.nyam.everyday.module.team.repository;
 
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
+import com.nyam.everyday.module.team.enums.ParticipationStatus;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,5 +22,8 @@ public interface TeamMemberStatusRepository extends JpaRepository<TeamMemberStat
 
     Optional<TeamMemberStatus> findByTeam_TeamIdAndMember_MemberId(Long teamId, Long memberId);
 
-    List<TeamMemberStatus> findAllByTeam_TeamIdAndStatus(Long teamId, TeamMemberStatus.ParticipationStatus participationStatus);
+    List<TeamMemberStatus> findAllByTeam_TeamIdAndStatus(Long teamId, ParticipationStatus participationStatus);
+
+    @Query("SELECT tms FROM TeamMemberStatus tms JOIN FETCH tms.member WHERE tms.team.teamId = :teamId AND tms.status = :status")
+    List<TeamMemberStatus> findAllWithMemberByTeam_TeamIdAndStatus(@org.springframework.data.repository.query.Param("teamId") Long teamId, @Param("status") ParticipationStatus status);
 }

@@ -3,32 +3,25 @@ package com.nyam.everyday.module.team.service;
 import com.nyam.everyday.common.aws.s3.service.AwsS3Service;
 import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.common.exception.ErrorCode;
-import com.nyam.everyday.module.awsS3.dto.AwsS3Response;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
+import com.nyam.everyday.module.team.enums.ParticipationStatus;
 import com.nyam.everyday.module.team.entity.Team;
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
+import com.nyam.everyday.module.team.enums.TeamRole;
 import com.nyam.everyday.module.team.repository.TeamMemberStatusRepository;
 import com.nyam.everyday.module.team.repository.TeamRepository;
-import com.nyam.everyday.web.team.dto.MemberStatusUpdateDto;
-import com.nyam.everyday.web.team.dto.TeamDetailDto;
-import com.nyam.everyday.web.team.dto.TeamDto;
-import com.nyam.everyday.web.team.dto.TeamMemberStatusDto;
+import com.nyam.everyday.web.team.dto.*;
 import com.nyam.everyday.web.team.mapper.TeamMapper;
 import com.nyam.everyday.web.team.mapper.TeamMemberStatusMapper;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
-import static com.nyam.everyday.common.util.EnumUtils.safeValueOf;
 
 /**
  * @author : 이지은
@@ -117,38 +110,35 @@ public class TeamService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new BaseException(ErrorCode.GROUP_NOT_FOUND));
 
-        // 중복 신청 또는 가입 여부 확인
         Optional<TeamMemberStatus> existing = teamMemberStatusRepository
                 .findByTeam_TeamIdAndMember_MemberId(teamId, memberId);
 
         if (existing.isPresent()) {
             TeamMemberStatus status = existing.get();
-            if (status.getStatus() == TeamMemberStatus.ParticipationStatus.APPROVED) {
+            if (status.getStatus() == ParticipationStatus.APPROVED) {
                 throw new BaseException(ErrorCode.ALREADY_JOINED_GROUP);
-            } else if (status.getStatus() == TeamMemberStatus.ParticipationStatus.PENDING) {
+            } else if (status.getStatus() == ParticipationStatus.PENDING) {
                 throw new BaseException(ErrorCode.ALREADY_EXIST_JOIN);
             }
         }
 
-        // 정원 초과 체크
         if (team.getTeamCurrentMembers() >= team.getTeamMaxMembers()) {
             throw new BaseException(ErrorCode.TEAM_CAPACITY_FULL);
         }
 
-        // 참가 요청 저장
         TeamMemberStatus request = TeamMemberStatus.builder()
                 .team(team)
                 .member(memberRepository.findById(memberId)
                         .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND)))
-                .status(TeamMemberStatus.ParticipationStatus.PENDING)
-                .teamRole(TeamMemberStatus.TeamRole.MEMBER)
+                .status(ParticipationStatus.PENDING)
+                .teamRole(TeamRole.MEMBER)
                 .build();
 
         teamMemberStatusRepository.save(request);
     }
 
+    @Transactional(readOnly = true)
     public List<TeamMemberStatusDto> getJoinRequestMembers(Long teamId, Long requesterId) {
-        // 권한 확인 (방장/부방장만 조회 가능)
         TeamMemberStatus requesterStatus = teamMemberStatusRepository
                 .findByTeam_TeamIdAndMember_MemberId(teamId, requesterId)
                 .orElseThrow(() -> new BaseException(ErrorCode.ACCESS_DENIED));
@@ -158,20 +148,18 @@ public class TeamService {
         }
 
         List<TeamMemberStatus> pendingMembers = teamMemberStatusRepository
-                .findAllByTeam_TeamIdAndStatus(teamId, TeamMemberStatus.ParticipationStatus.PENDING);
+                .findAllByTeam_TeamIdAndStatus(teamId, ParticipationStatus.PENDING);
 
-        return teamMemberStatusMapper.toDtoList(pendingMembers);
+        return teamMemberStatusMapper.toStatusDtoList(pendingMembers);
     }
 
     @Transactional
-    public void updateMemberStatus(Long teamId, Long targetMemberId, TeamMemberStatus.ParticipationStatus newStatus, Long requesterId) {
-        //실제 신청한 member가 있는지 확인
+    public void updateMemberStatus(Long teamId, Long targetMemberId, ParticipationStatus newStatus, Long requesterId) {
         TeamMemberStatus targetStatus = teamMemberStatusRepository
                 .findByTeam_TeamIdAndMember_MemberId(teamId, targetMemberId)
                 .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
 
-        //신청중 상태가 아니면 이미 처리한 요청에 대한 것은 exception
-        if (targetStatus.getStatus() != TeamMemberStatus.ParticipationStatus.PENDING) {
+        if (targetStatus.getStatus() != ParticipationStatus.PENDING) {
             throw new BaseException(ErrorCode.ALREADY_PROCESSED);
         }
 
@@ -183,14 +171,23 @@ public class TeamService {
             throw new BaseException(ErrorCode.ACCESS_DENIED);
         }
 
-        // ✅ Entity enum 기준으로 비교
-        if (newStatus == TeamMemberStatus.ParticipationStatus.APPROVED) {
+        if (newStatus == ParticipationStatus.APPROVED) {
             targetStatus.approve();
-        } else if (newStatus == TeamMemberStatus.ParticipationStatus.REJECTED) {
+        } else if (newStatus == ParticipationStatus.REJECTED) {
             targetStatus.reject();
         } else {
             throw new BaseException(ErrorCode.INVALID_STATUS);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<TeamMemberDTO> getApprovedTeamMembers(Long teamId) {
+        List<TeamMemberStatus> approvedMembers =
+                teamMemberStatusRepository.findAllWithMemberByTeam_TeamIdAndStatus(
+                        teamId, ParticipationStatus.APPROVED
+                );
+
+        return teamMemberStatusMapper.toMemberDtoList(approvedMembers);
     }
 
 }
