@@ -25,6 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
+import static com.nyam.everyday.common.util.EnumUtils.safeValueOf;
+
 /**
  * @author : 이지은
  * @fileName : TeamService
@@ -42,17 +44,17 @@ public class TeamService {
     private final AwsS3Service awsS3Service;
 
     @Transactional
-    public TeamDto createTeam(TeamDto dto, MultipartFile imageFile, Long memberId) {
+    public TeamDto createTeam(TeamDto dto,/* MultipartFile imageFile,*/ Long memberId) {
         //memberId에 대한 유효성 검사
         Member owner = memberRepository.findById(memberId).orElseThrow(()
                 -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
 
-        String imageUrl = null;
-        if (imageFile != null && !imageFile.isEmpty()) {
-            AwsS3Response response = awsS3Service.uploadFile(imageFile);
-            imageUrl = response.getUrl();
-            dto.setTeamImg(imageUrl); // 업로드된 이미지 URL DTO에 주입
-        }
+//        String imageUrl = null;
+//        if (imageFile != null && !imageFile.isEmpty()) {
+//            AwsS3Response response = awsS3Service.uploadFile(imageFile);
+//            imageUrl = response.getUrl();
+//            dto.setTeamImg(imageUrl); // 업로드된 이미지 URL DTO에 주입
+//        }
 
         //Mapstruct builder
         Team team = teamMapper.toEntity(dto, owner); // DTO → Entity 변환
@@ -64,9 +66,10 @@ public class TeamService {
         return teamMapper.toDto(team);
     }
 
-    private void registerLeader(Team team, Member owner) {
+    @Transactional
+    public void registerLeader(Team team, Member owner) {
         TeamMemberStatusDto leaderDto = TeamMemberStatusDto.builder()
-                .status("JOINED")
+                .status("APPROVED")
                 .teamRole("LEADER")
                 .build();
 
@@ -74,6 +77,7 @@ public class TeamService {
         teamMemberStatusRepository.save(leaderStatus);
     }
 
+    @Transactional
     public Page<TeamDto> getTeamList(String keyword, Pageable pageable) {
         Page<Team> teams;
 
@@ -86,6 +90,7 @@ public class TeamService {
         return teams.map(teamMapper::toDto);
     }
 
+    @Transactional
     public TeamDetailDto getTeam(Long teamId, Long memberId) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new BaseException(ErrorCode.GROUP_NOT_FOUND));
@@ -93,24 +98,58 @@ public class TeamService {
         Optional<TeamMemberStatus> memberStatusOpt =
                 teamMemberStatusRepository.findByTeam_TeamIdAndMember_MemberId(teamId, memberId);
 
-        String participationStatus = memberStatusOpt
-                .map(TeamMemberStatus::getStatus)
-                .orElse("NOT_JOINED");
+        // String → Enum 안전 변환
+        TeamDetailDto.ParticipationStatus participationStatus = memberStatusOpt
+                .map(s -> safeValueOf(
+                        TeamDetailDto.ParticipationStatus.class,
+                        s.getStatus(),
+                        TeamDetailDto.ParticipationStatus.NOT_JOINED
+                ))
+                .orElse(TeamDetailDto.ParticipationStatus.NOT_JOINED);
 
-        String teamRole = memberStatusOpt
-                .map(TeamMemberStatus::getTeamRole)
+        TeamDetailDto.TeamRole teamRole = memberStatusOpt
+                .map(s -> safeValueOf(
+                        TeamDetailDto.TeamRole.class,
+                        s.getTeamRole(),
+                        null
+                ))
                 .orElse(null);
 
-        return TeamDetailDto.builder()
-                .teamId(team.getTeamId())
-                .teamTitle(team.getTeamTitle())
-                .teamDescription(team.getTeamDescription())
-                .teamImage(team.getTeamImg())
-                .currentMemberCount(team.getTeamCurrentMembers())
-                .maxMembers(team.getTeamMaxMembers())
-                .createdDate(team.getCreatedDate().toString())
-                .status(TeamDetailDto.ParticipationStatus.valueOf(participationStatus))
-                .teamRole(TeamDetailDto.TeamRole.valueOf(teamRole))
+        return teamMapper.toDetailDto(team, participationStatus, teamRole);
+    }
+
+    @Transactional
+    public void requestToJoin(Long teamId, Long memberId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new BaseException(ErrorCode.GROUP_NOT_FOUND));
+
+        // 중복 신청 또는 가입 여부 확인
+        Optional<TeamMemberStatus> existing = teamMemberStatusRepository
+                .findByTeam_TeamIdAndMember_MemberId(teamId, memberId);
+
+        if (existing.isPresent()) {
+            TeamMemberStatus status = existing.get();
+            if (status.getStatus().equals("APPROVED")) {
+                throw new BaseException(ErrorCode.ALREADY_JOINED_GROUP);
+            } else if (status.getStatus().equals("PENDING")) {
+                throw new BaseException(ErrorCode.ALREADY_EXIST_JOIN);
+            }
+        }
+
+        // 정원 초과 체크
+        if (team.getTeamCurrentMembers() >= team.getTeamMaxMembers()) {
+            throw new BaseException(ErrorCode.TEAM_CAPACITY_FULL);
+        }
+
+        // 참가 요청 저장
+        TeamMemberStatus request = TeamMemberStatus.builder()
+                .team(team)
+                .member(memberRepository.findById(memberId)
+                        .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND)))
+                .status("PENDING")
+                .teamRole("MEMBER")
                 .build();
+
+        teamMemberStatusRepository.save(request);
     }
 }

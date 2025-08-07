@@ -13,6 +13,8 @@ public enum ErrorCode {
   INVALID_TOKEN(HttpStatus.BAD_REQUEST, "INVALID_TOKEN", "유효하지 않은 토큰입니다."),
   ALREADY_IN_BOOKMARK(HttpStatus.BAD_REQUEST, "ALREADY_IN_BOOKMARK", "이미 북마크에 존재하는 게시글입니다"),
   ALREADY_EXIST_JOIN(HttpStatus.BAD_REQUEST, "ALREADY_EXIST_JOIN", "이미 신청한 그룹입니다."),
+  ALREADY_JOINED_GROUP(HttpStatus.BAD_REQUEST, "ALREADY_JOINED_GROUP", "이미 그룹에 가입되어 있습니다."), // ✅ 추가
+  TEAM_CAPACITY_FULL(HttpStatus.BAD_REQUEST, "TEAM_CAPACITY_FULL", "그룹 정원이 초과되었습니다."),
   VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "입력값 유효성 검사에 실패했습니다."),
 
   /* 401 - Unauthorized */

@@ -8,6 +8,8 @@ import com.nyam.everyday.web.team.dto.TeamDetailDto;
 import com.nyam.everyday.web.team.dto.TeamDto;
 import com.nyam.everyday.web.team.dto.TeamSearchDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
@@ -16,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -39,16 +42,16 @@ public class TeamController {
     private final TeamSearchQueryService teamSearchService;
 
 
-    @Operation(summary = "그룹 생성", description = "그룹을 생성합니다.")
+    @Operation(summary = "그룹 생성", description = "그룹을 생성합니다. swagger에서는 이미지랑 테스트하기가 빡세서 주석처리해두었습니다. 이미지 제외하고 테스트 완료")
     @PostMapping
     public ResponseEntity<TeamDto> createTeam(
             @RequestBody TeamDto teamDTO,
-            @RequestPart(required = false) MultipartFile imageFile,
+            //@RequestPart(required = false) MultipartFile imageFile,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         //파라미터 그룹 이름, 그룹 설명, 그룹 이미지, 최대인원수(최소인원수==2), memberId 받아서 해당 ID를 owner(방장)으로
         Long memberId = userDetails.getId(); // 인증된 사용자로부터 방장 ID 추출
 
-        TeamDto response = teamService.createTeam(teamDTO, imageFile, memberId);
+        TeamDto response = teamService.createTeam(teamDTO, /*imageFile,*/ memberId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -89,6 +92,15 @@ public class TeamController {
         Long memberId = userDetails.getId();
         TeamDetailDto teamDetail = teamService.getTeam(teamId, memberId);
         return ResponseEntity.ok(teamDetail);
+    }
+
+
+    @Operation(summary = "그룹 참가 신청", description = "특정 그룹에 참가 신청을 보냅니다.")
+    @PostMapping("/{teamId}/join")
+    public ResponseEntity<String> requestToJoinTeam(@PathVariable Long teamId,
+                                                    @AuthenticationPrincipal CustomUserDetails userDetails) {
+        teamService.requestToJoin(teamId, userDetails.getId());
+        return ResponseEntity.ok("참가 신청이 완료되었습니다.");
     }
 
 
