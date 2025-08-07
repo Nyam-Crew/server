@@ -27,6 +27,9 @@ public class MealLogRequestDto {
     @Schema(description = "섭취량 (g, ml 등)")
     private Integer intakeAmount;
 
+    @Schema(description = "섭취 칼로리")
+    private Double intakeKcal;
+
     @Schema(description = "식사 타입 (BREAKFAST:아침, LUNCH:점심, DINNER:저녁, SNACK:간식)")
     private String mealType;
 }
