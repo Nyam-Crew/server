@@ -18,17 +18,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/chat")
 @Tag(name = "Chat-Message-Controller", description = "채팅 저장을 위한 임시 컨트롤러")
 @RequiredArgsConstructor
-public class ChatMesageController {
+public class ChatMessageController {
 
   private final ChatMessageService chatMessageService;
 
-@PostMapping("/send")
-@Operation(summary = "채팅 저장하기", description = "")
+  @PostMapping("/send")
+  @Operation(summary = "채팅 저장하기", description = "")
   public ChatMessage sendMessage(@RequestBody ChatMessageSaveRequest chatMessage) {
     return chatMessageService.save(chatMessage);
   }
 
-@GetMapping("/history")
+  @GetMapping("/history")
   public List<ChatMessage> getMessageHistory(@RequestParam String sender) {
     return chatMessageService.findBySender(sender);
   }
