@@ -4,9 +4,7 @@ import com.nyam.everyday.module.team.service.TeamSearchQueryService;
 import com.nyam.everyday.module.team.service.TeamSearchService;
 import com.nyam.everyday.module.team.service.TeamService;
 import com.nyam.everyday.security.core.CustomUserDetails;
-import com.nyam.everyday.web.team.dto.TeamDetailDto;
-import com.nyam.everyday.web.team.dto.TeamDto;
-import com.nyam.everyday.web.team.dto.TeamSearchDto;
+import com.nyam.everyday.web.team.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,6 +21,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.HandlerMapping;
+
+import java.util.List;
 
 /**
  *
@@ -40,6 +41,7 @@ public class TeamController {
 
     private final TeamService teamService;
     private final TeamSearchQueryService teamSearchService;
+    private final HandlerMapping resourceHandlerMapping;
 
 
     @Operation(summary = "그룹 생성", description = "그룹을 생성합니다. swagger에서는 이미지랑 테스트하기가 빡세서 주석처리해두었습니다. 이미지 제외하고 테스트 완료")
@@ -101,6 +103,28 @@ public class TeamController {
                                                     @AuthenticationPrincipal CustomUserDetails userDetails) {
         teamService.requestToJoin(teamId, userDetails.getId());
         return ResponseEntity.ok("참가 신청이 완료되었습니다.");
+    }
+
+    @Operation(summary = "그룹 참가 신청 중인 유저 목록", description = "그룹에 참가 신청 중인 유저 목록을 조회합니다.")
+    @GetMapping("/{teamId}/join-requests")
+    public ResponseEntity<List<TeamMemberStatusDto>> getJoinRequests(
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        List<TeamMemberStatusDto> result = teamService.getJoinRequestMembers(teamId, userDetails.getId());
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "그룹 참가 승인/거부", description = "그룹에 신청된 참가 신청을 승인/거부합니다.")
+    @PatchMapping("/{teamId}/members/{memberId}/status")
+    public ResponseEntity<Void> updateMemberStatus(
+            @PathVariable Long teamId,
+            @PathVariable Long memberId,
+            @RequestBody MemberStatusUpdateDto request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        teamService.updateMemberStatus(teamId, memberId, request.getStatus(), userDetails.getId());
+        return ResponseEntity.ok().build();
     }
 
 

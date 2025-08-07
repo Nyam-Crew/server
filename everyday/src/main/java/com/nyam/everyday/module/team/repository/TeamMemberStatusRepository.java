@@ -4,6 +4,7 @@ import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -18,4 +19,5 @@ public interface TeamMemberStatusRepository extends JpaRepository<TeamMemberStat
 
     Optional<TeamMemberStatus> findByTeam_TeamIdAndMember_MemberId(Long teamId, Long memberId);
 
+    List<TeamMemberStatus> findAllByTeam_TeamIdAndStatus(Long teamId, TeamMemberStatus.ParticipationStatus participationStatus);
 }

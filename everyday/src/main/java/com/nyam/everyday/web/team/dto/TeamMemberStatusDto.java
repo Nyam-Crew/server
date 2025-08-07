@@ -29,14 +29,28 @@ public class TeamMemberStatusDto {
     private Long memberId;
 
     @Schema(name = "", example = "")
-    private String status;
+    private ParticipationStatus status;
 
     @Schema(name = "", example = "")
-    private String teamRole;
+    private TeamRole teamRole;
 
     @Schema(name = "", example = "")
     private LocalDateTime createdDate;
 
     @Schema(name = "", example = "")
     private LocalDateTime modifiedDate;
+
+    public enum ParticipationStatus {
+        NOT_JOINED,    // 가입 요청 안함
+        PENDING,       // 가입 요청 중
+        APPROVED,      // 가입 완료
+        REJECTED,      // 거절됨
+        BANNED         // 강퇴됨
+    }
+
+    public enum TeamRole {
+        LEADER,
+        SUBLEADER,
+        MEMBER
+    }
 }

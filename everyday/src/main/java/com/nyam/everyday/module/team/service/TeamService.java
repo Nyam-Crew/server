@@ -10,6 +10,7 @@ import com.nyam.everyday.module.team.entity.Team;
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import com.nyam.everyday.module.team.repository.TeamMemberStatusRepository;
 import com.nyam.everyday.module.team.repository.TeamRepository;
+import com.nyam.everyday.web.team.dto.MemberStatusUpdateDto;
 import com.nyam.everyday.web.team.dto.TeamDetailDto;
 import com.nyam.everyday.web.team.dto.TeamDto;
 import com.nyam.everyday.web.team.dto.TeamMemberStatusDto;
@@ -23,6 +24,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static com.nyam.everyday.common.util.EnumUtils.safeValueOf;
@@ -69,8 +72,8 @@ public class TeamService {
     @Transactional
     public void registerLeader(Team team, Member owner) {
         TeamMemberStatusDto leaderDto = TeamMemberStatusDto.builder()
-                .status("APPROVED")
-                .teamRole("LEADER")
+                .status(TeamMemberStatusDto.ParticipationStatus.APPROVED)
+                .teamRole(TeamMemberStatusDto.TeamRole.LEADER)
                 .build();
 
         TeamMemberStatus leaderStatus = teamMemberStatusMapper.toEntity(leaderDto, team, owner);
@@ -143,4 +146,51 @@ public class TeamService {
 
         teamMemberStatusRepository.save(request);
     }
+
+    public List<TeamMemberStatusDto> getJoinRequestMembers(Long teamId, Long requesterId) {
+        // 권한 확인 (방장/부방장만 조회 가능)
+        TeamMemberStatus requesterStatus = teamMemberStatusRepository
+                .findByTeam_TeamIdAndMember_MemberId(teamId, requesterId)
+                .orElseThrow(() -> new BaseException(ErrorCode.ACCESS_DENIED));
+
+        if (!requesterStatus.getTeamRole().isManager()) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
+
+        List<TeamMemberStatus> pendingMembers = teamMemberStatusRepository
+                .findAllByTeam_TeamIdAndStatus(teamId, TeamMemberStatus.ParticipationStatus.PENDING);
+
+        return teamMemberStatusMapper.toDtoList(pendingMembers);
+    }
+
+    @Transactional
+    public void updateMemberStatus(Long teamId, Long targetMemberId, TeamMemberStatus.ParticipationStatus newStatus, Long requesterId) {
+        //실제 신청한 member가 있는지 확인
+        TeamMemberStatus targetStatus = teamMemberStatusRepository
+                .findByTeam_TeamIdAndMember_MemberId(teamId, targetMemberId)
+                .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
+
+        //신청중 상태가 아니면 이미 처리한 요청에 대한 것은 exception
+        if (targetStatus.getStatus() != TeamMemberStatus.ParticipationStatus.PENDING) {
+            throw new BaseException(ErrorCode.ALREADY_PROCESSED);
+        }
+
+        TeamMemberStatus requesterStatus = teamMemberStatusRepository
+                .findByTeam_TeamIdAndMember_MemberId(teamId, requesterId)
+                .orElseThrow(() -> new BaseException(ErrorCode.ACCESS_DENIED));
+
+        if (!requesterStatus.getTeamRole().isManager()) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
+
+        // ✅ Entity enum 기준으로 비교
+        if (newStatus == TeamMemberStatus.ParticipationStatus.APPROVED) {
+            targetStatus.approve();
+        } else if (newStatus == TeamMemberStatus.ParticipationStatus.REJECTED) {
+            targetStatus.reject();
+        } else {
+            throw new BaseException(ErrorCode.INVALID_STATUS);
+        }
+    }
+
 }

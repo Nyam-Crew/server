@@ -16,6 +16,8 @@ public enum ErrorCode {
   ALREADY_JOINED_GROUP(HttpStatus.BAD_REQUEST, "ALREADY_JOINED_GROUP", "이미 그룹에 가입되어 있습니다."), // ✅ 추가
   TEAM_CAPACITY_FULL(HttpStatus.BAD_REQUEST, "TEAM_CAPACITY_FULL", "그룹 정원이 초과되었습니다."),
   VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "입력값 유효성 검사에 실패했습니다."),
+  ALREADY_PROCESSED(HttpStatus.BAD_REQUEST, "ALREADY_PROCESSED", "이미 처리된 참가 신청입니다."),
+  INVALID_STATUS(HttpStatus.BAD_REQUEST, "INVALID_STATUS", "올바르지 않은 상태입니다."),
 
   /* 401 - Unauthorized */
   AUTHENTICATION_FAILED(HttpStatus.BAD_REQUEST, "AUTHENTICATION_FAILED", "인증에 실패했습니다."),

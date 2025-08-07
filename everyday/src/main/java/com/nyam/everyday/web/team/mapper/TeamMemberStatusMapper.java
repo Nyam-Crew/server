@@ -7,6 +7,8 @@ import com.nyam.everyday.web.team.dto.TeamDto;
 import com.nyam.everyday.web.team.dto.TeamMemberStatusDto;
 import org.mapstruct.*;
 
+import java.util.List;
+
 /**
  * 그룹 참여 현황 Builder mapper
  *
@@ -20,6 +22,8 @@ public interface TeamMemberStatusMapper {
     @Mapping(target = "teamId", source = "team.teamId")
     @Mapping(target = "memberId", source = "member.memberId")
     TeamMemberStatusDto toDTO(TeamMemberStatus entity);
+
+    List<TeamMemberStatusDto> toDtoList(List<TeamMemberStatus> list);
 
     @Mapping(target = "team", source = "team")
     @Mapping(target = "member", source = "member")

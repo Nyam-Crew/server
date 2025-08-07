@@ -42,9 +42,11 @@ public class TeamMemberStatus extends BaseEntity {
     private Team team;
 
     @Column(nullable = false, length = 10)
+    @Enumerated(EnumType.STRING)
     private ParticipationStatus status;
 
     @Column(name = "team_role", length = 10)
+    @Enumerated(EnumType.STRING)
     private TeamRole teamRole; // 예: MEMBER, LEADER
 
     public enum ParticipationStatus {
@@ -58,7 +60,26 @@ public class TeamMemberStatus extends BaseEntity {
     public enum TeamRole {
         LEADER,
         SUBLEADER,
-        MEMBER
+        MEMBER;
+
+        public boolean isManager() {
+            return this == LEADER || this == SUBLEADER;
+        }
     }
+
+    public void approve() {
+        if (this.status != ParticipationStatus.PENDING) {
+            throw new IllegalStateException("이미 처리된 요청입니다.");
+        }
+        this.status = ParticipationStatus.APPROVED;
+    }
+
+    public void reject() {
+        if (this.status != ParticipationStatus.PENDING) {
+            throw new IllegalStateException("이미 처리된 요청입니다.");
+        }
+        this.status = ParticipationStatus.REJECTED;
+    }
+
 
 }
