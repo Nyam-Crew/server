@@ -29,7 +29,7 @@ public class Team extends BaseEntity {
     @Column(name= "team_id")
     private Long teamId;
 
-    @Column(name="team_title")
+    @Column(name="team_title", nullable = false)
     private String teamTitle;
 
     @Column(name = "team_description")
@@ -39,7 +39,7 @@ public class Team extends BaseEntity {
     private String teamImg;
 
     @Column(name="team_current_members")
-    private int teamCurrentMembers;
+    private int teamCurrentMembers = 1;
 
     @Column(name="team_max_members")
     private int teamMaxMembers;

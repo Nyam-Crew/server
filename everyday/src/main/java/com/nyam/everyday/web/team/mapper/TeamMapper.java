@@ -2,6 +2,7 @@ package com.nyam.everyday.web.team.mapper;
 
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.team.entity.Team;
+import com.nyam.everyday.web.team.dto.TeamDetailDto;
 import com.nyam.everyday.web.team.dto.TeamDto;
 import org.mapstruct.*;
 
@@ -30,4 +31,17 @@ public interface TeamMapper {
             @Mapping(target = "modifiedDate", ignore = true)
     })
     Team modify(TeamDto dto, @MappingTarget Team team);
+
+    @Mappings({
+            @Mapping(source = "team.teamId", target = "teamId"),
+            @Mapping(source = "team.teamTitle", target = "teamTitle"),
+            @Mapping(source = "team.teamDescription", target = "teamDescription"),
+            @Mapping(source = "team.teamImg", target = "teamImage"),
+            @Mapping(source = "team.teamMaxMembers", target = "maxMembers"),
+            @Mapping(source = "team.teamCurrentMembers", target = "currentMemberCount"),
+            @Mapping(source = "team.createdDate", target = "createdDate", dateFormat = "yyyy-MM-dd"),
+            @Mapping(source = "status", target = "status"),
+            @Mapping(source = "teamRole", target = "teamRole")
+    })
+    TeamDetailDto toDetailDto(Team team, TeamDetailDto.ParticipationStatus status, TeamDetailDto.TeamRole teamRole);
 }

@@ -19,30 +19,30 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class TeamDto {
-    @Schema(name = "", example = "")
+    @Schema(name = "그룹 ID", example = "1")
     private Long teamId;
 
-    @Schema(name = "", example = "")
+    @Schema(description = "그룹 제목", example = "운동하는 사자들")
     private String teamTitle;
 
-    @Schema(name = "", example = "")
+    @Schema(description = "그룹 설명", example = "매일 운동 인증하는 그룹입니다.")
     private String teamDescription;
 
-    @Schema(name = "", example = "")
+    @Schema(description = "대표 이미지 URL (이미지 업로드 안 할 경우)", example = "https://example.com/image.jpg")
     private String teamImg;
 
-    @Schema(name="",example = "")
+    @Schema(description = "현재 인원 수", example = "1")
     private int teamCurrentMembers;
 
-    @Schema(name = "", example = "")
+    @Schema(description = "최대 인원 수", example = "10")
     private int teamMaxMembers;
 
-    @Schema(name = "", example = "")
+    @Schema(name = "그룹 생성일자")
     private LocalDateTime createdDate;
 
-    @Schema(name = "", example = "")
+    @Schema(name = "그룹 수정일자")
     private LocalDateTime modifiedDate;
 
-    @Schema(name = "", example = "")
+    @Schema(description = "그룹 생성자(방장) ID", example = "1")
     private Long ownerId;
 }
