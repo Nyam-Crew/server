@@ -1,0 +1,69 @@
+package com.nyam.everyday.module.team.service;
+
+import com.nyam.everyday.common.exception.BaseException;
+import com.nyam.everyday.common.exception.ErrorCode;
+import com.nyam.everyday.module.team.entity.TeamMemberStatus;
+import com.nyam.everyday.module.team.enums.ParticipationStatus;
+import com.nyam.everyday.module.team.repository.TeamMemberStatusRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ *
+ * 그룹 멤버 관리 service
+ *
+ * @author : 이지은
+ * @fileName : TeamMemberService
+ * @since : 25. 8. 7.
+ *
+ */
+@Service
+@RequiredArgsConstructor
+public class TeamMemberService {
+
+    private final TeamMemberStatusRepository teamMemberStatusRepository;
+
+    @Transactional
+    public void updateMemberStatus(Long teamId, Long targetMemberId, ParticipationStatus newStatus, Long requesterId) {
+        TeamMemberStatus targetStatus = teamMemberStatusRepository
+                .findByTeam_TeamIdAndMember_MemberId(teamId, targetMemberId)
+                .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if (targetStatus.getStatus() != ParticipationStatus.PENDING) {
+            throw new BaseException(ErrorCode.ALREADY_PROCESSED);
+        }
+
+        TeamMemberStatus requesterStatus = teamMemberStatusRepository
+                .findByTeam_TeamIdAndMember_MemberId(teamId, requesterId)
+                .orElseThrow(() -> new BaseException(ErrorCode.ACCESS_DENIED));
+
+        if (!requesterStatus.getTeamRole().isManager()) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
+
+        if (newStatus == ParticipationStatus.APPROVED) {
+            targetStatus.approve();
+        } else if (newStatus == ParticipationStatus.REJECTED) {
+            targetStatus.reject();
+        } else {
+            throw new BaseException(ErrorCode.INVALID_STATUS);
+        }
+    }
+
+    @Transactional
+    public void leaveTeam(Long teamId, Long memberId) {
+        TeamMemberStatus memberStatus = teamMemberStatusRepository
+                .findByTeam_TeamIdAndMember_MemberId(teamId, memberId)
+                .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
+
+        teamMemberStatusRepository.delete(memberStatus);
+    }
+
+    // 아래 기능 여기로 위치 이동할 예정
+    // - 참가 승인/거절
+    // 다음 기능도 여기에 추가될 예정:
+    // - 강퇴
+    // - 부방장 역할 부여/회수
+    // - 방장 위임
+}

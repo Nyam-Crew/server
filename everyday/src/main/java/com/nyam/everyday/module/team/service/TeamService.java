@@ -153,33 +153,6 @@ public class TeamService {
         return teamMemberStatusMapper.toStatusDtoList(pendingMembers);
     }
 
-    @Transactional
-    public void updateMemberStatus(Long teamId, Long targetMemberId, ParticipationStatus newStatus, Long requesterId) {
-        TeamMemberStatus targetStatus = teamMemberStatusRepository
-                .findByTeam_TeamIdAndMember_MemberId(teamId, targetMemberId)
-                .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
-
-        if (targetStatus.getStatus() != ParticipationStatus.PENDING) {
-            throw new BaseException(ErrorCode.ALREADY_PROCESSED);
-        }
-
-        TeamMemberStatus requesterStatus = teamMemberStatusRepository
-                .findByTeam_TeamIdAndMember_MemberId(teamId, requesterId)
-                .orElseThrow(() -> new BaseException(ErrorCode.ACCESS_DENIED));
-
-        if (!requesterStatus.getTeamRole().isManager()) {
-            throw new BaseException(ErrorCode.ACCESS_DENIED);
-        }
-
-        if (newStatus == ParticipationStatus.APPROVED) {
-            targetStatus.approve();
-        } else if (newStatus == ParticipationStatus.REJECTED) {
-            targetStatus.reject();
-        } else {
-            throw new BaseException(ErrorCode.INVALID_STATUS);
-        }
-    }
-
     @Transactional(readOnly = true)
     public List<TeamMemberDTO> getApprovedTeamMembers(Long teamId) {
         List<TeamMemberStatus> approvedMembers =

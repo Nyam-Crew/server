@@ -1,5 +1,6 @@
 package com.nyam.everyday.web.team.controller;
 
+import com.nyam.everyday.module.team.service.TeamMemberService;
 import com.nyam.everyday.module.team.service.TeamSearchQueryService;
 import com.nyam.everyday.module.team.service.TeamSearchService;
 import com.nyam.everyday.module.team.service.TeamService;
@@ -40,6 +41,8 @@ import java.util.List;
 public class TeamController {
 
     private final TeamService teamService;
+    private final TeamMemberService teamMemberService;
+
     private final TeamSearchQueryService teamSearchService;
     private final HandlerMapping resourceHandlerMapping;
 
@@ -123,7 +126,7 @@ public class TeamController {
             @RequestBody MemberStatusUpdateDto request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        teamService.updateMemberStatus(teamId, memberId, request.getStatus(), userDetails.getId());
+        teamMemberService.updateMemberStatus(teamId, memberId, request.getStatus(), userDetails.getId());
         return ResponseEntity.ok().build();
     }
 
