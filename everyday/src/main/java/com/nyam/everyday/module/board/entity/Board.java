@@ -1,6 +1,7 @@
 package com.nyam.everyday.module.board.entity;
 
 import com.nyam.everyday.common.entity.BaseEntity;
+import com.nyam.everyday.module.boardComment.entity.BoardComment;
 import com.nyam.everyday.module.bookmark.entity.Bookmark;
 import com.nyam.everyday.module.member.entity.Member;
 import jakarta.persistence.CascadeType;
@@ -44,7 +45,7 @@ public class Board extends BaseEntity {
 
   @Comment("게시글 내용")
   @Column(nullable = false)
-  private String boardComment;
+  private String boardContent;
 
   @Comment("조회수")
   @Column(nullable = false)
@@ -56,7 +57,8 @@ public class Board extends BaseEntity {
 
   @Comment("댓글 수")
   @Column(nullable = false)
-  private Long commentCount;
+  @Builder.Default
+  private Long commentCount = 0L;
 
   @Column(nullable = false)
   private String boardType;
@@ -65,4 +67,14 @@ public class Board extends BaseEntity {
   @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Bookmark> bookmarks = new ArrayList<>();
 
+  @Builder.Default
+  @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<BoardComment> boardComments = new ArrayList<>();
+
+  public void increaseCommentCount() {
+    this.commentCount++;
+  }
+
+
 }
+

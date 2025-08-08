@@ -65,7 +65,7 @@ CREATE TABLE board (
                        view_count NUMERIC(20) NOT NULL,
                        like_count BIGINT NOT NULL DEFAULT 0,
                        comment_count BIGINT NOT NULL DEFAULT 0,
-                       board_type VARCHAR(2) NOT NULL,
+                       board_type VARCHAR(20) NOT NULL,
                        created_date TIMESTAMP NOT NULL,
                        modified_date TIMESTAMP NOT NULL,
                        PRIMARY KEY (board_id)
