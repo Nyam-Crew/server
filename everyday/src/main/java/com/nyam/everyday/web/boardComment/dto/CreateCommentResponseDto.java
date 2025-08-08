@@ -1,0 +1,21 @@
+package com.nyam.everyday.web.boardComment.dto;
+
+import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Builder
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+public class CreateCommentResponseDto {
+
+  private Long commentId;
+  private Long boardId;
+  private Long memberId;
+  private LocalDateTime createdDate;
+
+
+}
