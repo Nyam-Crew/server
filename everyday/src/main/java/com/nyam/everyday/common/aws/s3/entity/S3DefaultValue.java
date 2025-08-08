@@ -13,11 +13,12 @@ public enum S3DefaultValue {
   DEFAULT_BADGE_IMAGE("https://nyamnyambucket.s3.ap-northeast-2.amazonaws.com/a8000079-2dec-4c23-9ab9-4c31a0dea01c.png"),
   DEFAULT_STAMP_IMAGE("https://nyamnyambucket.s3.ap-northeast-2.amazonaws.com/e36d1120-ab6c-4b1f-a405-f2c53c21da7a.png");
 
-  // targetUrl이 기본 이미지 중 하나에 해당된다면, true 반환
-  public static boolean contains(String targetUrl) {
-    return Arrays.stream(values())
-        .anyMatch(defaultImage -> defaultImage.getValue().equals(targetUrl));
-  }
+    private final String value;
 
-  private final String value;
+    /** targetUrl이 기본 이미지 중 하나면 true */
+    public static boolean contains(String targetUrl) {
+        if (targetUrl == null) return false;
+        return Arrays.stream(values())
+                .anyMatch(defaultImage -> defaultImage.value.equals(targetUrl));
+    }
 }
