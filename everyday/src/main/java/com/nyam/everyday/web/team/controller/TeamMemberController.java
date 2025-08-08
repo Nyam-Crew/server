@@ -30,7 +30,7 @@ public class TeamMemberController {
     private final TeamMemberService teamMemberService;
 
     @Operation(summary = "그룹 나가기", description = "본인이 가입한 그룹에서 탈퇴합니다.")
-    @PatchMapping("/{teamId}/members/me/leave")
+    @PatchMapping("/{teamId}/leave/me")
     public ResponseEntity<String> leaveTeam(
             @PathVariable Long teamId,
             @AuthenticationPrincipal Long memberId
