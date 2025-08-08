@@ -33,6 +33,7 @@ public enum ErrorCode {
   GROUP_NOT_FOUND(HttpStatus.NOT_FOUND, "GROUP_NOT_FOUND", "해당 모임을 찾을 수 없습니다."),
   POST_NOT_FOUND(HttpStatus.BAD_REQUEST, "POST_NOT_FOUND", "게시글을 찾을 수 없습니다."),
   COMMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "COMMENT_NOT_FOUND", "댓글을 찾을 수 없습니다."),
+  BOARD_NOT_FOUND(HttpStatus.NOT_FOUND,"BOARD_NOT_FOUND","게시글을 찾을 수 없습니다"),
 
   /* 500 - Internal Server Error */
   AWSS3_UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AWSS3_UNKNOWN_ERROR", "S3 연결 과정에서 에러가 발생했습니다"),
