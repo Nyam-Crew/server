@@ -1,7 +1,7 @@
 package com.nyam.everyday.web.team.mapper;
 
 import com.nyam.everyday.module.team.entity.TeamNotice;
-import com.nyam.everyday.web.team.dto.TeamNoticeDTO;
+import com.nyam.everyday.web.team.dto.TeamNoticeDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -15,11 +15,11 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface TeamNoticeMapper {
 
-    @Mapping(source = "Team.TeamId", target = "TeamId")
+    @Mapping(source = "team.teamId", target = "teamId")
     @Mapping(source = "member.memberId", target = "memberId")
-    TeamNoticeDTO toDTO(TeamNotice entity);
+    TeamNoticeDto toDTO(TeamNotice entity);
 
-    @Mapping(source = "TeamId", target = "Team.TeamId")
+    @Mapping(source = "teamId", target = "team.teamId")
     @Mapping(source = "memberId", target = "member.memberId")
-    TeamNotice toEntity(TeamNoticeDTO dto);
+    TeamNotice toEntity(TeamNoticeDto dto);
 }

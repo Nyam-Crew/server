@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamRankingHistoryDTO {
+public class TeamRankingHistoryDto {
 
     @Schema(description = "사용자 이메일", example = "ssj@naver.com")
     private Long id;
