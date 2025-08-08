@@ -1,7 +1,7 @@
 package com.nyam.everyday.web.team.mapper;
 
 import com.nyam.everyday.module.team.entity.Team;
-import com.nyam.everyday.web.team.dto.TeamDTO;
+import com.nyam.everyday.web.team.dto.TeamDto;
 import org.mapstruct.Builder;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -20,9 +20,9 @@ public interface TeamMapper {
     TeamMapper INSTANCE = Mappers.getMapper(TeamMapper.class);
 
     // DTO → Entity
-    @Mapping(target = "teamCreatedAt", ignore = true) // 자동 생성 필드는 무시
-    Team toEntity(TeamDTO dto);
+    @Mapping(target = "teamCreatedDate", ignore = true) // 자동 생성 필드는 무시
+    Team toEntity(TeamDto dto);
 
     // Entity → DTO
-    TeamDTO toDto(Team entity);
+    TeamDto toDto(Team entity);
 }

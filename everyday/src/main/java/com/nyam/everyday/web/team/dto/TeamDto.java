@@ -17,14 +17,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TeamDTO {
+public class TeamDto {
 
-    @Schema(description = "사용자 이메일", example = "ssj@naver.com")
+    @Schema(description = "사용자 Id", example = "")
     private Long teamId;
     private String teamName;
     private String teamDescription;
     private int teamMaxMembers;
-    private LocalDateTime teamCreatedAt;
+    private LocalDateTime teamCreatedDate;
     private LocalDateTime modifiedDate;
     private Long ownerId;
 }

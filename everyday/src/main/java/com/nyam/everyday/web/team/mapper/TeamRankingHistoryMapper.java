@@ -1,7 +1,7 @@
 package com.nyam.everyday.web.team.mapper;
 
 import com.nyam.everyday.module.team.entity.TeamRankingHistory;
-import com.nyam.everyday.web.team.dto.TeamRankingHistoryDTO;
+import com.nyam.everyday.web.team.dto.TeamRankingHistoryDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -15,11 +15,11 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface TeamRankingHistoryMapper {
 
-    @Mapping(source = "Team.TeamId", target = "TeamId")
+    @Mapping(source = "team.teamId", target = "teamId")
     @Mapping(source = "member.memberId", target = "memberId")
-    TeamRankingHistoryDTO toDTO(TeamRankingHistory entity);
+    TeamRankingHistoryDto toDTO(TeamRankingHistory entity);
 
-    @Mapping(source = "TeamId", target = "Team.TeamId")
+    @Mapping(source = "teamId", target = "team.teamId")
     @Mapping(source = "memberId", target = "member.memberId")
-    TeamRankingHistory toEntity(TeamRankingHistoryDTO dto);
+    TeamRankingHistory toEntity(TeamRankingHistoryDto dto);
 }

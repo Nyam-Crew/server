@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamActivityFeedDTO {
+public class TeamActivityFeedDto{
 
     @Schema(description = "피드 ID", example = "")
     private Long id;

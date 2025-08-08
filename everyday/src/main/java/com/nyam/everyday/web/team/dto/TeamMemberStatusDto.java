@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamMemberStatusDTO {
+public class TeamMemberStatusDto {
 
     @Schema(description = "사용자 이메일", example = "ssj@naver.com")
     private Long id;
