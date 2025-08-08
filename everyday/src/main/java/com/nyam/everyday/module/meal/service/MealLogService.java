@@ -1,6 +1,10 @@
 
 package com.nyam.everyday.module.meal.service;
 
+import com.nyam.everyday.module.food.entity.Food;
+import com.nyam.everyday.module.food.repository.FoodRepository;
+import com.nyam.everyday.module.member.entity.Member;
+import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.web.meal.dto.MealLogRequestDto;
 import com.nyam.everyday.web.meal.dto.MealLogResponseDto;
 import com.nyam.everyday.module.meal.entity.MealLog;
@@ -30,6 +34,8 @@ public class MealLogService {
 
     private final MealLogMapStruct mealLogMapStruct;
     private final MealLogRepository mealLogRepository;
+    private final FoodRepository foodRepository;
+    private final MemberRepository memberRepository;
 
     // 날짜별 기록 조회
     public List<MealLogResponseDto> getMealLogs(Long memberId, String mealType, String date) {
@@ -46,6 +52,16 @@ public class MealLogService {
     public Long addMealLog(MealLogRequestDto mealLogRequestDto) {
         // DTO -> Entity 변환
         MealLog mealLog = mealLogMapStruct.toEntity(mealLogRequestDto);
+
+        // 영속 엔티티로 세팅하기 위해 조회
+        Food food = foodRepository.findById(mealLogRequestDto.getFoodId())
+                .orElseThrow(() -> new IllegalArgumentException("Food not found with id: " + mealLogRequestDto.getFoodId()));
+
+        Member member = memberRepository.findById(mealLogRequestDto.getMemberId())
+                .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + mealLogRequestDto.getMemberId()));
+
+        mealLog.setFood(food);
+        mealLog.setMember(member);
 
         // 서버에서 createdDate, modifiedDate가 없으면 현재시간으로 세팅
         LocalDateTime now = LocalDateTime.now();
@@ -66,7 +82,7 @@ public class MealLogService {
         MealLog mealLog = mealLogRepository.findById(mealLogId)
                 .orElseThrow(() -> new IllegalArgumentException("MealLog not found with id: " + mealLogId));
 
-        if (!mealLog.getMemberId().equals(userId)) {
+        if (!mealLog.getMember().getMemberId().equals(userId)) {
             throw new AccessDeniedException("권한이 없습니다.");
         }
 

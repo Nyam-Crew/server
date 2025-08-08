@@ -1,5 +1,7 @@
 package com.nyam.everyday.module.meal.entity;
 
+import com.nyam.everyday.module.food.entity.Food;
+import com.nyam.everyday.module.member.entity.Member;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -28,13 +30,13 @@ public class MealLog {
     @Comment("음식 기록 PK")
     private Long mealLogId;
 
-    @Comment("회원 PK")
-    @Column(nullable = false)
-    private Long memberId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
-    @Comment("음식 PK")
-    @Column(nullable = false)
-    private Long foodId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "food_id", nullable = false)
+    private Food food;
 
     @Comment("섭취량")
     @Column(nullable = false)
