@@ -18,9 +18,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface MealLogRepository extends JpaRepository<MealLog, Long> {
     @Query("SELECT new com.nyam.everyday.web.meal.dto.MealLogResponseDto(" +
-            "m.mealLogId, m.memberId, m.foodId, f.foodName, m.intakeAmount, m.intakeKcal, m.mealType, m.createdDate, m.modifiedDate) " +
-            "FROM MealLog m JOIN Food f ON m.foodId = f.foodId " +
-            "WHERE m.memberId = :memberId AND m.mealType = :mealType AND m.createdDate BETWEEN :start AND :end")
+            "m.mealLogId, m.member.memberId, m.food.foodId, f.foodName, m.intakeAmount, m.intakeKcal, m.mealType, m.createdDate, m.modifiedDate) " +
+            "FROM MealLog m JOIN m.food f " +
+            "WHERE m.member.memberId = :memberId AND m.mealType = :mealType AND m.createdDate BETWEEN :start AND :end")
     List<MealLogResponseDto> findMealLogsWithFoodName(
             @Param("memberId") Long memberId,
             @Param("mealType") String mealType,
