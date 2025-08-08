@@ -47,4 +47,16 @@ public class Team extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member owner;
+
+    // 이미지 변경용 도메인 메서드
+    public void changeImage(String newImageUrl) {
+        this.teamImg = newImageUrl;
+    }
+
+    // 기본정보 변경용 도메인 메서드 (예: PATCH API)
+    public void updateBasicInfo(String title, String description, Integer maxMembers) {
+        if (title != null) this.teamTitle = title;
+        if (description != null) this.teamDescription = description;
+        if (maxMembers != null) this.teamMaxMembers = maxMembers;
+    }
 }

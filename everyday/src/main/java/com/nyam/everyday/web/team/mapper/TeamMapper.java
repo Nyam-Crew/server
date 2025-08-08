@@ -2,6 +2,8 @@ package com.nyam.everyday.web.team.mapper;
 
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.team.entity.Team;
+import com.nyam.everyday.module.team.enums.ParticipationStatus;
+import com.nyam.everyday.module.team.enums.TeamRole;
 import com.nyam.everyday.web.team.dto.TeamDetailDto;
 import com.nyam.everyday.web.team.dto.TeamDto;
 import org.mapstruct.*;
@@ -43,5 +45,5 @@ public interface TeamMapper {
             @Mapping(source = "status", target = "status"),
             @Mapping(source = "teamRole", target = "teamRole")
     })
-    TeamDetailDto toDetailDto(Team team, TeamDetailDto.ParticipationStatus status, TeamDetailDto.TeamRole teamRole);
+    TeamDetailDto toDetailDto(Team team, ParticipationStatus status, TeamRole teamRole);
 }

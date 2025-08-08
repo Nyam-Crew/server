@@ -18,6 +18,7 @@ public enum ErrorCode {
   VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "입력값 유효성 검사에 실패했습니다."),
   ALREADY_PROCESSED(HttpStatus.BAD_REQUEST, "ALREADY_PROCESSED", "이미 처리된 참가 신청입니다."),
   INVALID_STATUS(HttpStatus.BAD_REQUEST, "INVALID_STATUS", "올바르지 않은 상태입니다."),
+  INVALID_REQUEST(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "올바르지 않은 요청입니다."),
 
   /* 401 - Unauthorized */
   AUTHENTICATION_FAILED(HttpStatus.BAD_REQUEST, "AUTHENTICATION_FAILED", "인증에 실패했습니다."),

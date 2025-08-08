@@ -94,12 +94,12 @@ public class TeamService {
         Optional<TeamMemberStatus> memberStatusOpt =
                 teamMemberStatusRepository.findByTeam_TeamIdAndMember_MemberId(teamId, memberId);
 
-        TeamDetailDto.ParticipationStatus participationStatus = memberStatusOpt
-                .map(s -> TeamDetailDto.ParticipationStatus.valueOf(s.getStatus().name()))
-                .orElse(TeamDetailDto.ParticipationStatus.NOT_JOINED);
+        ParticipationStatus participationStatus = memberStatusOpt
+                .map(s -> ParticipationStatus.valueOf(s.getStatus().name()))
+                .orElse(ParticipationStatus.NOT_JOINED);
 
-        TeamDetailDto.TeamRole teamRole = memberStatusOpt
-                .map(s -> TeamDetailDto.TeamRole.valueOf(s.getTeamRole().name()))
+        TeamRole teamRole = memberStatusOpt
+                .map(s -> TeamRole.valueOf(s.getTeamRole().name()))
                 .orElse(null);
 
         return teamMapper.toDetailDto(team, participationStatus, teamRole);
@@ -161,6 +161,50 @@ public class TeamService {
                 );
 
         return teamMemberStatusMapper.toMemberDtoList(approvedMembers);
+    }
+
+    @Transactional
+    public TeamDetailDto updateTeam(Long teamId, Long memberId, TeamUpdateDto teamUpdateDto) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new BaseException(ErrorCode.GROUP_NOT_FOUND));
+
+        TeamMemberStatus rel = teamMemberStatusRepository
+                .findByTeam_TeamIdAndMember_MemberId(teamId, memberId)
+                .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 공통 권한 체크
+        verifyCanEditTeam(rel);
+
+        // 비즈니스 유효성
+        if (teamUpdateDto.getMaxMembers() != null &&
+                teamUpdateDto.getMaxMembers() < team.getTeamCurrentMembers()) {
+            throw new BaseException(ErrorCode.INVALID_REQUEST,
+                    "maxMembers cannot be less than currentMemberCount");
+        }
+
+        // ✅ 도메인 메서드로 부분 업데이트 (setter 불필요)
+        team.updateBasicInfo(
+                teamUpdateDto.getTeamTitle(),
+                teamUpdateDto.getTeamDescription(),
+                teamUpdateDto.getMaxMembers()
+        );
+
+        // 영속 상태면 save 불필요(원한다면 유지 가능)
+        teamRepository.save(team);
+
+        return teamMapper.toDetailDto(team, rel.getStatus(), rel.getTeamRole());
+    }
+
+
+    /** 승인 멤버 + (LEADER or SUBLEADER)만 수정 가능 */
+    public void verifyCanEditTeam(TeamMemberStatus rel) {
+        if (rel.getStatus() == null || rel.getStatus() != ParticipationStatus.APPROVED) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
+        TeamRole role = rel.getTeamRole();
+        if ((role != TeamRole.LEADER && role != TeamRole.SUBLEADER)) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
     }
 
 }
