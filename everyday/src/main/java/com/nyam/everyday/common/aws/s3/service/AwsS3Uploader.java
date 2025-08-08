@@ -1,6 +1,5 @@
 package com.nyam.everyday.common.aws.s3.service;
 
-import com.nyam.everyday.common.aws.s3.dto.AwsS3Response;
 import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.common.util.FileNameGenerator;
 import java.io.IOException;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Component

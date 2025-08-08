@@ -4,6 +4,10 @@ import com.nyam.everyday.module.meal.entity.MealLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import com.nyam.everyday.web.meal.dto.MealLogResponseDto;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 /**
  * MealLogRepository
  *
@@ -13,11 +17,15 @@ import java.util.List;
  */
 
 public interface MealLogRepository extends JpaRepository<MealLog, Long> {
-    List<MealLog> findByMemberIdAndMealTypeAndCreatedDateBetween(
-            Long memberId,
-            String mealType,
-            LocalDateTime start,
-            LocalDateTime end
+    @Query("SELECT new com.nyam.everyday.web.meal.dto.MealLogResponseDto(" +
+            "m.mealLogId, m.member.memberId, m.food.foodId, f.foodName, m.intakeAmount, m.intakeKcal, m.mealType, m.createdDate, m.modifiedDate) " +
+            "FROM MealLog m JOIN m.food f " +
+            "WHERE m.member.memberId = :memberId AND m.mealType = :mealType AND m.createdDate BETWEEN :start AND :end")
+    List<MealLogResponseDto> findMealLogsWithFoodName(
+            @Param("memberId") Long memberId,
+            @Param("mealType") String mealType,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
     );
 
 }

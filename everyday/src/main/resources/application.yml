@@ -1,10 +1,15 @@
 spring:
   profiles:
-    active: local # ?? ?? ????
+    active: local
 
   application:
     name:  backend
   output:
     ansi:
       enabled: always
+
+jwt:
+  accessTokenExpirationTime: 1000000
+  refreshTokenExpirationTime: 86400000
+  secretKey: ${JWT_SECRET_KEY}
 

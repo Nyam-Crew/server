@@ -2,8 +2,10 @@ package com.nyam.everyday.common.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 
+@Slf4j
 @Getter
 @RequiredArgsConstructor
 public class BaseException extends RuntimeException {
@@ -28,9 +30,15 @@ public class BaseException extends RuntimeException {
   public static final BaseException INTERNAL_SERVER_ERROR = new BaseException(ErrorCode.INTERNAL_SERVER_ERROR);
   public static final BaseException AWSS3_UPLOAD_ERROR =  new  BaseException(ErrorCode.AWSS3_UPLOAD_ERROR);
   public static final BaseException AWSS3_DELETE_ERROR = new  BaseException(ErrorCode.AWSS3_DELETE_ERROR);
+  public static final BaseException BOARD_NOT_FOUND =  new BaseException(ErrorCode.BOARD_NOT_FOUND);
 
   private final ErrorCode errorCode;
 
+  public BaseException(ErrorCode errorCode, String customMessage) {
+    super(customMessage);
+    this.errorCode = errorCode;
+    log.error("[BaseException] {} ==> {}", errorCode.getCode(), customMessage);
+  }
 
   // 의도적인 예외이므로 stack trace 제거 (불필요한 예외처리 비용 제거)
   @Override

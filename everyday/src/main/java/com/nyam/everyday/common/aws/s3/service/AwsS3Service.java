@@ -1,7 +1,7 @@
 package com.nyam.everyday.common.aws.s3.service;
 
-import com.nyam.everyday.common.aws.s3.dto.AwsS3Response;
-import com.nyam.everyday.common.entity.S3DefaultValue;
+import com.nyam.everyday.module.awsS3.dto.AwsS3Response;
+import com.nyam.everyday.common.aws.s3.entity.S3DefaultValue;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
