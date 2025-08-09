@@ -21,12 +21,24 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TeamRankingHistoryDto {
 
-    @Schema(description = "사용자 이메일", example = "ssj@naver.com")
-    private Long id;
-    private Long groupId;
+    @Schema(name = "", example = "")
+    private Long teamRankingId;
+
+    @Schema(name = "", example = "")
+    private Long teamId;
+
+    @Schema(name = "", example = "")
     private Long memberId;
+
+    @Schema(name = "", example = "")
     private String weekCode;
+
+    @Schema(name = "", example = "")
     private int point;
+
+    @Schema(name = "", example = "")
     private String field;
-    private LocalDateTime createdAt;
+
+    @Schema(name = "", example = "")
+    private LocalDateTime createdDate;
 }

@@ -30,7 +30,7 @@ public class TeamRankingHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "team_ranking_id")
-    private Long id;
+    private Long teamRankingId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -50,6 +50,6 @@ public class TeamRankingHistory {
     private String field;
 
     @CreatedDate
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "created_date")
+    private LocalDateTime createdDate;
 }
