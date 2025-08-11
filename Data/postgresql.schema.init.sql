@@ -145,6 +145,9 @@ CREATE TABLE team_member_status (
                                     created_date TIMESTAMP NOT NULL,
                                     modified_date TIMESTAMP NOT NULL,
                                     team_role VARCHAR(10) NOT NULL DEFAULT 'MEMBER',
+                                    banned_reason VARCHAR(255),
+                                    banned_date TIMESTAMP,
+                                    left_date TIMESTAMP,
                                     PRIMARY KEY (team_member_id)
 );
 
