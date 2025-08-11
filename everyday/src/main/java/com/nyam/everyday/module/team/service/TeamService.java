@@ -9,8 +9,7 @@ import com.nyam.everyday.module.team.enums.ParticipationStatus;
 import com.nyam.everyday.module.team.entity.Team;
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import com.nyam.everyday.module.team.enums.TeamRole;
-import com.nyam.everyday.module.team.repository.TeamMemberStatusRepository;
-import com.nyam.everyday.module.team.repository.TeamRepository;
+import com.nyam.everyday.module.team.repository.*;
 import com.nyam.everyday.web.team.dto.*;
 import com.nyam.everyday.web.team.mapper.TeamMapper;
 import com.nyam.everyday.web.team.mapper.TeamMemberStatusMapper;
@@ -35,9 +34,17 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final MemberRepository memberRepository;
     private final TeamMemberStatusRepository teamMemberStatusRepository;
+    private final TeamActivityFeedRepository teamActivityFeedRepository;
+    private final TeamGlobalRankingRepository teamGlobalRankingRepository;
+    private final TeamNoticeRepository teamNoticeRepository;
+    private final TeamNotificationRepository teamNotificationRepository;
+    private final TeamRankingHistoryRepository teamRankingHistoryRepository;
+
     private final TeamMapper teamMapper;
     private final TeamMemberStatusMapper teamMemberStatusMapper;
     private final AwsS3Service awsS3Service;
+    // private final RedisRankingService redisRankingService;
+    // private final ChatService chatService;
 
     @Transactional
     public TeamDto createTeam(TeamDto dto,/* MultipartFile imageFile,*/ Long memberId) {
@@ -207,10 +214,36 @@ public class TeamService {
         }
     }
 
-    public void deleteTeamHard(Long teamId, Long id, String confirmTeamTitle) {
-        //그룹 이름을 똑바로 입력해야함
-        //방장만 가능함
-        //방장 외의 인원이 없어야함
-        //자식 삭제 후 부모삭제로 진행할 예정
+    @Transactional
+    public void deleteTeamHard(Long teamId, Long actorMemberId, String confirmTeamTitle) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new BaseException(ErrorCode.GROUP_NOT_FOUND));
+
+        TeamMemberStatus rel = teamMemberStatusRepository
+                .findByTeam_TeamIdAndMember_MemberId(teamId, actorMemberId)
+                .orElseThrow(() -> new BaseException(ErrorCode.ACCESS_DENIED));
+
+        if (!rel.getTeamRole().isLeader()) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED, "방장만 삭제할 수 있습니다.");
+        }
+        if (confirmTeamTitle == null || !team.getTeamTitle().equals(confirmTeamTitle)) {
+            throw new BaseException(ErrorCode.INVALID_REQUEST, "확인용 팀명이 일치하지 않습니다.");
+        }
+
+        // todo.외부 리소스 정리
+        //if (team.getTeamImg() != null) awsS3Service.deleteFileByUrl(team.getTeamImg());
+        // redisRankingService.evictTeamKeys(teamId);
+        // chatService.deleteAllByTeamId(teamId);
+
+        // 1) 자식들 벌크 삭제 (가장 하위부터)
+        teamActivityFeedRepository.deleteByTeamId(teamId);
+        teamGlobalRankingRepository.deleteByTeamId(teamId);
+        teamRankingHistoryRepository.deleteByTeamId(teamId);
+        teamNotificationRepository.deleteByTeamId(teamId);
+        teamNoticeRepository.deleteByTeamId(teamId);
+        teamMemberStatusRepository.deleteByTeamId(teamId);
+
+        // 2) 부모 삭제
+        teamRepository.delete(team);
     }
 }
