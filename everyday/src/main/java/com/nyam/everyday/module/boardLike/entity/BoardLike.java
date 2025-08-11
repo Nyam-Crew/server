@@ -1,6 +1,7 @@
 package com.nyam.everyday.module.boardLike.entity;
 
 
+import com.nyam.everyday.common.entity.BaseCreatedEntity;
 import com.nyam.everyday.module.board.entity.Board;
 import com.nyam.everyday.module.member.entity.Member;
 import jakarta.persistence.Column;
@@ -23,7 +24,7 @@ import org.hibernate.annotations.Comment;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class BoardLike {
+public class BoardLike extends BaseCreatedEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,7 +41,5 @@ public class BoardLike {
   @Comment("게시글 아이디")
   private Board board;
 
-  @Column(nullable = false)
-  private LocalDateTime created_time;
 
 }
