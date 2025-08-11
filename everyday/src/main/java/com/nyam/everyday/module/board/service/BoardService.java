@@ -43,6 +43,11 @@ public class BoardService {
 
 
   }
-  public void deleteBoard(Long boardId) {}
+  @Transactional
+  public void deleteBoard(Long boardId, Long memberId) {
+    // 1.게시글 조회 시
+    Board board = boardRepository.findById(boardId)
+        .orElseThrow(() -> new BaseException(ErrorCode.BOARD_NOT_FOUND));
+  }
 
 }
