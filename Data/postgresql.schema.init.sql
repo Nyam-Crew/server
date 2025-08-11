@@ -1,4 +1,4 @@
-CREATE SCHEMA IF NOT EXISTS everyday;
+\CREATE SCHEMA IF NOT EXISTS everyday;
 SET search_path TO everyday;
 
 CREATE TABLE member (
@@ -36,10 +36,12 @@ CREATE TABLE member_meal_log (
                                  member_id BIGINT NOT NULL,
                                  food_id BIGINT NOT NULL,
                                  intake_amount INT NOT NULL,
-                                 intake_kcal NUMERIC(6,1) NOT NULL,
                                  meal_type VARCHAR(16) NOT NULL,
                                  created_date TIMESTAMP NOT NULL,
                                  modified_date TIMESTAMP NOT NULL,
+                                 kcal NUMERIC(4,1) NOT NULL,
+                                 protein NUMERIC(4,1) NOT NULL,
+                                 fat NUMERIC(4,1) NOT NULL,
                                  PRIMARY KEY (meal_log_id)
 );
 
@@ -333,8 +335,6 @@ COMMENT ON COLUMN member.gender IS 'M,F 중 하나';
 COMMENT ON COLUMN member.member_status IS '0:정상, 1:탈퇴, 2:정지';
 
 COMMENT ON COLUMN member_meal_log.intake_amount IS '단위는 항상 g 혹은 ml로 간주';
-
-COMMENT ON COLUMN member_meal_log.intake_kcal IS '그램수, 먹은 양 기반으로 계산해서 저장';
 
 COMMENT ON COLUMN member_meal_log.meal_type IS '0: 아침, 1:점심, 2:저녁, 3:간식 중 하나';
 
