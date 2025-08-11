@@ -70,4 +70,9 @@ public class Team extends BaseEntity {
     public void decreaseCurrentMembers(int delta) {
         this.teamCurrentMembers = Math.max(0, this.teamCurrentMembers - delta);
     }
+
+    // 그룹 방장 변경
+    public void changeLeader(Member newLeader) {
+        this.owner = newLeader; // 또는 ownerId 세팅
+    }
 }
