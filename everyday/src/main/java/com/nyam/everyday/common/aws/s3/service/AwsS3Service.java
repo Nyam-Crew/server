@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collection;
+
 @Service
 @RequiredArgsConstructor
 public class AwsS3Service {
@@ -34,4 +36,20 @@ public class AwsS3Service {
       // 3) 새 URL 반환
       return AwsS3Response.builder().url(newUrl).build();
   }
+
+  //이미지 URL 단일 삭제
+    public void deleteFileByUrl(String url) {
+        if (url == null || url.isBlank()) return;
+        if (S3DefaultValue.contains(url)) return; // 기본 이미지 보호
+        awsS3Uploader.delete(url);
+    }
+
+    // ✅ 여러 URL 일괄 삭제
+    public void deleteFilesByUrls(Collection<String> urls) {
+        if (urls == null || urls.isEmpty()) return;
+        for (String url : urls) {
+            deleteFileByUrl(url);
+        }
+    }
+
 }

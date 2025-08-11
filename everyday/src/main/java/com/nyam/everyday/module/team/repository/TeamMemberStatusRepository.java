@@ -4,6 +4,7 @@ import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import com.nyam.everyday.module.team.enums.ParticipationStatus;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -19,6 +20,10 @@ import java.util.Optional;
  */
 @Repository
 public interface TeamMemberStatusRepository extends JpaRepository<TeamMemberStatus, Long> {
+
+    @Modifying
+    @Query("delete from TeamMemberStatus s where s.team.teamId = :teamId")
+    void deleteByTeamId(@Param("teamId") Long teamId);
 
     Optional<TeamMemberStatus> findByTeam_TeamIdAndMember_MemberId(Long teamId, Long memberId);
 
