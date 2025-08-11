@@ -65,8 +65,8 @@ public class TeamService {
     @Transactional
     public void registerLeader(Team team, Member owner) {
         TeamMemberStatusDto leaderDto = TeamMemberStatusDto.builder()
-                .status(TeamMemberStatusDto.ParticipationStatus.APPROVED)
-                .teamRole(TeamMemberStatusDto.TeamRole.LEADER)
+                .status(ParticipationStatus.APPROVED)
+                .teamRole(TeamRole.LEADER)
                 .build();
 
         TeamMemberStatus leaderStatus = teamMemberStatusMapper.toEntity(leaderDto, team, owner);
@@ -95,11 +95,11 @@ public class TeamService {
                 teamMemberStatusRepository.findByTeam_TeamIdAndMember_MemberId(teamId, memberId);
 
         ParticipationStatus participationStatus = memberStatusOpt
-                .map(s -> ParticipationStatus.valueOf(s.getStatus().name()))
-                .orElse(ParticipationStatus.NOT_JOINED);
+                .map(TeamMemberStatus::getStatus)
+                .orElse(null);
 
         TeamRole teamRole = memberStatusOpt
-                .map(s -> TeamRole.valueOf(s.getTeamRole().name()))
+                .map(TeamMemberStatus::getTeamRole)
                 .orElse(null);
 
         return teamMapper.toDetailDto(team, participationStatus, teamRole);
