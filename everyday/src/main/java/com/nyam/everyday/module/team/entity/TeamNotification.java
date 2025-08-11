@@ -1,5 +1,6 @@
 package com.nyam.everyday.module.team.entity;
 
+import com.nyam.everyday.common.entity.BaseCreatedEntity;
 import com.nyam.everyday.module.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,9 +25,8 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
 @Table(name = "team_notification")
-public class TeamNotification {
+public class TeamNotification extends BaseCreatedEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,7 +44,4 @@ public class TeamNotification {
     @Column(name = "notification_type", nullable = false)
     private String notificationType;
 
-    @CreatedDate
-    @Column(name = "created_date")
-    private LocalDateTime createdDate;
 }
