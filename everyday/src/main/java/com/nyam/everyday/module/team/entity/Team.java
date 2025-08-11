@@ -60,4 +60,14 @@ public class Team extends BaseEntity {
         if (description != null) this.teamDescription = description;
         if (maxMembers != null) this.teamMaxMembers = maxMembers;
     }
+
+    //그룹 참가 승인시 +1
+    public void increaseCurrentMembers(int delta) {
+        this.teamCurrentMembers += delta;
+    }
+
+    //팀나가기 할때 인원수 -1
+    public void decreaseCurrentMembers(int delta) {
+        this.teamCurrentMembers = Math.max(0, this.teamCurrentMembers - delta);
+    }
 }

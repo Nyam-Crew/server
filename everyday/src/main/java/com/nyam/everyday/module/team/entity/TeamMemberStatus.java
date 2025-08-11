@@ -11,6 +11,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+
 /**
  * 그룹 참여 현황 entity
  *
@@ -47,6 +50,15 @@ public class TeamMemberStatus extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private TeamRole teamRole; // 예: MEMBER, LEADER
 
+    @Column(name="banned_reason", nullable = true)
+    private String bannedReason;
+
+    @Column(name="banned_date", nullable = true)
+    private LocalDateTime bannedDate;
+
+    @Column(name="left_date", nullable = true)
+    private LocalDateTime leftDate;
+
     public void approve() {
         if (this.status != ParticipationStatus.PENDING) {
             throw new IllegalStateException("이미 처리된 요청입니다.");
@@ -61,5 +73,18 @@ public class TeamMemberStatus extends BaseEntity {
         this.status = ParticipationStatus.REJECTED;
     }
 
+    /** 탈퇴 처리: 상태/시간/역할 초기화까지 한 번에 */
+    public void markLeft(LocalDateTime when) {
+        this.status = ParticipationStatus.LEFT;
+        this.leftDate = when;
+        //this.teamRole = TeamRole.MEMBER;
+    }
+
+    public void ban(String reason, LocalDateTime when) {
+        this.status = ParticipationStatus.BANNED;
+        this.bannedReason = (reason == null || reason.isBlank()) ? null : reason.trim();
+        this.bannedDate = when;
+        // 필요 시 역할 초기화: this.teamRole = null; 지금 nullable = false라서 활성화하면 에러발생
+    }
 
 }
