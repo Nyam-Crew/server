@@ -5,6 +5,8 @@ import com.nyam.everyday.common.exception.ErrorCode;
 import com.nyam.everyday.module.team.service.TeamMemberService;
 import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.web.team.dto.TeamBanDto;
+import com.nyam.everyday.web.team.dto.TeamRoleChangeDto;
+import com.nyam.everyday.web.team.dto.TeamTransLeaderDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -64,6 +66,28 @@ public class TeamMemberController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body("해당 멤버를 강퇴했습니다.");
+    }
+
+    @Operation(summary = "방장 권한 위임", description = "리더가 특정 멤버에게 방장 권한을 위임합니다.")
+    @PatchMapping("/teams/{teamId}/leader")
+    public ResponseEntity<String> transferLeader(
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody TeamTransLeaderDto req
+    ) {
+        teamMemberService.transferLeader(teamId, userDetails.getId(), req.getTargetMemberId());
+        return ResponseEntity.ok("방장 권한이 위임되었습니다.");
+    }
+
+    @Operation(summary = "부방장 권한 부여/회수", description = "리더가 멤버의 역할을 SUBLEADER 또는 MEMBER로 변경합니다.")
+    @PatchMapping("/teams/{teamId}/role")
+    public ResponseEntity<String> changeRole(
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody TeamRoleChangeDto req
+    ) {
+        teamMemberService.changeRole(teamId, userDetails.getId(), req.getTargetMemberId(), req.getRole());
+        return ResponseEntity.ok("역할을 변경했습니다.");
     }
 
 }

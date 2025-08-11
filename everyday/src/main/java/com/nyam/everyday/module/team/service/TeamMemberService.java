@@ -141,9 +141,85 @@ public class TeamMemberService {
 
     }
 
-    // 아래 기능 여기로 위치 이동할 예정
-    // 다음 기능도 여기에 추가될 예정:
-    // - 강퇴
-    // - 부방장 역할 부여/회수
-    // - 방장 위임
+    @Transactional
+    public void transferLeader(Long teamId, Long actorMemberId, Long targetMemberId) {
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new BaseException(ErrorCode.GROUP_NOT_FOUND));
+
+        TeamMemberStatus actor = teamMemberStatusRepository
+                .findByTeam_TeamIdAndMember_MemberId(teamId, actorMemberId)
+                .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 리더만 가능 + 승인 상태만 허용
+        if (!actor.getTeamRole().isLeader() || actor.getStatus() != ParticipationStatus.APPROVED) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
+        // 자기 자신으로 위임 불가
+        if (actorMemberId.equals(targetMemberId)) {
+            throw new BaseException(ErrorCode.INVALID_REQUEST, "자기 자신에게는 위임할 수 없습니다.");
+        }
+
+        TeamMemberStatus target = teamMemberStatusRepository
+                .findByTeam_TeamIdAndMember_MemberId(teamId, targetMemberId)
+                .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if (target.getStatus() != ParticipationStatus.APPROVED) {
+            throw new BaseException(ErrorCode.INVALID_REQUEST, "승인된 멤버에게만 위임할 수 있습니다.");
+        }
+
+        // 역할 스왑: target -> LEADER, actor(기존 리더) -> SUBLEADER
+        target.changeRole(TeamRole.LEADER);
+        actor.changeRole(TeamRole.SUBLEADER);
+
+        // 팀의 Leader 갱신(팀 엔티티에 owner/member FK가 있다면)
+        team.changeLeader(target.getMember());
+        // JPA 변경감지로 커밋 시점에 반영
+    }
+
+    @Transactional
+    public void changeRole(Long teamId, Long actorMemberId, Long targetMemberId, TeamRole newRole) {
+        // 팀/행위자
+        teamRepository.findById(teamId)
+                .orElseThrow(() -> new BaseException(ErrorCode.GROUP_NOT_FOUND));
+
+        TeamMemberStatus actor = teamMemberStatusRepository
+                .findByTeam_TeamIdAndMember_MemberId(teamId, actorMemberId)
+                .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if (!actor.getTeamRole().isLeader() || actor.getStatus() != ParticipationStatus.APPROVED) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
+
+        // 리더 변경은 별도 API 사용
+        if (newRole == TeamRole.LEADER) {
+            throw new BaseException(ErrorCode.INVALID_REQUEST, "방장 변경은 /leader API를 사용하세요.");
+        }
+
+        // 자기 자신 역할 변경 방지
+        if (actorMemberId.equals(targetMemberId)) {
+            throw new BaseException(ErrorCode.INVALID_REQUEST, "본인 역할은 변경할 수 없습니다.");
+        }
+
+        TeamMemberStatus target = teamMemberStatusRepository
+                .findByTeam_TeamIdAndMember_MemberId(teamId, targetMemberId)
+                .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if (target.getStatus() != ParticipationStatus.APPROVED) {
+            throw new BaseException(ErrorCode.INVALID_REQUEST, "승인된 멤버만 역할을 변경할 수 있습니다.");
+        }
+
+        // 기존 LEADER는 여기서 바꾸지 않음
+        if (target.getTeamRole().isLeader()) {
+            throw new BaseException(ErrorCode.INVALID_REQUEST, "방장 역할 변경은 /leader API로만 가능합니다.");
+        }
+
+        // 허용되는 변경: SUBLEADER <-> MEMBER
+        if (newRole != TeamRole.SUBLEADER && newRole != TeamRole.MEMBER) {
+            throw new BaseException(ErrorCode.INVALID_REQUEST, "허용되지 않은 역할입니다.");
+        }
+
+        target.changeRole(newRole);
+    }
+
 }

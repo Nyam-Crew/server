@@ -87,4 +87,8 @@ public class TeamMemberStatus extends BaseEntity {
         // 필요 시 역할 초기화: this.teamRole = null; 지금 nullable = false라서 활성화하면 에러발생
     }
 
+    public void changeRole(TeamRole newRole) {
+        this.teamRole = newRole;
+    }
+
 }
