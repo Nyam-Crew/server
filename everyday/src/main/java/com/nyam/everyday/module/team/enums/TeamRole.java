@@ -17,4 +17,6 @@ public enum TeamRole {
     public boolean isManager() {
         return this == LEADER || this == SUBLEADER;
     }
+    public boolean isLeader()     { return this == TeamRole.LEADER; }
+    public boolean isSubLeader()  { return this == TeamRole.SUBLEADER; }
 }

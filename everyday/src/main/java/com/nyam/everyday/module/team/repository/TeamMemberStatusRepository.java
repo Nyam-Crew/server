@@ -26,4 +26,21 @@ public interface TeamMemberStatusRepository extends JpaRepository<TeamMemberStat
 
     @Query("SELECT tms FROM TeamMemberStatus tms JOIN FETCH tms.member WHERE tms.team.teamId = :teamId AND tms.status = :status")
     List<TeamMemberStatus> findAllWithMemberByTeam_TeamIdAndStatus(@org.springframework.data.repository.query.Param("teamId") Long teamId, @Param("status") ParticipationStatus status);
+
+    @Query("""
+        SELECT tms FROM TeamMemberStatus tms
+        JOIN FETCH tms.member
+        WHERE tms.team.teamId = :teamId
+        AND tms.status = 'APPROVED'
+    """)
+    List<TeamMemberStatus> findApprovedMembers(@Param("teamId") Long teamId);
+
+    // JOINED 인원 카운트 (current_member_count 재검증/보정용)
+    @Query("""
+        SELECT COUNT(tms)
+          FROM TeamMemberStatus tms
+         WHERE tms.team.teamId = :teamId
+           AND tms.status = 'JOINED'
+    """)
+    long countJoinedMembers(@Param("teamId") Long teamId);
 }
