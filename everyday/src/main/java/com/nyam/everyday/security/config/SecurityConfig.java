@@ -52,7 +52,7 @@ public class SecurityConfig {
   private static final String[] PUBLIC_API_ROUTES = {
       "/api/auth/sign-up", "/api/auth/login", "/api/auth/logout",
       "/oauth2/**", "/login/**", "/actuator/prometheus", "/exception",
-      "/api/chat/**","/api/boards/**","/api/board-comments/**"
+      "/api/chat/**","/api/boards/**","/api/board-comments/**","/api/**"
   };
 
 
