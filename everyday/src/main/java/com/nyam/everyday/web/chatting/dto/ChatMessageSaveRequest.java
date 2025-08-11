@@ -1,4 +1,4 @@
-package com.nyam.everyday.web.chatmessage.dto;
+package com.nyam.everyday.web.chatting.dto;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ChatMessageSaveRequest {
-  private String sender;
+  private Long memberId;
+  private Long roomId;
   private String content;
 }
