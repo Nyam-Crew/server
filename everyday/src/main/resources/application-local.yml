@@ -35,7 +35,9 @@ spring:
 # MongoDB 관련 설정
   data:
     mongodb:
-      uri: mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST_ADDRESS}/?retryWrites=true&w=majority&appName=nyamnyamMongo
+      uri: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST_ADDRESS}:${MONGO_PORT}/${MONGO_DBNAME}?authSource=admin&tls=false&retryWrites=true&appName=nyamnyamMongo
+      # Mongo를 Atlas 기반으로 사용하기 위한다면 아래의 코드 사용
+      #uri: mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST_ADDRESS}/?retryWrites=true&w=majority&appName=nyamnyamMongo
       database: ${MONGO_DBNAME}
 
 # AWS S3 적용을 위한 세팅
