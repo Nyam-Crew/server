@@ -1,6 +1,7 @@
 package com.nyam.everyday.module.bookmark.entity;
 
 
+import com.nyam.everyday.common.entity.BaseCreatedEntity;
 import com.nyam.everyday.module.board.entity.Board;
 import com.nyam.everyday.module.member.entity.Member;
 import jakarta.persistence.Column;
@@ -25,7 +26,7 @@ import org.hibernate.annotations.Comment;
 @Setter
 @Builder
 @NoArgsConstructor
-public class Bookmark {
+public class Bookmark extends BaseCreatedEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,8 +42,7 @@ public class Bookmark {
   @JoinColumn(name = "board_id", nullable = false)
   private Board board;
 
-  @Column(nullable = false)
-  private LocalDateTime createdDate;
+
 
 
 }
