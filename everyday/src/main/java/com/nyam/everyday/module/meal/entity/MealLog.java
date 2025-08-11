@@ -2,11 +2,11 @@ package com.nyam.everyday.module.meal.entity;
 
 import com.nyam.everyday.module.food.entity.Food;
 import com.nyam.everyday.module.member.entity.Member;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.*;
-
 import org.hibernate.annotations.Comment;
 
 /**
@@ -46,9 +46,21 @@ public class MealLog {
     @Column(nullable = false, precision = 6, scale = 1)
     private BigDecimal intakeKcal;
 
-    @Comment("식사 타입(0:아침, 1:점심, 2:저녁, 3:간식)")
-    @Column(nullable = false, length = 2)
+    @Schema(description = "식사 타입 (BREAKFAST:아침, LUNCH:점심, DINNER:저녁, SNACK:간식)")
+    @Column(nullable = false, length = 16)
     private String mealType;
+
+    @Comment("단백질")
+    @Column(precision = 4, scale = 1, nullable = false)
+    private BigDecimal protein;
+
+    @Comment("지방")
+    @Column(precision = 4, scale = 1, nullable = false)
+    private BigDecimal fat;
+
+    @Comment("탄수화물")
+    @Column(precision = 4, scale = 1, nullable = false)
+    private BigDecimal carbohydrate;
 
     @Comment("생성일시")
     @Column(nullable = false, updatable = false)

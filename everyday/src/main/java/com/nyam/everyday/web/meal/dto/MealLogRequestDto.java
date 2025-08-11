@@ -3,6 +3,8 @@ package com.nyam.everyday.web.meal.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 /**
  * MealLogRequestDto
  *
@@ -19,7 +21,7 @@ import lombok.*;
 public class MealLogRequestDto {
 
     @Schema(description = "회원 PK")
-    private Long memberId; // JWT 인증 기반이면 서버에서 추출, 프론트에선 omit 가능
+    private Long memberId;
 
     @Schema(description = "음식 PK")
     private Long foodId;
@@ -28,8 +30,17 @@ public class MealLogRequestDto {
     private Integer intakeAmount;
 
     @Schema(description = "섭취 칼로리")
-    private Double intakeKcal;
+    private BigDecimal intakeKcal;
 
     @Schema(description = "식사 타입 (BREAKFAST:아침, LUNCH:점심, DINNER:저녁, SNACK:간식)")
     private String mealType;
+
+    @Schema(description = "단백질")
+    private BigDecimal protein;
+
+    @Schema(description = "탄수화물")
+    private BigDecimal carbohydrate;
+
+    @Schema(description = "지방")
+    private BigDecimal fat;
 }
