@@ -17,21 +17,21 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamActivityFeedDto {
+public class TeamActivityFeedDto{
 
-    @Schema(name = "", example = "")
+    @Schema(name = "피드 ID", example = "실시간 피드 ID")
     private Long feedId;
 
-    @Schema(name = "", example = "")
+    @Schema(description = "그룹 ID", example = "ssj@naver.com")
     private Long teamId;
 
-    @Schema(name = "", example = "")
+    @Schema(description = "그룹 멤버 ID", example = "ssj@naver.com")
     private Long memberId;
 
-    @Schema(name = "", example = "")
+    @Schema(description = "활동 타입", example = "ssj@naver.com")
     private String activityType;
 
-    @Schema(name = "", example = "")
+    @Schema(description = "활동 내용", example = "ssj@naver.com")
     private String activityContent;
 
     @Schema(name = "", example = "")

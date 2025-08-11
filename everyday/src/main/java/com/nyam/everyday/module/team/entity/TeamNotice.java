@@ -45,10 +45,4 @@ public class TeamNotice extends BaseEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @CreatedDate
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "modified_at")
-    private LocalDateTime modifiedAt;
 }

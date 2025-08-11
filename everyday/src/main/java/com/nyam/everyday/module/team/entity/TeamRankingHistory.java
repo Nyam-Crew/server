@@ -24,7 +24,6 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
 @Table(name = "team_ranking_history")
 public class TeamRankingHistory extends BaseCreatedEntity {
 
