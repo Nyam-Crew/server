@@ -207,4 +207,10 @@ public class TeamService {
         }
     }
 
+    public void deleteTeamHard(Long teamId, Long id, String confirmTeamTitle) {
+        //그룹 이름을 똑바로 입력해야함
+        //방장만 가능함
+        //방장 외의 인원이 없어야함
+        //자식 삭제 후 부모삭제로 진행할 예정
+    }
 }
