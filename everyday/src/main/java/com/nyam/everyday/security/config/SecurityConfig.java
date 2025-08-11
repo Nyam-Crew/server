@@ -72,9 +72,9 @@ public class SecurityConfig {
             .requestMatchers(STATIC_RESOURCES).permitAll()
             .requestMatchers(SWAGGER_RESOURCES).permitAll()
             .requestMatchers(PUBLIC_API_ROUTES).permitAll()
-            .requestMatchers("/api/**").authenticated()
             .requestMatchers("/ws/**").permitAll()
             .requestMatchers("/ws").permitAll()
+            .requestMatchers("/api/**").authenticated()
             .anyRequest().permitAll()
         )
         .exceptionHandling(e -> e
