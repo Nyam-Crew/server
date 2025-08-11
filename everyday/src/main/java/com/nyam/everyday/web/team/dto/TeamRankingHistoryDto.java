@@ -1,10 +1,7 @@
 package com.nyam.everyday.web.team.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -15,7 +12,8 @@ import java.time.LocalDateTime;
  * @fileName : TeamRankingHistoryDTO
  * @since : 25. 8. 4.
  */
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -40,5 +38,5 @@ public class TeamRankingHistoryDto {
     private String field;
 
     @Schema(name = "", example = "")
-    private LocalDateTime createdDate;
+    private LocalDateTime teamRankingCreatedDate;
 }

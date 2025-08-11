@@ -1,10 +1,7 @@
 package com.nyam.everyday.web.team.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -16,16 +13,25 @@ import java.time.LocalDateTime;
  * @since : 25. 8. 4.
  */
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class TeamNotificationDto {
 
-    @Schema(description = "사용자 이메일", example = "ssj@naver.com")
-    private Long id;
+    @Schema(name = "", example = "")
+    private Long teamAlarmId;
+
+    @Schema(name = "", example = "")
     private Long teamId;
+
+    @Schema(name = "", example = "")
     private Long memberId;
+
+    @Schema(name = "", example = "")
     private String notificationType;
-    private LocalDateTime createdDate;
+
+    @Schema(name = "", example = "")
+    private LocalDateTime teamAlarmCreatedDate;
 }

@@ -2,14 +2,14 @@ package com.nyam.everyday.module.team.entity;
 
 import com.nyam.everyday.common.entity.BaseEntity;
 import com.nyam.everyday.module.member.entity.Member;
+import com.nyam.everyday.module.team.enums.ParticipationStatus;
+import com.nyam.everyday.module.team.enums.TeamRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-
-import java.time.LocalDateTime;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
  * 그룹 참여 현황 entity
@@ -29,7 +29,7 @@ public class TeamMemberStatus extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "team_member_id")
-    private Long id;
+    private Long teamMemberId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -40,8 +40,26 @@ public class TeamMemberStatus extends BaseEntity {
     private Team team;
 
     @Column(nullable = false, length = 10)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private ParticipationStatus status;
 
     @Column(name = "team_role", length = 10)
-    private String teamRole; // 예: MEMBER, LEADER
+    @Enumerated(EnumType.STRING)
+    private TeamRole teamRole; // 예: MEMBER, LEADER
+
+    public void approve() {
+        if (this.status != ParticipationStatus.PENDING) {
+            throw new IllegalStateException("이미 처리된 요청입니다.");
+        }
+        this.status = ParticipationStatus.APPROVED;
+    }
+
+    public void reject() {
+        if (this.status != ParticipationStatus.PENDING) {
+            throw new IllegalStateException("이미 처리된 요청입니다.");
+        }
+        this.status = ParticipationStatus.REJECTED;
+    }
+
+
 }

@@ -1,5 +1,6 @@
 package com.nyam.everyday.module.team.entity;
 
+import com.nyam.everyday.common.entity.BaseCreatedEntity;
 import com.nyam.everyday.module.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
  * 그룹 내 알림 Entity
  *
  * @author : 이지은
- * @fileName : team_Notification
+ * @fileName : Team_Notification
  * @since : 25. 8. 4.
  */
 
@@ -24,14 +25,13 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
 @Table(name = "team_notification")
-public class TeamNotification {
+public class TeamNotification extends BaseCreatedEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "team_alarm_id")
-    private Long id;
+    private Long teamAlarmId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id", nullable = false)
@@ -44,7 +44,4 @@ public class TeamNotification {
     @Column(name = "notification_type", nullable = false)
     private String notificationType;
 
-    @CreatedDate
-    @Column(name = "created_date")
-    private LocalDateTime createdAt;
 }

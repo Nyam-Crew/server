@@ -1,10 +1,7 @@
 package com.nyam.everyday.web.team.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -15,14 +12,15 @@ import java.time.LocalDateTime;
  * @fileName : TeamActivityFeedDTO
  * @since : 25. 8. 4.
  */
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class TeamActivityFeedDto{
 
-    @Schema(description = "피드 ID", example = "")
-    private Long id;
+    @Schema(name = "피드 ID", example = "실시간 피드 ID")
+    private Long feedId;
 
     @Schema(description = "그룹 ID", example = "ssj@naver.com")
     private Long teamId;
@@ -36,6 +34,6 @@ public class TeamActivityFeedDto{
     @Schema(description = "활동 내용", example = "ssj@naver.com")
     private String activityContent;
 
-    @Schema(description = "피드 생성 시간", example = "ssj@naver.com")
-    private LocalDateTime createdAt;
+    @Schema(name = "", example = "")
+    private LocalDateTime feedCreatedDate;
 }

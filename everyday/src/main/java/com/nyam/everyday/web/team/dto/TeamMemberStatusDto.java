@@ -1,10 +1,7 @@
 package com.nyam.everyday.web.team.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -15,18 +12,45 @@ import java.time.LocalDateTime;
  * @fileName : TeamMemberStatusDTO
  * @since : 25. 8. 4.
  */
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class TeamMemberStatusDto {
 
-    @Schema(description = "사용자 이메일", example = "ssj@naver.com")
-    private Long id;
+    @Schema(name = "", example = "")
+    private Long teamMemberId;
+
+    @Schema(name = "", example = "")
     private Long teamId;
+
+    @Schema(name = "", example = "")
     private Long memberId;
-    private String status;
-    private String teamRole;
+
+    @Schema(name = "", example = "")
+    private ParticipationStatus status;
+
+    @Schema(name = "", example = "")
+    private TeamRole teamRole;
+
+    @Schema(name = "", example = "")
     private LocalDateTime createdDate;
+
+    @Schema(name = "", example = "")
     private LocalDateTime modifiedDate;
+
+    public enum ParticipationStatus {
+        NOT_JOINED,    // 가입 요청 안함
+        PENDING,       // 가입 요청 중
+        APPROVED,      // 가입 완료
+        REJECTED,      // 거절됨
+        BANNED         // 강퇴됨
+    }
+
+    public enum TeamRole {
+        LEADER,
+        SUBLEADER,
+        MEMBER
+    }
 }

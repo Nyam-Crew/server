@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
  * 생성된 그룹에 대한 entity입니다
  *
  * @author : 이지은
- * @fileName : team
+ * @fileName : Team
  * @since : 25. 8. 4.
  */
 
@@ -26,14 +26,20 @@ public class Team extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name= "_id")
+    @Column(name= "team_id")
     private Long teamId;
 
-    @Column(name="team_title")
-    private String teamName;
+    @Column(name="team_title", nullable = false)
+    private String teamTitle;
 
     @Column(name = "team_description")
     private String teamDescription;
+
+    @Column(name = "team_img")
+    private String teamImg;
+
+    @Column(name="team_current_members")
+    private int teamCurrentMembers = 1;
 
     @Column(name="team_max_members")
     private int teamMaxMembers;
@@ -41,4 +47,16 @@ public class Team extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member owner;
+
+    // 이미지 변경용 도메인 메서드
+    public void changeImage(String newImageUrl) {
+        this.teamImg = newImageUrl;
+    }
+
+    // 기본정보 변경용 도메인 메서드 (예: PATCH API)
+    public void updateBasicInfo(String title, String description, Integer maxMembers) {
+        if (title != null) this.teamTitle = title;
+        if (description != null) this.teamDescription = description;
+        if (maxMembers != null) this.teamMaxMembers = maxMembers;
+    }
 }

@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
  * 그룹 공지 관련 entity
  *
  * @author : 이지은
- * @fileName : teamNotice
+ * @fileName : TeamNotice
  * @since : 25. 8. 4.
  */
 
@@ -29,7 +29,7 @@ public class TeamNotice extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "team_notice_id")
-    private Long id;
+    private Long teamNoticeId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
