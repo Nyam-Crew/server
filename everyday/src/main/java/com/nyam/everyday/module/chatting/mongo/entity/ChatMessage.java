@@ -1,4 +1,4 @@
-package com.nyam.everyday.module.mongo.chatmessage.entity;
+package com.nyam.everyday.module.chatting.mongo.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,8 +17,9 @@ public class ChatMessage {
 
   // @Document가 붙은 클래스 내의 @Id가 붙은 컬럼은 MongoDB가 알아서 값을 생성해준다.
   @Id
-  private String message_id;
-  private String sender;
+  private Long messageId;
+  private Long roomId;
+  private Long memberId;
   private String content;
   private Long timestamp;
 }
