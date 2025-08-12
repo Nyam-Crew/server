@@ -13,6 +13,9 @@ import com.nyam.everyday.module.team.repository.*;
 import com.nyam.everyday.web.team.dto.*;
 import com.nyam.everyday.web.team.mapper.TeamMapper;
 import com.nyam.everyday.web.team.mapper.TeamMemberStatusMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,6 +32,7 @@ import java.util.Optional;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TeamService {
 
     private final TeamRepository teamRepository;
@@ -39,6 +43,9 @@ public class TeamService {
     private final TeamNoticeRepository teamNoticeRepository;
     private final TeamNotificationRepository teamNotificationRepository;
     private final TeamRankingHistoryRepository teamRankingHistoryRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private final TeamMapper teamMapper;
     private final TeamMemberStatusMapper teamMemberStatusMapper;
@@ -235,7 +242,9 @@ public class TeamService {
         // redisRankingService.evictTeamKeys(teamId);
         // chatService.deleteAllByTeamId(teamId);
 
-        // 1) 자식들 벌크 삭제 (가장 하위부터)
+        entityManager.flush();
+        entityManager.clear();
+
         teamActivityFeedRepository.deleteByTeamId(teamId);
         teamGlobalRankingRepository.deleteByTeamId(teamId);
         teamRankingHistoryRepository.deleteByTeamId(teamId);
@@ -243,7 +252,16 @@ public class TeamService {
         teamNoticeRepository.deleteByTeamId(teamId);
         teamMemberStatusRepository.deleteByTeamId(teamId);
 
+        entityManager.flush();
+        entityManager.clear();
+
         // 2) 부모 삭제
-        teamRepository.delete(team);
+        teamRepository.deleteById(teamId);
     }
+    private void assertManagedTeam(Team team) {
+        if (team != null && !entityManager.contains(team)) {
+            log.warn("Non-managed Team injected! Team#{}", team.getTeamId());
+        }
+    }
+
 }
