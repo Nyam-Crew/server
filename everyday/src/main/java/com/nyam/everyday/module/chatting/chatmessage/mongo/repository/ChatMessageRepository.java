@@ -1,7 +1,7 @@
-package com.nyam.everyday.module.chatting.mongo.repository;
+package com.nyam.everyday.module.chatting.chatmessage.mongo.repository;
 
 
-import com.nyam.everyday.module.chatting.mongo.entity.ChatMessage;
+import com.nyam.everyday.module.chatting.chatmessage.mongo.entity.ChatMessage;
 import java.util.List;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
