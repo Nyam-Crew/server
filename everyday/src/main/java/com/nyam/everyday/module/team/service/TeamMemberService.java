@@ -60,6 +60,12 @@ public class TeamMemberService {
         teamMemberStatusRepository.delete(memberStatus);
     }
 
+    // 어떤 유저가 그룹의 멤버인지 확인하기 위한 함수
+    @Transactional(readOnly = true)
+    public Boolean isMember(Long memberid, Long teamId) {
+        return teamMemberStatusRepository.existsByTeam_TeamIdAndMember_MemberIdAndStatus(memberid, teamId, ParticipationStatus.APPROVED);
+    }
+
     // 아래 기능 여기로 위치 이동할 예정
     // - 참가 승인/거절
     // 다음 기능도 여기에 추가될 예정:
