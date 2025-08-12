@@ -39,6 +39,7 @@ public class Team extends BaseEntity {
     private String teamImg;
 
     @Column(name="team_current_members")
+    @Builder.Default
     private int teamCurrentMembers = 1;
 
     @Column(name="team_max_members")

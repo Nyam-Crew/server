@@ -2,6 +2,7 @@ package com.nyam.everyday.module.member.entity;
 
 import com.nyam.everyday.common.entity.BaseEntity;
 import com.nyam.everyday.module.auth.entity.Auth;
+import com.nyam.everyday.module.badge.entity.MemberBadgeStatus;
 import com.nyam.everyday.module.board.entity.Board;
 import com.nyam.everyday.module.bookmark.entity.Bookmark;
 import com.nyam.everyday.security.core.Role;
@@ -45,6 +46,7 @@ public class Member extends BaseEntity {
   private String providerId;
 
   @Comment("닉네임")
+  @Builder.Default
   @Column(nullable = false)
   private String nickname = "";
 
@@ -53,6 +55,7 @@ public class Member extends BaseEntity {
   private String email;
 
   @Comment("회원 사진")
+  @Builder.Default
   @Column
   private String memberImg = "";
 
@@ -63,14 +66,17 @@ public class Member extends BaseEntity {
   private Gender gender = Gender.U;
 
   @Comment("키")
+  @Builder.Default
   @Column
   private BigDecimal height = BigDecimal.ZERO;
 
   @Comment("몸무게")
+  @Builder.Default
   @Column
   private BigDecimal weight = BigDecimal.ZERO;
 
   @Comment("나이")
+  @Builder.Default
   @Column
   private int age = 0;
 
@@ -107,5 +113,9 @@ public class Member extends BaseEntity {
   @Builder.Default
   @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Bookmark> bookmarks = new ArrayList<>();
+
+  @Builder.Default
+  @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<MemberBadgeStatus> memberBadgeStatuses = new ArrayList<>();
 
 }

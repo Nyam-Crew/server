@@ -1,11 +1,15 @@
 package com.nyam.everyday.module.member.service;
 
 
+import com.nyam.everyday.common.aws.s3.entity.S3DefaultValue;
+import com.nyam.everyday.common.aws.s3.service.AwsS3Service;
 import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.common.exception.ErrorCode;
+import com.nyam.everyday.module.awsS3.dto.AwsS3Response;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.web.member.dto.MemberDto;
+import com.nyam.everyday.web.member.dto.NicknameDuplicationResponse;
 import com.nyam.everyday.web.member.mapper.MemberMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +21,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MemberService {
 
+  private final AwsS3Service awsS3Service;
   private final MemberRepository memberRepository;
   private final MemberMapper memberMapper;
 
@@ -30,18 +35,29 @@ public class MemberService {
   @Transactional
   public MemberDto create(MemberDto dto) {
     Member entity = memberMapper.toEntity(dto);
-    Member saved = memberRepository.save(entity);
-    return memberMapper.toDto(saved);
+    entity.setMemberImg(S3DefaultValue.DEFAULT_PROFILE_IMAGE.getValue());
+    return memberMapper.toDto(memberRepository.save(entity));
   }
 
   @Transactional
   public MemberDto update(Long id, MemberDto dto) {
     Member member = memberRepository.findById(id)
         .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "id " + id + "에 해당하는 사용자가 없습니다."));
+
+    if(dto.getMemberImgFile() != null){
+      AwsS3Response newS3Url = awsS3Service.replaceFile(member.getMemberImg(), dto.getMemberImgFile());
+      dto.setMemberImg(newS3Url.getUrl());
+    }
     memberMapper.modify(dto, member); // 필드 변경만
+
 
     //TODO - BMI, BMR, TDEE 계산
     return memberMapper.toDto(member); // save() 없이도 반영됨
+  }
+
+  public NicknameDuplicationResponse checkNicknameDuplication(String nickname) {
+    boolean isDuplicate = memberRepository.existsByNickname(nickname);
+    return new NicknameDuplicationResponse(isDuplicate);
   }
 
 }

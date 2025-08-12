@@ -3,6 +3,7 @@ package com.nyam.everyday.web.member.controller;
 import com.nyam.everyday.module.member.service.MemberService;
 import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.web.member.dto.MemberDto;
+import com.nyam.everyday.web.member.dto.NicknameDuplicationResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -55,5 +56,15 @@ public class MemberController {
     MemberDto updated = memberService.update(id, dto);
     return ResponseEntity.ok(updated);
   }
+
+  @GetMapping("/check-nickname/{nickname}")
+  @Operation(summary = "닉네임 중복 확인", description = "닉네임의 중복 여부를 확인합니다.")
+  public ResponseEntity<NicknameDuplicationResponse> checkNicknameDuplication(@PathVariable String nickname) {
+    NicknameDuplicationResponse response = memberService.checkNicknameDuplication(nickname);
+    return ResponseEntity.ok(response);
+  }
+
+
+
 
 }
