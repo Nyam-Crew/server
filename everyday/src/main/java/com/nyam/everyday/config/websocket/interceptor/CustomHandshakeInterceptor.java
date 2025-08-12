@@ -1,10 +1,12 @@
 package com.nyam.everyday.config.websocket.interceptor;
 
 import com.nyam.everyday.security.jwt.JwtTokenProvider;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -55,7 +57,8 @@ public class CustomHandshakeInterceptor implements HandshakeInterceptor { // TOD
   //  - 방법 1) 아래 필드를 'private final'로 바꾸고 생성자 주입 사용 권장
   //  - 방법 2) @Autowired로 필드 주입(권장도 낮음)
   //  - 방법 3) 설정(WebSocketConfig)에서 직접 new 하며 의존성 주입
-  private JwtTokenProvider jwtTokenProvider;
+
+  private final JwtTokenProvider jwtTokenProvider;
 
   // Handshake 직전에 실행됩니다.
   @Override
@@ -68,47 +71,29 @@ public class CustomHandshakeInterceptor implements HandshakeInterceptor { // TOD
       // 원본 서블릿 요청 꺼내기
       HttpServletRequest req = servletRequest.getServletRequest();
 
-      // 클라이언트가 보낸 Authorization 헤더 읽기. 예) "Bearer eyJhbGciOiJI..."
-      String authHeader = req.getHeader("Authorization");
+      // 쿠키에서 값 꺼내기
+      String token = extractAccessTokenFromCookies(req.getCookies(), "accessToken").orElse(null);
+      log.info("[BeforeHandshake] : 쿠키에서 값 꺼내기 성공 : {}", token);
 
-      // "Bearer "로 시작하는지 확인
-      if (authHeader != null && authHeader.startsWith("Bearer ")) {
-        // "Bearer " 접두어 제거하고 순수 토큰만 추출
-        String token = authHeader.substring(7);
-
-        // 토큰 유효성 검사 수행
-        if (jwtTokenProvider.validateToken(token)) {
-          // 유효성 검사 실패했다는 로그 출력
-          log.info("요청에 대한 Token이 유효하지 않습니다.");
-          // UNAUTHORIZED로 상태 코드 만들기
-          response.setStatusCode(HttpStatus.UNAUTHORIZED);
-          // 반환할 내용의 해석을 위해 UTF-8로 해석하라는 의미의 header설정
-          response.getHeaders().add(HttpHeaders.CONTENT_TYPE, "text/plain;charset=UTF-8");
-          try {
-            // 내용 작성
-            response.getBody().write("토큰이 유효하지 않습니다.".getBytes(StandardCharsets.UTF_8));
-          } catch (IOException e) {
-            log.info("Return을 위한 Body 설정 중 오류 발생 : {}", e.getMessage());
-          }
-
-          return false; // 연결 거부
-        }
-
-
-        // 토큰에서 사용자 식별값 파싱(메서드명은 예시)
-        Long userId = jwtTokenProvider.getUserIdFromToken(token);
-
-        // 이후 WebSocket 세션에서도 사용할 수 있도록 속성 Map에 보관
-        // 핸들러나 @MessageMapping에서 SimpMessageHeaderAccessor로 접근합니다.
-        attributes.put("token", token);
-        attributes.put("userId", userId);
-
-        // 인증 통과 → 업그레이드 계속 진행
-        return true;
+      // 토큰 없으면, 연결 거부
+      if (token == null) {
+        log.info("[BeforeHandshake] : 쿠키에 값이 없어서 연결을 해제합니다.");
+        return false;
       }
+
+      // 토큰이 유효하지 않아도 연결 거부
+      if (!jwtTokenProvider.validateToken(token)) {
+        log.info("[BeforeHandshake] : 쿠키 값이 유효하지 않아서 연결을 해제합니다.");
+        return false;
+      }
+
+      Long memberId = jwtTokenProvider.getUserIdFromToken(token);
+      log.info("[BeforeHandshake] : 인증에 성공했습니다. userId는 {}", memberId);
+      // HandshakeHandler에서 principal을 만들 수 있도록, 값을 담아둔다.
+      attributes.put("memberId", memberId);
+      return true;
     }
 
-    // 인증 실패 또는 헤더 없음 → 연결 거부
     return false;
   }
 
@@ -118,5 +103,16 @@ public class CustomHandshakeInterceptor implements HandshakeInterceptor { // TOD
     // 업그레이드가 끝난 뒤 호출됩니다.
     // 여기서는 로깅이나 모니터링 같은 후처리를 할 수 있습니다.
     // 실패한 경우 exception으로 이유를 확인할 수 있습니다.
+  }
+
+  // Cookie에서 AccessToken 꺼내기
+  private Optional<String> extractAccessTokenFromCookies(Cookie[] cookies, String name) {
+    if (cookies == null) return Optional.empty();
+    for (Cookie c : cookies) {
+      if (name.equals(c.getName())) {
+        return Optional.ofNullable(c.getValue());
+      }
+    }
+    return Optional.empty();
   }
 }

@@ -3,8 +3,10 @@ package com.nyam.everyday.config.websocket.handler;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
@@ -32,6 +34,8 @@ import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
  * - attributes에서 꺼내는 키 이름("userId")은 Interceptor에서 put한 키와 동일해야 합니다.
  * - 권한이 필요하면 UsernamePasswordAuthenticationToken 생성 시 적절한 GrantedAuthority 목록을 넣으십시오.
  */
+@Slf4j
+@Component
 public class CustomHandshakeHandler extends DefaultHandshakeHandler {
     /**
      * Handshake 시점에 이 WebSocket 연결의 Principal을 결정합니다.
@@ -47,9 +51,10 @@ public class CustomHandshakeHandler extends DefaultHandshakeHandler {
                                       WebSocketHandler wsHandler,
                                       Map<String, Object> attributes) {
         // HandshakeInterceptor에서 저장해 둔 사용자 ID를 꺼냅니다. 예) 123L
-        Object userId = attributes.get("userId");           // 인터셉터에서 넣은 값
+        Object memberId = attributes.get("memberId");           // 인터셉터에서 넣은 값
+        log.info("[CustomHandshakeHandler] : attribute에서 꺼낸 memberId : {}", memberId);
         // Principal 이름으로 사용할 문자열로 변환합니다. STOMP의 convertAndSendToUser에서 이 값을 사용합니다.
-        String name = String.valueOf(userId);               // "123"
+        String name = String.valueOf(memberId);               // "123"
         // 사용자 이름(name)만 담은 Principal을 생성해 반환합니다.
         // 두 번째 인자(credentials)는 사용하지 않으므로 null, 세 번째 인자(authorities)는 빈 목록입니다.
         // 역할/권한 기반 라우팅이나 보안이 필요하다면 authorities에 ROLE_* 권한을 넣으세요.
