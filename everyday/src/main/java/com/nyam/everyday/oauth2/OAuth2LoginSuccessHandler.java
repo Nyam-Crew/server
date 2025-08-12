@@ -56,7 +56,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     response.addCookie(refreshTokenCookie);
 
 
-    response.sendRedirect("/main.html?" + "&memberId=" + memberId);
-    //  response.sendRedirect("http://localhost:3000/main" + (id != null ? "?id=" + id : ""));//리액트
+    // response.sendRedirect("/main.html?" + "&memberId=" + memberId);
+    response.sendRedirect("http://localhost:5173/");//리액트
   }
 }

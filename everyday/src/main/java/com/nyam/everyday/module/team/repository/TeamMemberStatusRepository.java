@@ -26,4 +26,6 @@ public interface TeamMemberStatusRepository extends JpaRepository<TeamMemberStat
 
     @Query("SELECT tms FROM TeamMemberStatus tms JOIN FETCH tms.member WHERE tms.team.teamId = :teamId AND tms.status = :status")
     List<TeamMemberStatus> findAllWithMemberByTeam_TeamIdAndStatus(@org.springframework.data.repository.query.Param("teamId") Long teamId, @Param("status") ParticipationStatus status);
+
+    Boolean existsByTeam_TeamIdAndMember_MemberIdAndStatus(Long teamId, Long memberId, ParticipationStatus status);
 }
