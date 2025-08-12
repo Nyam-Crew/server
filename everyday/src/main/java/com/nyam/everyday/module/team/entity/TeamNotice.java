@@ -45,4 +45,22 @@ public class TeamNotice extends BaseEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    /** 부분 수정(PATCH) */
+    public void editPartial(String title, String content) {
+        boolean changed = false;
+
+        if (title != null) {
+            if (title.isBlank()) throw new IllegalArgumentException("제목은 공백일 수 없습니다.");
+            this.title = title;
+            changed = true;
+        }
+        if (content != null) {
+            this.content = content;
+            changed = true;
+        }
+        if (!changed) {
+            throw new IllegalArgumentException("수정할 필드가 없습니다.");
+        }
+    }
+
 }
