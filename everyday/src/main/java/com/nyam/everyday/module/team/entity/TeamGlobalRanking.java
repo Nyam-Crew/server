@@ -2,6 +2,9 @@ package com.nyam.everyday.module.team.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import java.time.LocalDateTime;
 
 /**
@@ -30,8 +33,10 @@ public class TeamGlobalRanking {
     @Column(name = "period_value", nullable = false, length = 10)
     private String periodValue;
 
-    @Column(name = "team_id", nullable = false)
-    private Long teamId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "team_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Team team;
 
     @Column(name = "total_score")
     private Integer totalScore;

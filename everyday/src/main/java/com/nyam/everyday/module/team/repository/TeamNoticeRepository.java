@@ -2,6 +2,9 @@ package com.nyam.everyday.module.team.repository;
 
 import com.nyam.everyday.module.team.entity.TeamNotice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
@@ -23,4 +26,7 @@ public interface TeamNoticeRepository extends JpaRepository<TeamNotice, Long> {
     // 생성 시 소유 검증/조회
     Optional<TeamNotice> findByTeam_TeamIdAndTeamNoticeId(Long teamId, Long teamNoticeId);
 
+    @Modifying
+    @Query("delete from TeamNotice n where n.team.teamId = :teamId")
+    void deleteByTeamId(@Param("teamId") Long teamId);
 }
