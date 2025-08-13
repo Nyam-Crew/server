@@ -4,6 +4,7 @@ import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import com.nyam.everyday.module.team.enums.ParticipationStatus;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -20,12 +21,33 @@ import java.util.Optional;
 @Repository
 public interface TeamMemberStatusRepository extends JpaRepository<TeamMemberStatus, Long> {
 
+    @Modifying
+    @Query("delete from TeamMemberStatus s where s.team.teamId = :teamId")
+    void deleteByTeamId(@Param("teamId") Long teamId);
+
     Optional<TeamMemberStatus> findByTeam_TeamIdAndMember_MemberId(Long teamId, Long memberId);
 
     List<TeamMemberStatus> findAllByTeam_TeamIdAndStatus(Long teamId, ParticipationStatus participationStatus);
 
     @Query("SELECT tms FROM TeamMemberStatus tms JOIN FETCH tms.member WHERE tms.team.teamId = :teamId AND tms.status = :status")
     List<TeamMemberStatus> findAllWithMemberByTeam_TeamIdAndStatus(@org.springframework.data.repository.query.Param("teamId") Long teamId, @Param("status") ParticipationStatus status);
+
+    @Query("""
+        SELECT tms FROM TeamMemberStatus tms
+        JOIN FETCH tms.member
+        WHERE tms.team.teamId = :teamId
+        AND tms.status = 'APPROVED'
+    """)
+    List<TeamMemberStatus> findApprovedMembers(@Param("teamId") Long teamId);
+
+    // JOINED 인원 카운트 (current_member_count 재검증/보정용)
+    @Query("""
+        SELECT COUNT(tms)
+          FROM TeamMemberStatus tms
+         WHERE tms.team.teamId = :teamId
+           AND tms.status = 'JOINED'
+    """)
+    long countJoinedMembers(@Param("teamId") Long teamId);
 
     Boolean existsByTeam_TeamIdAndMember_MemberIdAndStatus(Long teamId, Long memberId, ParticipationStatus status);
 }

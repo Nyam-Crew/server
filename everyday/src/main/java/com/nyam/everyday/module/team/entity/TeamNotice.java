@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
@@ -35,8 +37,9 @@ public class TeamNotice extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "team_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Team team;
 
     @Column(nullable = false)

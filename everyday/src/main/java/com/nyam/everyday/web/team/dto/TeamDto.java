@@ -31,8 +31,9 @@ public class TeamDto {
     @Schema(description = "대표 이미지 URL (이미지 업로드 안 할 경우)", example = "https://example.com/image.jpg")
     private String teamImg;
 
-    @Schema(description = "현재 인원 수", example = "1")
-    private int teamCurrentMembers;
+//    @Schema(description = "현재 인원 수", example = "1")
+//    @Builder.Default
+//    private int teamCurrentMembers = 1;
 
     @Schema(description = "최대 인원 수", example = "10")
     private int teamMaxMembers;

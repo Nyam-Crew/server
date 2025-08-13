@@ -1,5 +1,7 @@
 package com.nyam.everyday.web.team.dto;
 
+import com.nyam.everyday.module.team.enums.ParticipationStatus;
+import com.nyam.everyday.module.team.enums.TeamRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -40,17 +42,4 @@ public class TeamMemberStatusDto {
     @Schema(name = "", example = "")
     private LocalDateTime modifiedDate;
 
-    public enum ParticipationStatus {
-        NOT_JOINED,    // 가입 요청 안함
-        PENDING,       // 가입 요청 중
-        APPROVED,      // 가입 완료
-        REJECTED,      // 거절됨
-        BANNED         // 강퇴됨
-    }
-
-    public enum TeamRole {
-        LEADER,
-        SUBLEADER,
-        MEMBER
-    }
 }

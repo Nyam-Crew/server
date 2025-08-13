@@ -10,11 +10,13 @@ package com.nyam.everyday.module.team.enums;
  *
  */
 public enum ParticipationStatus {
-    NOT_JOINED,    // 가입 요청 안함
     PENDING,       // 가입 요청 중
     APPROVED,      // 가입 완료
     REJECTED,      // 거절됨
-    BANNED;
+    BANNED,        // 강퇴됨
+    LEFT;          // 스스로 나감
+
+    public boolean isApproved()   { return this == ParticipationStatus.APPROVED; }
 }
 
 
