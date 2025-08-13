@@ -160,5 +160,15 @@ public class TeamController {
         return ResponseEntity.ok(dto);
     }
 
+    @Operation(summary = "그룹 하드 삭제(방장 전용)", description = "확인용 팀명이 정확히 일치해야 삭제됩니다. 삭제 시 복구할 수 없습니다.")
+    @DeleteMapping(value = "/{teamId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> deleteTeam(
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody TeamDeleteDto deleteTitle
+    ) {
+        teamService.deleteTeamHard(teamId, userDetails.getId(), deleteTitle.getConfirmTeamTitle());
+        return ResponseEntity.noContent().build();
+    }
 
 }

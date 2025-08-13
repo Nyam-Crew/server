@@ -1,20 +1,20 @@
 package com.nyam.everyday.module.team.repository;
 
-import com.nyam.everyday.module.team.entity.TeamNotice;
+import com.nyam.everyday.module.team.entity.TeamActivityFeed;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 /**
- * 그룹 공지사항 Repository
+ * 팀 실시간피드 Repository
  *
  * @author : 이지은
- * @fileName : TeamNoticeRepository
- * @since : 25. 8. 6.
+ * @fileName : TeamActivityFeedRepository
+ * @since : 25. 8. 11.
  */
-public interface TeamNoticeRepository extends JpaRepository<TeamNotice, Long> {
+public interface TeamActivityFeedRepository extends JpaRepository<TeamActivityFeed, Long> {
     @Modifying
-    @Query("delete from TeamNotice n where n.team.teamId = :teamId")
+    @Query("delete from TeamActivityFeed f where f.team.teamId = :teamId")
     void deleteByTeamId(@Param("teamId") Long teamId);
 }

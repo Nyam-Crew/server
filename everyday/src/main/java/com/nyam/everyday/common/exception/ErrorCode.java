@@ -32,6 +32,7 @@ public enum ErrorCode {
   MEMBER_DEACTIVATED(HttpStatus.UNAUTHORIZED,"MEMBER_DEACTIVATED","비활성화된 멤버입니다"),
   INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,"INVALID_REFRESH_TOKEN","유효하지 않는 토큰입니다"),
   REFRESH_TOKEN_MISMATCH(HttpStatus.UNAUTHORIZED,"REFRESH_TOKEN_MISMATCH","리프레쉬 토큰이 불일치 합니다"),
+  ONLY_LEADER_CAN_BAN(HttpStatus.FORBIDDEN,"ONLY_LEADER_CAN_BAN","강퇴는 방장만 가능합니다"),
 
   /* 404 - Not Found */
   MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND,"MEMBER_NOT_FOUND","해당 사용자를 찾을 수 없습니다"),
@@ -39,6 +40,10 @@ public enum ErrorCode {
   POST_NOT_FOUND(HttpStatus.BAD_REQUEST, "POST_NOT_FOUND", "게시글을 찾을 수 없습니다."),
   COMMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "COMMENT_NOT_FOUND", "댓글을 찾을 수 없습니다."),
   BOARD_NOT_FOUND(HttpStatus.NOT_FOUND,"BOARD_NOT_FOUND","게시글을 찾을 수 없습니다"),
+
+  /* 409 - Conflict */
+  LEADER_CANNOT_LEAVE(HttpStatus.CONFLICT,"LEADER_CANNOT_LEAVE", "방장은 그룹을 탈퇴할 수 없습니다."),
+  LEADER_CANNOT_BAN(HttpStatus.CONFLICT, "LEADER_CANNOT_BAN", "리더/부리더는 강퇴할 수 없습니다."),
 
   /* 500 - Internal Server Error */
   AWSS3_UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AWSS3_UNKNOWN_ERROR", "S3 연결 과정에서 에러가 발생했습니다"),
