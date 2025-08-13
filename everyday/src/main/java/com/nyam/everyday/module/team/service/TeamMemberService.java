@@ -223,6 +223,12 @@ public class TeamMemberService {
 
         target.changeRole(newRole);
     }
+
+    // 어떤 유저가 그룹의 멤버인지 확인하기 위한 함수
+    @Transactional(readOnly = true)
+    public Boolean isMember(Long memberId, Long teamId) {
+        return teamMemberStatusRepository.existsByTeam_TeamIdAndMember_MemberIdAndStatus(memberId, teamId, ParticipationStatus.APPROVED);
+    }
   
     // 특정 유저가 속한 그룹 리스트를 반환받는다
     @Transactional(readOnly = true)
