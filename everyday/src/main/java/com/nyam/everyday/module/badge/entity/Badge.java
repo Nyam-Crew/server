@@ -35,5 +35,6 @@ public class Badge extends BaseCreatedEntity {
     private String badgeImage;
 
     @OneToMany(mappedBy = "badge")
+    @Builder.Default
     private List<MemberBadgeStatus> memberBadgeStatuses = new ArrayList<>();
 }
