@@ -1,36 +1,16 @@
 {
-  "mappings": {
-    "properties": {
-      "foodName": {
-        "type": "text",
-        "analyzer": "korean_search",
-        "search_analyzer": "korean_search",
-        "fields": {
-          "keyword": { "type": "keyword", "ignore_above": 256 },
-          "autocomplete": {
-            "type": "text",
-            "analyzer": "korean_autocomplete",
-            "search_analyzer": "korean_search"
-          }
-        }
-      },
-      "manufacturer": {
-        "type": "keyword",
-        "normalizer": "lowercase"
-      },
-      "unitKcal":   { "type": "scaled_float", "scaling_factor": 10, "index": false },
-      "unitGram":   { "type": "integer",      "index": false },
-      "foodSize":   { "type": "integer",      "index": false }
-    }
-  },
-  "settings": {
-    "analysis": {
-      "normalizer": {
-        "lowercase": {
-          "type": "custom",
-          "filter": ["lowercase"]
-        }
+  "properties": {
+    "foodName": {
+      "type": "text",
+      "analyzer": "korean_search",
+      "search_analyzer": "korean_search",
+      "fields": {
+        "keyword": { "type": "keyword" }
       }
-    }
+    },
+    "manufacturer": { "type": "keyword" },
+    "unitKcal": { "type": "double" },
+    "unitGram": { "type": "long" },
+    "foodSize": { "type": "integer" }
   }
 }

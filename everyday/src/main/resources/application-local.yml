@@ -36,9 +36,9 @@ spring:
   data:
     mongodb:
       # 로컬에서 MongoDB 사용할떈 아래의 코드 사용
-      uri: mongodb://${LOCAL_MONGO_USERNAME}:${LOCAL_MONGO_PASSWORD}@${LOCAL_MONGO_HOST_ADDRESS}:${LOCAL_MONGO_PORT}/${LOCAL_MONGO_DBNAME}?authSource=admin&tls=false&retryWrites=true&appName=nyamnyamMongo
+#      uri: mongodb://${LOCAL_MONGO_USERNAME}:${LOCAL_MONGO_PASSWORD}@${LOCAL_MONGO_HOST_ADDRESS}:${LOCAL_MONGO_PORT}/${LOCAL_MONGO_DBNAME}?authSource=admin&tls=false&retryWrites=true&appName=nyamnyamMongo
       # Mongo를 Atlas 기반으로 사용하기 위한다면 아래 코드 주석처리 해제
-      #uri: mongodb+srv://${ATLAS_MONGO_USERNAME}:${ATLAS_MONGO_PASSWORD}@${ATLAS_MONGO_HOST_ADDRESS}/?retryWrites=true&w=majority&appName=nyamnyamMongo
+      uri: mongodb+srv://${ATLAS_MONGO_USERNAME}:${ATLAS_MONGO_PASSWORD}@${ATLAS_MONGO_HOST_ADDRESS}/?retryWrites=true&w=majority&appName=nyamnyamMongo
       database: ${MONGO_DBNAME}
 
 # AWS S3 적용을 위한 세팅
