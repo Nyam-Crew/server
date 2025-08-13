@@ -8,25 +8,27 @@ services:
       - nyam_server
     restart: unless-stopped
 
-#    nyam-elasticsearch:
-#      image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
-#      restart: always
-#      container_name: nyam-elasticsearch
-#      environment:
-#        - node.name=es01
-#        - discovery.type=single-node
-#        - xpack.security.enabled=false
-#      ulimits:
-#        memlock:
-#          soft: -1
-#          hard: -1
-#      ports:
-#        - "9200:9200"
-#        - "9300:9300"
-#      volumes:
-#        - ./volumes/esdata:/usr/share/elasticsearch/data
-#      networks:
-#        - nyam_server
+  nyam-elasticsearch:
+    build:
+      context: ./elasticsearch
+    image: nyam-elasticsearch:8.12.0-nori
+    container_name: nyam-elasticsearch
+    restart: always
+    environment:
+      - node.name=es01
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - ./volumes/esdata:/usr/share/elasticsearch/data
+    networks:
+      - nyam_server
 
 networks:
   nyam_server:

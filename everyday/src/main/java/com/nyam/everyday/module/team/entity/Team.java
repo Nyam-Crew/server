@@ -39,6 +39,7 @@ public class Team extends BaseEntity {
     private String teamImg;
 
     @Column(name="team_current_members")
+    @Builder.Default
     private int teamCurrentMembers = 1;
 
     @Column(name="team_max_members")
@@ -58,5 +59,20 @@ public class Team extends BaseEntity {
         if (title != null) this.teamTitle = title;
         if (description != null) this.teamDescription = description;
         if (maxMembers != null) this.teamMaxMembers = maxMembers;
+    }
+
+    //그룹 참가 승인시 +1
+    public void increaseCurrentMembers(int delta) {
+        this.teamCurrentMembers += delta;
+    }
+
+    //팀나가기 할때 인원수 -1
+    public void decreaseCurrentMembers(int delta) {
+        this.teamCurrentMembers = Math.max(0, this.teamCurrentMembers - delta);
+    }
+
+    // 그룹 방장 변경
+    public void changeLeader(Member newLeader) {
+        this.owner = newLeader; // 또는 ownerId 세팅
     }
 }

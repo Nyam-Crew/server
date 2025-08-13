@@ -9,11 +9,13 @@ import com.nyam.everyday.module.team.enums.ParticipationStatus;
 import com.nyam.everyday.module.team.entity.Team;
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import com.nyam.everyday.module.team.enums.TeamRole;
-import com.nyam.everyday.module.team.repository.TeamMemberStatusRepository;
-import com.nyam.everyday.module.team.repository.TeamRepository;
+import com.nyam.everyday.module.team.repository.*;
 import com.nyam.everyday.web.team.dto.*;
 import com.nyam.everyday.web.team.mapper.TeamMapper;
 import com.nyam.everyday.web.team.mapper.TeamMemberStatusMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,14 +32,26 @@ import java.util.Optional;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TeamService {
 
     private final TeamRepository teamRepository;
     private final MemberRepository memberRepository;
     private final TeamMemberStatusRepository teamMemberStatusRepository;
+    private final TeamActivityFeedRepository teamActivityFeedRepository;
+    private final TeamGlobalRankingRepository teamGlobalRankingRepository;
+    private final TeamNoticeRepository teamNoticeRepository;
+    private final TeamNotificationRepository teamNotificationRepository;
+    private final TeamRankingHistoryRepository teamRankingHistoryRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
     private final TeamMapper teamMapper;
     private final TeamMemberStatusMapper teamMemberStatusMapper;
     private final AwsS3Service awsS3Service;
+    // private final RedisRankingService redisRankingService;
+    // private final ChatService chatService;
 
     @Transactional
     public TeamDto createTeam(TeamDto dto,/* MultipartFile imageFile,*/ Long memberId) {
@@ -65,8 +79,8 @@ public class TeamService {
     @Transactional
     public void registerLeader(Team team, Member owner) {
         TeamMemberStatusDto leaderDto = TeamMemberStatusDto.builder()
-                .status(TeamMemberStatusDto.ParticipationStatus.APPROVED)
-                .teamRole(TeamMemberStatusDto.TeamRole.LEADER)
+                .status(ParticipationStatus.APPROVED)
+                .teamRole(TeamRole.LEADER)
                 .build();
 
         TeamMemberStatus leaderStatus = teamMemberStatusMapper.toEntity(leaderDto, team, owner);
@@ -95,11 +109,11 @@ public class TeamService {
                 teamMemberStatusRepository.findByTeam_TeamIdAndMember_MemberId(teamId, memberId);
 
         ParticipationStatus participationStatus = memberStatusOpt
-                .map(s -> ParticipationStatus.valueOf(s.getStatus().name()))
-                .orElse(ParticipationStatus.NOT_JOINED);
+                .map(TeamMemberStatus::getStatus)
+                .orElse(null);
 
         TeamRole teamRole = memberStatusOpt
-                .map(s -> TeamRole.valueOf(s.getTeamRole().name()))
+                .map(TeamMemberStatus::getTeamRole)
                 .orElse(null);
 
         return teamMapper.toDetailDto(team, participationStatus, teamRole);
@@ -204,6 +218,49 @@ public class TeamService {
         TeamRole role = rel.getTeamRole();
         if ((role != TeamRole.LEADER && role != TeamRole.SUBLEADER)) {
             throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
+    }
+
+    @Transactional
+    public void deleteTeamHard(Long teamId, Long actorMemberId, String confirmTeamTitle) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new BaseException(ErrorCode.GROUP_NOT_FOUND));
+
+        TeamMemberStatus rel = teamMemberStatusRepository
+                .findByTeam_TeamIdAndMember_MemberId(teamId, actorMemberId)
+                .orElseThrow(() -> new BaseException(ErrorCode.ACCESS_DENIED));
+
+        if (!rel.getTeamRole().isLeader()) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED, "방장만 삭제할 수 있습니다.");
+        }
+        if (confirmTeamTitle == null || !team.getTeamTitle().equals(confirmTeamTitle)) {
+            throw new BaseException(ErrorCode.INVALID_REQUEST, "확인용 팀명이 일치하지 않습니다.");
+        }
+
+        // todo.외부 리소스 정리
+        //if (team.getTeamImg() != null) awsS3Service.deleteFileByUrl(team.getTeamImg());
+        // redisRankingService.evictTeamKeys(teamId);
+        // chatService.deleteAllByTeamId(teamId);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        teamActivityFeedRepository.deleteByTeamId(teamId);
+        teamGlobalRankingRepository.deleteByTeamId(teamId);
+        teamRankingHistoryRepository.deleteByTeamId(teamId);
+        teamNotificationRepository.deleteByTeamId(teamId);
+        teamNoticeRepository.deleteByTeamId(teamId);
+        teamMemberStatusRepository.deleteByTeamId(teamId);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // 2) 부모 삭제
+        teamRepository.deleteById(teamId);
+    }
+    private void assertManagedTeam(Team team) {
+        if (team != null && !entityManager.contains(team)) {
+            log.warn("Non-managed Team injected! Team#{}", team.getTeamId());
         }
     }
 

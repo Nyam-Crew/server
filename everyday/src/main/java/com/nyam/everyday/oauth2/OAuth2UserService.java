@@ -1,12 +1,12 @@
 package com.nyam.everyday.oauth2;
 
 
+import com.nyam.everyday.common.aws.s3.entity.S3DefaultValue;
 import com.nyam.everyday.module.auth.entity.Auth;
 import com.nyam.everyday.module.auth.repository.AuthRepository;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.security.core.CustomUserDetails;
-import com.nyam.everyday.security.core.Role;
 import com.nyam.everyday.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +51,6 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
     Map<String, Object> attributes = oAuth2User.getAttributes();
     String providerId, username, email;
 
-
     if ("google".equals(provider)) {
 
       email = (String) attributes.get("email");
@@ -80,8 +79,10 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         .orElseGet(() -> {
           Member newMember = new Member();
           newMember.setProviderId(providerId);
-          newMember.setRole(Role.ROLE_USER);
           newMember.setEmail(email != null ? email : "");
+          if(username != null) newMember.setNickname(username);
+          newMember.setMemberImg(S3DefaultValue.DEFAULT_PROFILE_IMAGE.getValue());
+
           return memberRepository.save(newMember);
         });
     log.info("[OAuth2UserService] 찾은 유저 : {}  ", member.getProviderId());

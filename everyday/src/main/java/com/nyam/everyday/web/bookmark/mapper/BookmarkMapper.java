@@ -1,11 +1,13 @@
-package com.nyam.everyday.web.bookmark;
+package com.nyam.everyday.web.bookmark.mapper;
 
 
 import com.nyam.everyday.module.board.entity.Board;
+import com.nyam.everyday.module.bookmark.dto.BookmarkAndBoardDto;
 import com.nyam.everyday.module.bookmark.entity.Bookmark;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.web.bookmark.dto.CreateBookmarkRequestDto;
 import com.nyam.everyday.web.bookmark.dto.CreateBookmarkResponseDto;
+import com.nyam.everyday.web.bookmark.dto.MyBookmarkListResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -22,6 +24,8 @@ public interface BookmarkMapper {
   @Mapping(source = "bookmark.board.boardId",target = "boardId")
   @Mapping(source = "bookmark.member.memberId",target = "memberId")
   CreateBookmarkResponseDto toResponseDto(Bookmark bookmark);
+
+  MyBookmarkListResponseDto toResponseDto(BookmarkAndBoardDto moduleDto);
 
 
 }
