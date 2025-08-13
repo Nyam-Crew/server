@@ -1,16 +1,13 @@
 package com.nyam.everyday.security.config;
 
 import com.nyam.everyday.oauth2.OAuth2LoginSuccessHandler;
-import com.nyam.everyday.oauth2.OAuth2LogoutSuccessHandler;
 import com.nyam.everyday.oauth2.OAuth2UserService;
 import com.nyam.everyday.oauth2.RedisOAuth2AuthorizationRequestRepository;
 import com.nyam.everyday.security.jwt.JwtTokenFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -75,6 +72,8 @@ public class SecurityConfig {
             .requestMatchers(STATIC_RESOURCES).permitAll()
             .requestMatchers(SWAGGER_RESOURCES).permitAll()
             .requestMatchers(PUBLIC_API_ROUTES).permitAll()
+            .requestMatchers("/ws/**").permitAll()
+            .requestMatchers("/ws").permitAll()
             .requestMatchers("/api/**").authenticated()
             .anyRequest().permitAll()
         )
@@ -90,12 +89,12 @@ public class SecurityConfig {
               response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
             })
         )
-        .sessionManagement(session ->session
+        .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
         .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
 
-        .oauth2Login(oauth2->oauth2
+        .oauth2Login(oauth2 -> oauth2
             .loginPage("/index.html")
             .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
             .successHandler(oAuth2LoginSuccessHandler)
@@ -110,7 +109,6 @@ public class SecurityConfig {
 //            .permitAll()
 //        )
 
-
         .build();
   }
 
@@ -118,7 +116,7 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowCredentials(true);
-    config.setAllowedOrigins(List.of("http://localhost:3000"));
+    config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     config.setAllowedHeaders(List.of("*"));
     config.setExposedHeaders(List.of("Authorization"));

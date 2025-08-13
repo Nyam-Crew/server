@@ -48,4 +48,6 @@ public interface TeamMemberStatusRepository extends JpaRepository<TeamMemberStat
            AND tms.status = 'JOINED'
     """)
     long countJoinedMembers(@Param("teamId") Long teamId);
+
+    Boolean existsByTeam_TeamIdAndMember_MemberIdAndStatus(Long teamId, Long memberId, ParticipationStatus status);
 }
