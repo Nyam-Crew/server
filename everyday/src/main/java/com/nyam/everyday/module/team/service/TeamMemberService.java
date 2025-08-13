@@ -5,6 +5,8 @@ import com.nyam.everyday.common.exception.ErrorCode;
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import com.nyam.everyday.module.team.enums.ParticipationStatus;
 import com.nyam.everyday.module.team.repository.TeamMemberStatusRepository;
+import com.nyam.everyday.web.team.dto.MemberTeamListDto;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,6 +66,14 @@ public class TeamMemberService {
     @Transactional(readOnly = true)
     public Boolean isMember(Long memberid, Long teamId) {
         return teamMemberStatusRepository.existsByTeam_TeamIdAndMember_MemberIdAndStatus(memberid, teamId, ParticipationStatus.APPROVED);
+    }
+
+    // 특정 유저가 속한 그룹 리스트를 반환받는다
+    @Transactional(readOnly = true)
+    public MemberTeamListDto getAllGroupsByMemberId(Long memberId) {
+        List<TeamMemberStatus> tmp = teamMemberStatusRepository.getAllByMember_MemberId(memberId);
+
+        return MemberTeamListDto.of(tmp);
     }
 
     // 아래 기능 여기로 위치 이동할 예정

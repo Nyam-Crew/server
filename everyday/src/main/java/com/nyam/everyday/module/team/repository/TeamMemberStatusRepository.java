@@ -28,4 +28,7 @@ public interface TeamMemberStatusRepository extends JpaRepository<TeamMemberStat
     List<TeamMemberStatus> findAllWithMemberByTeam_TeamIdAndStatus(@org.springframework.data.repository.query.Param("teamId") Long teamId, @Param("status") ParticipationStatus status);
 
     Boolean existsByTeam_TeamIdAndMember_MemberIdAndStatus(Long teamId, Long memberId, ParticipationStatus status);
+
+    // 특정 멤버가 속해있는 모든 그룹 리스트 찾기
+    List<TeamMemberStatus> getAllByMember_MemberId(Long memberId);
 }
