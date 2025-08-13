@@ -1,0 +1,16 @@
+package com.nyam.everyday.search.repository;
+
+import com.nyam.everyday.search.document.FoodDocument;
+import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
+
+/**
+ * FoodSearchRepository
+ *
+ * @author : 장소희
+ * @fileName : FoodSearchRepository
+ * @since : 25. 8. 13.
+ */
+
+public interface FoodSearchRepository extends ElasticsearchRepository<FoodDocument, String> {
+
+}
