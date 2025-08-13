@@ -7,6 +7,8 @@ import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import com.nyam.everyday.module.team.enums.ParticipationStatus;
 import com.nyam.everyday.module.team.enums.TeamRole;
 import com.nyam.everyday.module.team.repository.TeamMemberStatusRepository;
+import com.nyam.everyday.web.team.dto.MemberTeamListDto;
+import java.util.List;
 import com.nyam.everyday.module.team.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -222,4 +224,24 @@ public class TeamMemberService {
         target.changeRole(newRole);
     }
 
+    // 어떤 유저가 그룹의 멤버인지 확인하기 위한 함수
+    @Transactional(readOnly = true)
+    public Boolean isMember(Long memberId, Long teamId) {
+        return teamMemberStatusRepository.existsByTeam_TeamIdAndMember_MemberIdAndStatus(memberId, teamId, ParticipationStatus.APPROVED);
+    }
+
+    // 특정 유저가 속한 그룹 리스트를 반환받는다
+    @Transactional(readOnly = true)
+    public MemberTeamListDto getAllGroupsByMemberId(Long memberId) {
+        List<TeamMemberStatus> tmp = teamMemberStatusRepository.getAllByMember_MemberId(memberId);
+
+        return MemberTeamListDto.of(tmp);
+    }
+
+    // 아래 기능 여기로 위치 이동할 예정
+    // - 참가 승인/거절
+    // 다음 기능도 여기에 추가될 예정:
+    // - 강퇴
+    // - 부방장 역할 부여/회수
+    // - 방장 위임
 }
