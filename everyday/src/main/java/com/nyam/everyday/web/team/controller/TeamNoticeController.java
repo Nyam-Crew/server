@@ -27,13 +27,13 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name="TeamNotice-Controller", description = "그룹 공지 CRUD 및 그룹 공지 알림 컨트롤러입니다.")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/teams")
+@RequestMapping("/api/teams/notices")
 public class TeamNoticeController {
 
     private final TeamNoticeService teamNoticeService;
 
     @Operation(summary = "그룹 공지 작성 (방장/부방장 전용), 공지는 그룹당 한건만 가능")
-    @PostMapping("/{teamId}/notices")
+    @PostMapping("/{teamId}")
     public ResponseEntity<TeamNoticeDto> createNotice(
             @PathVariable Long teamId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -45,7 +45,7 @@ public class TeamNoticeController {
     }
 
     @Operation(summary = "그룹 공지 수정(PATCH)", description = "제목/본문 중 전달된 값만 부분 수정. 리더/부리더만 가능.")
-    @PatchMapping(value = "/{teamId}/notices/{noticeId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/{teamId}/{noticeId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TeamNoticeDto> updateNotice(
             @PathVariable Long teamId,
             @PathVariable Long noticeId,
@@ -58,7 +58,7 @@ public class TeamNoticeController {
     }
 
     @Operation(summary = "그룹 공지 단건 조회")
-    @GetMapping("/{teamId}/notices")
+    @GetMapping("/{teamId}")
     public ResponseEntity<TeamNoticeDto> getNotice(
             @PathVariable Long teamId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -67,7 +67,7 @@ public class TeamNoticeController {
     }
 
     @Operation(summary = "그룹 공지 삭제(Hard)", description = "그룹 공지 삭제는 리더/부리더만 가능")
-    @DeleteMapping("/{teamId}/notices/{noticeId}")
+    @DeleteMapping("/{teamId}/{noticeId}")
     public ResponseEntity<Void> deleteNotice(
             @PathVariable Long teamId,
             @PathVariable Long noticeId,
