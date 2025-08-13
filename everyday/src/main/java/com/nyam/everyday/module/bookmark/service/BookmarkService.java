@@ -4,18 +4,22 @@ import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.common.exception.ErrorCode;
 import com.nyam.everyday.module.board.entity.Board;
 import com.nyam.everyday.module.board.repository.BoardRepository;
+import com.nyam.everyday.module.bookmark.dto.BookmarkAndBoardDto;
 import com.nyam.everyday.module.bookmark.entity.Bookmark;
 import com.nyam.everyday.module.bookmark.repository.BookmarkRepository;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
-import com.nyam.everyday.web.bookmark.BookmarkMapper;
+import com.nyam.everyday.web.bookmark.mapper.BookmarkMapper;
 import com.nyam.everyday.web.bookmark.dto.CreateBookmarkRequestDto;
 import com.nyam.everyday.web.bookmark.dto.CreateBookmarkResponseDto;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BookmarkService {
@@ -51,5 +55,13 @@ public class BookmarkService {
 
 
   }
+
+  @Transactional(readOnly = true)
+  public Page<BookmarkAndBoardDto> getMyBookmarks(Long memberId, Pageable pageable) {
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
+    return  bookmarkRepository.findBookmarkedBoardsByMember(member, pageable);
+  }
+
 
 }

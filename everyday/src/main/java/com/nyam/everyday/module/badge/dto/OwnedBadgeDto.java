@@ -1,8 +1,8 @@
-package com.nyam.everyday.module.badge.repository;
+package com.nyam.everyday.module.badge.dto;
 
 import java.time.LocalDateTime;
 
-public interface OwnedBadgeProjection {
+public interface OwnedBadgeDto {
   Long getBadgeId();
   LocalDateTime getAcquiredAt(); // = createdDate
 }
