@@ -1,0 +1,35 @@
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "nori_posfilter": {
+          "type": "nori_part_of_speech",
+          "stoptags": ["E", "IC", "J", "MAG", "MAJ", "MM", "SP", "SSC", "SSO", "SC", "SE", "XPN", "XSA", "XSN", "XSV", "UNA", "NA", "VSV"]
+        },
+        "my_shingle": {
+          "type": "shingle",
+          "min_shingle_size": 2,
+          "max_shingle_size": 2
+        }
+      },
+      "analyzer": {
+        "korean_index": {
+          "type": "custom",
+          "tokenizer": "nori_tokenizer",
+          "filter": ["lowercase", "nori_readingform", "nori_posfilter"]
+        },
+        "korean_search": {
+          "type": "custom",
+          "tokenizer": "nori_tokenizer",
+          "filter": ["lowercase", "nori_readingform", "nori_posfilter", "my_shingle"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "name": { "type": "text", "analyzer": "korean_index", "search_analyzer": "korean_search" },
+      "desc": { "type": "text", "analyzer": "korean_index", "search_analyzer": "korean_search" }
+    }
+  }
+}

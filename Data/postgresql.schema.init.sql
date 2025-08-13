@@ -104,8 +104,10 @@ CREATE TABLE food (
                       food_name VARCHAR(50) NOT NULL,
                       manufacturer VARCHAR(50),
                       unit_kcal DECIMAL(4,1) NOT NULL,
-                      unit_weight BIGINT NOT NULL,
-                      PRIMARY KEY (food_id)
+                      unit_gram BIGINT NOT NULL,
+                      food_size INT,
+                      PRIMARY KEY (food_id),
+                      CONSTRAINT uq_food_name_mfr UNIQUE (food_name, manufacturer) -- 이름+제조사 중복 방지
 );
 
 CREATE TABLE nutrition_category (
@@ -121,7 +123,9 @@ CREATE TABLE nutrition_detail (
                                   nutrition_nm VARCHAR(50) NOT NULL,
                                   amount NUMERIC(4,1) NOT NULL,
                                   unit_weight BIGINT NOT NULL,
-                                  PRIMARY KEY (nutrition_id)
+                                  PRIMARY KEY (nutrition_id),
+                                  FOREIGN KEY (food_id) REFERENCES food(food_id),
+                                  FOREIGN KEY (food_cate_id) REFERENCES nutrition_category(food_cate_id)
 );
 
 CREATE TABLE team (
@@ -330,6 +334,8 @@ CREATE INDEX idx_member_team_ranking ON member_team_ranking (team_id, period_val
 
 CREATE INDEX idx_team_global_ranking ON team_global_ranking (period_value);
 
+CREATE UNIQUE INDEX ux_nd_food_cate_nm ON nutrition_detail (food_id, food_cate_id, nutrition_nm);
+
 COMMENT ON COLUMN member.provider_id IS '소셜에서 들어오는 provider';
 
 COMMENT ON COLUMN member.member_img IS 'AWS S3의 URL그대로 기록하기';
@@ -437,3 +443,11 @@ ALTER TABLE daily_mission_behavior ADD CONSTRAINT FK_behavior_TO_daily_mission_b
 ALTER TABLE member_behavior_log ADD CONSTRAINT FK_member_TO_member_behavior_log FOREIGN KEY (member_id) REFERENCES member (member_id);
 
 ALTER TABLE member_behavior_log ADD CONSTRAINT FK_behavior_TO_member_behavior_log FOREIGN KEY (behavior_id) REFERENCES behavior (behavior_id);
+
+INSERT INTO nutrition_category (food_cate_id, category) VALUES
+                                                            (1, '탄수화물'),
+                                                            (2, '단백질'),
+                                                            (3, '지방'),
+                                                            (4, '무기질'),
+                                                            (5, '기타')
+ON CONFLICT (food_cate_id) DO NOTHING;
