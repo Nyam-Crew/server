@@ -42,5 +42,9 @@ public class Food {
 
     @Comment("단위 무게 (g)")
     @Column(nullable = false)
-    private Long unitWeight;
+    private Long unitGram;
+
+    @Comment("식품 크기 (g) — API 제공값, null 가능")
+    @Column
+    private Integer foodSize;
 }
