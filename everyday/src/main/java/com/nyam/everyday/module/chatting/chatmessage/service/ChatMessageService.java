@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ public class ChatMessageService {
   private final TeamMemberStatusRepository teamMemberStatusRepository;
   private final SimpMessagingTemplate simpMessagingTemplate;
   private final MemberRepository memberRepository;
+  private final MongoTemplate mongoTemplate;
 
   // 메세지가 전송되었을 때 처리하기 위한 메서드
   public void handleMessage(ChatMessageSaveRequest request, Long memberId) {
@@ -46,16 +48,19 @@ public class ChatMessageService {
         .build();
 
     // 먼저 메세지를 저장한다.
-    ChatMessage result = chatMessageRepository.save(chatMessage);
+    ChatMessage saved = mongoTemplate.insert(chatMessage);
+    // ChatMessage result = chatMessageRepository.save(chatMessage);
     log.info("[handleMessage] : 메세지 MongoDB에 저장 완료");
+
+    // redis 캐시 갱신 (20개만 남게)₩
 
     // 저장 후에 Broadcast를 위한 자료형 준비
     ChatMessageBroadcastDto broadcast = ChatMessageBroadcastDto.builder()
-        .messageId(result.getMessageId())
-        .senderId(result.getMemberId())
-        .sender(result.getNickname())
-        .content(result.getContent())
-        .timestamp(result.getTimestamp())
+        .messageId(saved.getMessageId())
+        .senderId(saved.getMemberId())
+        .sender(saved.getNickname())
+        .content(saved.getContent())
+        .timestamp(saved.getTimestamp())
         .build();
 
     // Broadcast 수행
@@ -71,12 +76,14 @@ public class ChatMessageService {
   // 특정 채팅방의 메세지 히스토리 받아오기
   @Transactional(readOnly = true)
   public List<ChatMessageBroadcastDto> getMessageHistory(Long memberId, Long roomId) {
-    // 여기서 이 유저가 채팅방에 접근할 권한 있는지 체크
-//    if (!teamMemberStatusRepository.existsByTeam_TeamIdAndMember_MemberIdAndStatus(roomId, memberId,
-//        ParticipationStatus.APPROVED)) {
-//      log.info("{} 멤버는 {}번 채팅방의 내용에 접근할 수 없습니다", memberId, roomId);
-//      throw BaseException.ACCESS_DENIED;
-//    }
+     // 여기서 이 유저가 채팅방에 접근할 권한 있는지 체크
+    if (!teamMemberStatusRepository.existsByTeam_TeamIdAndMember_MemberIdAndStatus(roomId, memberId,
+        ParticipationStatus.APPROVED)) {
+      log.info("{} 멤버는 {}번 채팅방의 내용에 접근할 수 없습니다", memberId, roomId);
+      throw BaseException.ACCESS_DENIED;
+    }
+
+    // Redis에 저장된 값 있는지 체크
 
     List<ChatMessage> messages = chatMessageRepository.findAllByRoomId(roomId);
     List<ChatMessageBroadcastDto> result = new ArrayList<>();
