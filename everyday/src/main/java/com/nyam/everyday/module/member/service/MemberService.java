@@ -23,7 +23,8 @@ public class MemberService {
 
   public MemberDto getMemberById(Long id) {
     Member member = memberRepository.findById(id)
-        .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "id " + id + "에 해당하는 사용자가 없습니다."));
+        .orElseThrow(
+            () -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "id " + id + "에 해당하는 사용자가 없습니다."));
     return memberMapper.toDto(member);
   }
 
@@ -37,7 +38,8 @@ public class MemberService {
   @Transactional
   public MemberDto update(Long id, MemberDto dto) {
     Member member = memberRepository.findById(id)
-        .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "id " + id + "에 해당하는 사용자가 없습니다."));
+        .orElseThrow(
+            () -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "id " + id + "에 해당하는 사용자가 없습니다."));
     memberMapper.modify(dto, member); // 필드 변경만
 
     //TODO - BMI, BMR, TDEE 계산

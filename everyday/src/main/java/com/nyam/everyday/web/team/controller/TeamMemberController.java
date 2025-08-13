@@ -4,6 +4,7 @@ import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.common.exception.ErrorCode;
 import com.nyam.everyday.module.team.service.TeamMemberService;
 import com.nyam.everyday.security.core.CustomUserDetails;
+import com.nyam.everyday.web.team.dto.MemberTeamListDto;
 import com.nyam.everyday.web.team.dto.TeamBanDto;
 import com.nyam.everyday.web.team.dto.TeamRoleChangeDto;
 import com.nyam.everyday.web.team.dto.TeamTransLeaderDto;
@@ -13,6 +14,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -88,6 +95,14 @@ public class TeamMemberController {
     ) {
         teamMemberService.changeRole(teamId, userDetails.getId(), req.getTargetMemberId(), req.getRole());
         return ResponseEntity.ok("역할을 변경했습니다.");
+    }
+
+    @GetMapping("/getlist")
+    @Operation(summary = "소속된 팀 모두 가져오기", description = "자신이 소속된 모든 팀의 정보를 가져옵니다.")
+    public ResponseEntity<MemberTeamListDto> getTeamList(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Long memberId = customUserDetails.getId();
+        MemberTeamListDto teamList = teamMemberService.getAllGroupsByMemberId(memberId);
+        return ResponseEntity.ok(teamList);
     }
 
 }

@@ -1,8 +1,10 @@
 package com.nyam.everyday.web.member.controller;
 
 import com.nyam.everyday.module.member.service.MemberService;
+import com.nyam.everyday.module.team.service.TeamMemberService;
 import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.web.member.dto.MemberDto;
+import com.nyam.everyday.web.team.dto.MemberTeamListDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MemberController {
 
   private final MemberService memberService;
-
+  private final TeamMemberService teamMemberService;
 
   @GetMapping("/{id}")
   @Operation(summary = "회원 정보", description = "회원의 정보를 조회합니다.")
