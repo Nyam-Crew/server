@@ -2,6 +2,7 @@ package com.nyam.everyday.module.team.entity;
 
 import com.nyam.everyday.common.entity.BaseCreatedEntity;
 import com.nyam.everyday.module.member.entity.Member;
+import com.nyam.everyday.module.team.enums.TeamNotificationType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,6 +43,6 @@ public class TeamNotification extends BaseCreatedEntity {
     private Member member;
 
     @Column(name = "notification_type", nullable = false)
-    private String notificationType;
+    private TeamNotificationType notificationType;
 
 }

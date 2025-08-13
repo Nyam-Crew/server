@@ -1,5 +1,6 @@
 package com.nyam.everyday.web.team.dto;
 
+import com.nyam.everyday.module.team.enums.ActivityType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -17,10 +18,10 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamActivityFeedDto{
+public class TeamActivityFeedItem{
 
     @Schema(name = "피드 ID", example = "실시간 피드 ID")
-    private Long feedId;
+    private String feedId;//Redis만 활용해서 UUID로 ID 생성 예정
 
     @Schema(description = "그룹 ID", example = "ssj@naver.com")
     private Long teamId;
@@ -29,11 +30,11 @@ public class TeamActivityFeedDto{
     private Long memberId;
 
     @Schema(description = "활동 타입", example = "ssj@naver.com")
-    private String activityType;
+    private ActivityType activityType;
 
     @Schema(description = "활동 내용", example = "ssj@naver.com")
     private String activityContent;
 
-    @Schema(name = "", example = "")
+    @Schema(name = "피드 생성 시간")
     private LocalDateTime feedCreatedDate;
 }
