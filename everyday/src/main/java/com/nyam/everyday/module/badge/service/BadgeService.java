@@ -13,11 +13,13 @@ import com.nyam.everyday.module.badge.repository.MemberBadgeStatusRepository;
 import com.nyam.everyday.module.badge.dto.OwnedBadgeDto;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
+import com.nyam.everyday.web.badge.dto.AssignBadgeRequestDto;
 import com.nyam.everyday.web.badge.dto.BadgeDto;
 import com.nyam.everyday.web.badge.dto.BadgeOwnershipDto;
 import com.nyam.everyday.web.badge.mapper.BadgeMapper;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -62,15 +65,15 @@ public class BadgeService {
      * 회원에게 뱃지를 부여합니다.
      */
     @Transactional
-    public void assignBadgeToMember(Long memberId, Long badgeId) {
+    public void assignBadgeToMember(Long memberId, AssignBadgeRequestDto requestDto) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "memberId : " + memberId + "에 해당하는 사용자가 없습니다."));
-        Badge badge = badgeRepository.findById(badgeId)
-                .orElseThrow(() -> new IllegalArgumentException("해당하는 뱃지가 없습니다."));
+        Badge badge = badgeRepository.findById(requestDto.getBadgeId())
+                .orElseThrow(() -> new BaseException(ErrorCode.BADGE_NOT_FOUND));
 
         // 이미 뱃지를 가지고 있는지 확인
         memberBadgeStatusRepository.findByMemberAndBadge(member, badge).ifPresent(mb -> {
-            throw new IllegalStateException("해당 멤버가 이미 뱃지를 보유하고 있습니다.");
+            throw new BaseException(ErrorCode.ALREADY_ASSIGN_BADGE);
         });
 
         MemberBadgeStatus memberBadgeStatus = new MemberBadgeStatus(member, badge);
@@ -81,11 +84,13 @@ public class BadgeService {
 
     /** 현재 로그인한 사용자가 보유한 뱃지 여부 isOwned 가 표시된 badge 페이징 호출 */
     public Page<BadgeOwnershipDto> getBadgeListWithOwnership(Pageable pageable, Long currentUserId) {
+        // 1. badge 모든 목록 호출
         Page<Badge> badgePage = badgeRepository.findAll(pageable);
-        List<Long> pageIds = badgePage.getContent().stream().map(Badge::getId).toList();
+        List<Long> badgeIds = badgePage.getContent().stream().map(Badge::getId).toList();
 
+        // 2. 로그인한 사용자가 보유하고 있는 뱃지 정보 추가
         Map<Long, LocalDateTime> ownedMap = memberBadgeStatusRepository
-            .findOwnedBadgeProjections(currentUserId, pageIds).stream()
+            .findOwnedBadgeProjections(currentUserId, badgeIds).stream()
             .collect(Collectors.toMap(OwnedBadgeDto::getBadgeId, OwnedBadgeDto::getAcquiredAt));
 
         return badgePage.map(b ->
