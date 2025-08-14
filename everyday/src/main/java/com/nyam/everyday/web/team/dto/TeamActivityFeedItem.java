@@ -7,7 +7,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 /**
- * 그룹 실시간 현황 DTO
+ * 그룹 실시간 피드 DTO
  *
  * @author : 이지은
  * @fileName : TeamActivityFeedDTO

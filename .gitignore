@@ -40,6 +40,8 @@ nbdist/
 ### Docker Volumes ###
 Data/volumes/
 Data/volumes/*
+Infra/volumes
+Infra/volumes/*
 
 ### etc ###
 .env

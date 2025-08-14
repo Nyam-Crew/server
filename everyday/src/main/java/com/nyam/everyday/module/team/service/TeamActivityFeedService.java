@@ -1,5 +1,6 @@
 package com.nyam.everyday.module.team.service;
 
+import com.nyam.everyday.module.team.enums.ActivityType;
 import com.nyam.everyday.web.team.dto.TeamActivityFeedItem;
 
 import java.time.Instant;
@@ -27,7 +28,7 @@ public interface TeamActivityFeedService {
      * @param message       본문(상세) - 프론트 렌더링용
      * @param payload       추가 데이터(선택; MVP에서는 저장/송신 생략 가능)
      */
-    void record(Long teamId, Long actorMemberId, String type,
+    void record(Long teamId, Long actorMemberId, ActivityType type,
                 String title, String message, Map<String, Object> payload);
 
     /** 최근 N개 */
