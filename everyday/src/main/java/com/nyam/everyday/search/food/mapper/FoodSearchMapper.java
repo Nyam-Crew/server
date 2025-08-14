@@ -1,7 +1,7 @@
-package com.nyam.everyday.search.mapper;
+package com.nyam.everyday.search.food.mapper;
 
 import com.nyam.everyday.module.food.entity.Food;
-import com.nyam.everyday.search.document.FoodDocument;
+import com.nyam.everyday.search.food.document.FoodDocument;
 import org.mapstruct.*;
 
 /**

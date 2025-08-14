@@ -1,6 +1,6 @@
-package com.nyam.everyday.search.service;
+package com.nyam.everyday.search.food.service;
 
-import com.nyam.everyday.search.document.FoodDocument;
+import com.nyam.everyday.search.food.document.FoodDocument;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.stereotype.Service;
