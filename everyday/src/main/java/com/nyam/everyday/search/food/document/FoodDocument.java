@@ -1,4 +1,4 @@
-package com.nyam.everyday.search.document;
+package com.nyam.everyday.search.food.document;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;

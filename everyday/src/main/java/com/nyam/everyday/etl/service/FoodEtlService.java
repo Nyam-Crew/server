@@ -18,8 +18,8 @@ import com.nyam.everyday.module.food.entity.Food;
 import com.nyam.everyday.module.food.entity.NutritionDetail;
 import com.nyam.everyday.module.food.repository.FoodRepository;
 import com.nyam.everyday.module.food.repository.NutritionDetailRepository;
-import com.nyam.everyday.search.service.FoodSearchIndexer;
-import com.nyam.everyday.search.mapper.FoodSearchMapper;
+import com.nyam.everyday.search.food.service.FoodSearchIndexer;
+import com.nyam.everyday.search.food.mapper.FoodSearchMapper;
 
 
 /**

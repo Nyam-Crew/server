@@ -1,6 +1,6 @@
 package com.nyam.everyday.search.bootstrap;
 
-import com.nyam.everyday.search.document.FoodDocument;
+import com.nyam.everyday.search.food.document.FoodDocument;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;

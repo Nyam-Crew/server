@@ -1,6 +1,6 @@
-package com.nyam.everyday.search.repository;
+package com.nyam.everyday.search.food.repository;
 
-import com.nyam.everyday.search.document.FoodDocument;
+import com.nyam.everyday.search.food.document.FoodDocument;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 /**
