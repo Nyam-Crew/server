@@ -1,4 +1,4 @@
-package com.nyam.everyday.redis;
+package com.nyam.everyday.redis.config;
 
 
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,6 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int port;
 
-
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
@@ -36,6 +35,5 @@ public class RedisConfig {
         template.setConnectionFactory(connectionFactory);
         return template;
     }
-
 
 }
