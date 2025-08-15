@@ -3,11 +3,11 @@ package com.nyam.everyday.web.member.controller;
 import com.nyam.everyday.common.dto.CustomPageResponseDto;
 import com.nyam.everyday.module.badge.service.BadgeService;
 import com.nyam.everyday.module.member.service.MemberService;
-import com.nyam.everyday.module.team.service.TeamMemberService;
 import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.web.badge.dto.AssignBadgeRequestDto;
 import com.nyam.everyday.web.badge.dto.BadgeOwnershipDto;
-import com.nyam.everyday.web.member.dto.MemberDto;
+import com.nyam.everyday.web.member.dto.MemberRequestDto;
+import com.nyam.everyday.web.member.dto.MemberResponseDto;
 import com.nyam.everyday.web.member.dto.NicknameDuplicationResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,14 +39,14 @@ public class MemberController {
 
   @GetMapping("/{memberId}")
   @Operation(summary = "회원 정보", description = "회원의 정보를 조회합니다.")
-  public ResponseEntity<MemberDto> getMember(@PathVariable Long memberId) {
-    MemberDto memberDto = memberService.getMemberById(memberId);
-    return ResponseEntity.ok(memberDto);
+  public ResponseEntity<MemberResponseDto> getMember(@PathVariable Long memberId) {
+    MemberResponseDto memberResponseDto = memberService.getMemberById(memberId);
+    return ResponseEntity.ok(memberResponseDto);
   }
 
   @GetMapping("/me")
   @Operation(summary = "로그인한 회원 정보", description = "로그인한 회원의 정보를 조회합니다.")
-  public ResponseEntity<MemberDto> getMember(@AuthenticationPrincipal CustomUserDetails userDetails) {
+  public ResponseEntity<MemberResponseDto> getMember(@AuthenticationPrincipal CustomUserDetails userDetails) {
     Long id = userDetails.getId();
     log.info("[getMember] memberId : {}", id);
     return ResponseEntity.ok(memberService.getMemberById(id));
@@ -54,15 +54,15 @@ public class MemberController {
 
   @PostMapping
   @Operation(summary = "회원 추가", description = "회원을 신규 추가합니다.")
-  public ResponseEntity<MemberDto> create(@RequestBody MemberDto dto) {
-    MemberDto saved = memberService.create(dto);
+  public ResponseEntity<MemberResponseDto> create(@RequestBody MemberRequestDto dto) {
+    MemberResponseDto saved = memberService.create(dto);
     return ResponseEntity.ok(saved);
   }
 
   @PutMapping("/{memberId}")
   @Operation(summary = "회원 정보 수정", description = "회원 정보를 수정합니다.")
-  public ResponseEntity<MemberDto> update(@PathVariable Long memberId, @RequestBody MemberDto dto) {
-    MemberDto updated = memberService.update(memberId, dto);
+  public ResponseEntity<MemberResponseDto> update(@PathVariable Long memberId, @RequestBody MemberRequestDto dto) {
+    MemberResponseDto updated = memberService.update(memberId, dto);
     return ResponseEntity.ok(updated);
   }
 

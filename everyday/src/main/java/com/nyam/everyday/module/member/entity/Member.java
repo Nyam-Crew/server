@@ -80,10 +80,6 @@ public class Member extends BaseEntity {
   @Column
   private int age = 0;
 
-  @Comment("기초대사량") // BMR
-  @Column
-  private int basalMetabolicRate;
-
   @Comment("권한")
   @Builder.Default
   @Enumerated(EnumType.STRING)

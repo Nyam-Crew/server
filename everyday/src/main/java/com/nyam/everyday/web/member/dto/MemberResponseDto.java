@@ -1,7 +1,7 @@
 package com.nyam.everyday.web.member.dto;
 
-
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,13 +14,13 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "회원 정보")
-public class MemberDto {
+public class MemberResponseDto {
 
   @Schema(description = "아이디")
   private Long memberId;
-
+/*
   @Schema(description = "회원아이디") //@kakao
-  private String providerId;
+  private String providerId;*/
 
   @Schema(description = "회원 닉네임")
   private String nickname;
@@ -38,25 +38,25 @@ public class MemberDto {
   private String gender;
 
   @Schema(description = "회원 키")
-  private float height;
+  private BigDecimal height;
 
   @Schema(description = "회원 몸무게")
-  private float weight;
+  private BigDecimal weight;
 
   @Schema(description = "회원 나이")
   private int age;
 
-  @Schema(description = "기초대사량", nullable = true)
-  private int basalMetabolicRate;
+  @Schema(description = "체질량지수")
+  private BigDecimal bmi;
+
+  @Schema(description = "기초대사량")
+  private BigDecimal bmr;
+
+  @Schema(description = "총 일일 에너지 소비량")
+  private BigDecimal tdee;
 
   @Schema(description = "활동레벨")
   private String activityLevel;
-
-  @Schema(description = "총 일일 에너지 소비량" , nullable = true)
-  private String tdee;
-
-  @Schema(description = "BMI" , nullable = true)
-  private String bmi;
 
   @Schema(description = "회원상태")
   private String memberStatus;
