@@ -7,13 +7,17 @@ import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.module.team.enums.ParticipationStatus;
 import com.nyam.everyday.module.team.repository.TeamMemberStatusRepository;
+import com.nyam.everyday.redis.service.ChatHistoryCacheService;
 import com.nyam.everyday.web.chatting.dto.ChatMessageBroadcastDto;
 import com.nyam.everyday.web.chatting.dto.ChatMessageSaveRequest;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChatMessageService {
 
   private final ChatMessageRepository chatMessageRepository;
+  private final ChatHistoryCacheService chatHistoryCacheService;
   private final TeamMemberStatusRepository teamMemberStatusRepository;
   private final SimpMessagingTemplate simpMessagingTemplate;
   private final MemberRepository memberRepository;
@@ -33,10 +38,10 @@ public class ChatMessageService {
   // 메세지가 전송되었을 때 처리하기 위한 메서드
   public void handleMessage(ChatMessageSaveRequest request, Long memberId) {
     // 보낸 멤버 정보를 가져오고, 없으면 에러
-    log.info("[handleMessage] : 메세지 수신");
+//    log.info("[handleMessage] : 메세지 수신");
     Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> BaseException.MEMBER_NOT_FOUND);
 
-    log.info("[handleMessage] : 보낸 유저는 {}, 방 번호는 {}", member.getNickname(), request.getRoomId());
+//    log.info("[handleMessage] : 보낸 유저는 {}, 방 번호는 {}", member.getNickname(), request.getRoomId());
 
     // 저장을 위한 정보 저장
     ChatMessage chatMessage = ChatMessage.builder()
@@ -52,50 +57,95 @@ public class ChatMessageService {
     // ChatMessage result = chatMessageRepository.save(chatMessage);
     log.info("[handleMessage] : 메세지 MongoDB에 저장 완료");
 
-    // redis 캐시 갱신 (20개만 남게)₩
 
-    // 저장 후에 Broadcast를 위한 자료형 준비
-    ChatMessageBroadcastDto broadcast = ChatMessageBroadcastDto.builder()
-        .messageId(saved.getMessageId())
-        .senderId(saved.getMemberId())
-        .sender(saved.getNickname())
-        .content(saved.getContent())
-        .timestamp(saved.getTimestamp())
-        .build();
+    // 저장 후에 Broadcast를 위해 dto로 매핑
+    ChatMessageBroadcastDto broadcast = ChatMessageBroadcastDto.of(saved);
+
+    // redis 캐시 갱신 (20개만 남게)
+    log.info("Redis 캐시 갱신 완료");
+    chatHistoryCacheService.addMessage(request.getRoomId(), broadcast);
 
     // Broadcast 수행
     simpMessagingTemplate.convertAndSend("/topic/chat/" + request.getRoomId(), broadcast);
     log.info("[handleMessage] : Broadcast 완료");
   }
 
-  // 내가 보낸 메세지 리스트를 얻기 위한 메서드
-  public List<ChatMessage> getMyMessages(Long memberId) {
-    return chatMessageRepository.findAllByMemberId(memberId);
-  }
-
-  // 특정 채팅방의 메세지 히스토리 받아오기
+  // 특정 채팅방에 처음 접속했을 때 사용한다. 첫 20개를 불러옴.
+  // Redis에 먼저 가서 값을 찾고, 없다면 MongoDB에서 가져와서 캐싱한다
   @Transactional(readOnly = true)
   public List<ChatMessageBroadcastDto> getMessageHistory(Long memberId, Long roomId) {
      // 여기서 이 유저가 채팅방에 접근할 권한 있는지 체크
-    if (!teamMemberStatusRepository.existsByTeam_TeamIdAndMember_MemberIdAndStatus(roomId, memberId,
-        ParticipationStatus.APPROVED)) {
-      log.info("{} 멤버는 {}번 채팅방의 내용에 접근할 수 없습니다", memberId, roomId);
-      throw BaseException.ACCESS_DENIED;
-    }
+//    this.authCheck(memberId,  roomId);
 
     // Redis에 저장된 값 있는지 체크
+    List<ChatMessageBroadcastDto> messages = chatHistoryCacheService.getMessages(roomId);
+    // Redis에서 뭔가 불러오는 데에 성공했다면, 그대로 반환
+    if (!messages.isEmpty()) {
+      log.info("Redis에 값이 존재해서 그대로 반환");
+      return messages;
+    }
 
-    List<ChatMessage> messages = chatMessageRepository.findAllByRoomId(roomId);
+    // Redis에 값이 없다면, Mongo에서 불러와야 한다
+    Query q = new Query();
+    // roomId값이 입력된 roomId와 같은 값들을 가져온다.
+    q.addCriteria(Criteria.where("roomId").is(roomId));
+    // 최대 20개 뽑으며, 정렬기준은 timestamp의 내림차순
+    q.limit(20).with(Sort.by(Sort.Direction.DESC, "timestamp"));
+    // ChatMessage 클래스를 지정해줌으로써 어떤 컬렉션에서 가져올 지 정해준다.
+    List<ChatMessage> result_mongo = mongoTemplate.find(q, ChatMessage.class);
+
+    // 저장할 배열 생성
     List<ChatMessageBroadcastDto> result = new ArrayList<>();
 
-    // 리스트화해서 반환
-    for (ChatMessage chatMessage : messages) {
+    // 각 값을 ChatMessage -> ChatMessageBroadCastDto로 변경
+    for (ChatMessage chatMessage : result_mongo) {
+      // Redis 캐시에 값 추가
+      chatHistoryCacheService.addMessage(roomId, ChatMessageBroadcastDto.of(chatMessage));
+
+      // 반환하기 위해 result에 추가
+      result.add(ChatMessageBroadcastDto.of(chatMessage));
+    }
+
+    log.info("Redis에 캐싱되어있지 않아 저장하고 결과 반환");
+
+    // 결과 반환
+    return result;
+  }
+
+  @Transactional(readOnly = true)
+  public List<ChatMessageBroadcastDto> getAllMessageHistory(Long memberId, Long roomId) {
+    // 여기서 이 유저가 채팅방에 접근할 권한 있는지 체크
+//    this.authCheck(memberId,  roomId);
+
+    // 저장할 배열 생성
+    List<ChatMessageBroadcastDto> result = new ArrayList<>();
+
+    // Mongo에서 값 불러오기
+    Query q = new Query();
+    q.addCriteria(Criteria.where("roomId").is(roomId));
+    q.with(Sort.by(Sort.Direction.DESC, "timestamp"));
+    List<ChatMessage> result_mongo = mongoTemplate.find(q, ChatMessage.class);
+
+    // 각 값을 ChatMessage -> ChatMessageBroadCastDto로 변경
+    for (ChatMessage chatMessage : result_mongo) {
+      // Redis 캐시에 값 추가
+      chatHistoryCacheService.addMessage(roomId, ChatMessageBroadcastDto.of(chatMessage));
+
+      // 반환하기 위해 result에 추가
       result.add(ChatMessageBroadcastDto.of(chatMessage));
       log.info("{}가 result에 더해짐", chatMessage);
     }
 
-
-    log.info("[ChatMessageService] - getMessageHistory : 반환 결과는 {}", result);
+    // 결과 반환
     return result;
   }
+
+  // 특정 채팅방에 유저가 접근할 권한이 있는지 확인한다.
+  private void authCheck(Long memberId, Long roomId) {
+    if (!teamMemberStatusRepository.existsByTeam_TeamIdAndMember_MemberIdAndStatus(roomId, memberId, ParticipationStatus.APPROVED)) {
+      log.info("{} 멤버는 {}번 채팅방의 내용에 접근할 수 없습니다", memberId, roomId);
+      throw BaseException.ACCESS_DENIED;
+    }
+  }
 }
+
