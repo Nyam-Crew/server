@@ -1,6 +1,5 @@
 package com.nyam.everyday.web.chatting.controller;
 
-import com.nyam.everyday.module.chatting.chatmessage.mongo.entity.ChatMessage;
 import com.nyam.everyday.module.chatting.chatmessage.service.ChatMessageService;
 import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.web.chatting.dto.ChatMessageBroadcastDto;
@@ -9,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,20 +34,23 @@ public class ChatMessageController {
     chatMessageService.handleMessage(request, memberId);
   }
 
-  @GetMapping("/history/me")
-  @Operation(summary = "내가 보냈던 메세지 목록 확인하기")
-  public List<ChatMessage> getMyMessages(
-      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-    Long memberId = customUserDetails.getId();
-    return chatMessageService.getMyMessages(memberId);
-  }
-
   @GetMapping("/history/{roomId}")
   @Operation(summary = "특정 채팅방의 과거 메세지 불러오기")
-  public List<ChatMessageBroadcastDto> getMessageHistory(@PathVariable("roomId") Long roomId,
+  public ResponseEntity<List<ChatMessageBroadcastDto>> getMessageHistory(
+      @PathVariable("roomId") Long roomId,
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
     Long memberId = customUserDetails.getId();
 
-    return chatMessageService.getMessageHistory(memberId, roomId);
+    return ResponseEntity.ok(chatMessageService.getMessageHistory(memberId, roomId));
+  }
+
+  @GetMapping("/history/{roomId}/all")
+  @Operation(summary = "특정 채팅방에 과거 메세지 전체 불러오기")
+  public ResponseEntity<List<ChatMessageBroadcastDto>> getAllMessageHistory(
+      @PathVariable("roomId") Long roomId,
+      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    Long memberId = customUserDetails.getId();
+
+    return ResponseEntity.ok(chatMessageService.getAllMessageHistory(memberId, roomId));
   }
 }
