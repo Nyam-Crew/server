@@ -11,6 +11,6 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
  * @since : 25. 8. 13.
  */
 
-public interface FoodSearchRepository extends ElasticsearchRepository<FoodDocument, String> {
-
+public interface FoodSearchRepository extends ElasticsearchRepository<FoodDocument, String>, FoodSearchRepositoryCustom {
+    // 필요하면 메소드 쿼리 추가 가능
 }

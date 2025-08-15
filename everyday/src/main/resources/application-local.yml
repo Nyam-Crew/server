@@ -106,3 +106,5 @@ openapi:
     base-url: http://api.data.go.kr/openapi/tn_pubr_public_nutri_process_info_api
     service-key: ${NUTRI_API_KEY}   # 환경변수에서 주입
     default-page-size: 100
+    connect-timeout: 5s
+    read-timeout: 120s

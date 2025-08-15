@@ -10,12 +10,11 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
  * @fileName : ElasticsearchConfig
  * @since : 25. 8. 13.
  *
- * - spring.elasticsearch.* 설정은 application-*.yml 에서 자동 바인딩되고,
- *   여기서는 ES Repository 스캔만 활성화합니다.
+ * 이미 Spring Boot auto-config + @Document를 쓰고 있으면 없어도 동작하지만, 리포지토리 스캔 경로를 명확히 해두면 안전함
  *
  */
 
 @Configuration
-@EnableElasticsearchRepositories(basePackages = "com.nyam.everyday.search.repository")
+@EnableElasticsearchRepositories(basePackages = "com.nyam.everyday.search")
 public class ElasticsearchConfig {
 }

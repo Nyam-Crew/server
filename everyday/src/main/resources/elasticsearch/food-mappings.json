@@ -4,11 +4,25 @@
       "type": "text",
       "analyzer": "korean_search",
       "search_analyzer": "korean_search",
+      "copy_to": ["all_search"],
+      "fields": { "keyword": { "type": "keyword" } }
+    },
+    "manufacturer": {
+      "type": "keyword",
       "fields": {
-        "keyword": { "type": "keyword" }
+        "search": {
+          "type": "text",
+          "analyzer": "korean_search",
+          "search_analyzer": "korean_search",
+          "copy_to": ["all_search"]
+        }
       }
     },
-    "manufacturer": { "type": "keyword" },
+    "all_search": {
+      "type": "text",
+      "analyzer": "korean_search",
+      "search_analyzer": "korean_search"
+    },
     "unitKcal": { "type": "double" },
     "unitGram": { "type": "long" },
     "foodSize": { "type": "integer" }
