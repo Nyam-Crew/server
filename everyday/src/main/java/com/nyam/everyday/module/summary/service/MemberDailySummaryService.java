@@ -33,7 +33,6 @@ public class MemberDailySummaryService{
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1).minusNanos(1);
 
-        // 회원 엔티티 조회 (체중 정보 얻기 위해)
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
 
@@ -42,7 +41,7 @@ public class MemberDailySummaryService{
                 .orElseGet(() -> {
                     MemberDailySummary newSummary = new MemberDailySummary();
                     newSummary.setMember(member);
-                    newSummary.setWeight(member.getWeight()); // 회원 체중 넣기
+                    newSummary.setWeight(BigDecimal.valueOf(0));
                     newSummary.setTotalWater(0);
                     newSummary.setTotalProtein(0);
                     newSummary.setTotalCarbohydrate(0);
@@ -87,9 +86,6 @@ public class MemberDailySummaryService{
         summary.setModifiedDate(LocalDateTime.now());
 
         summaryRepository.save(summary);
-
-        member.setWeight(BigDecimal.valueOf(weight));
-        memberRepository.save(member);
     }
 
 }
