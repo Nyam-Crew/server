@@ -13,6 +13,8 @@ import com.nyam.everyday.module.badge.repository.MemberBadgeStatusRepository;
 import com.nyam.everyday.module.badge.dto.OwnedBadgeDto;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
+import com.nyam.everyday.module.scorelog.entity.SourceType;
+import com.nyam.everyday.module.scorelog.service.ScoreLogService;
 import com.nyam.everyday.web.badge.dto.AssignBadgeRequestDto;
 import com.nyam.everyday.web.badge.dto.BadgeDto;
 import com.nyam.everyday.web.badge.dto.BadgeOwnershipDto;
@@ -38,6 +40,7 @@ public class BadgeService {
     private final BadgeRepository badgeRepository;
     private final MemberBadgeStatusRepository memberBadgeStatusRepository;
     private final MemberRepository memberRepository;
+    private final ScoreLogService scoreLogService;
 
     private final AwsS3Service awsS3Service;
     private final BadgeMapper badgeMapper;
@@ -62,7 +65,7 @@ public class BadgeService {
     }
 
     /**
-     * 회원에게 뱃지를 부여합니다.
+     * 회원에게 뱃지를 부여하고, 뱃지 타입에 따라 점수를 지급합니다.
      */
     @Transactional
     public void assignBadgeToMember(Long memberId, AssignBadgeRequestDto requestDto) {
@@ -78,6 +81,14 @@ public class BadgeService {
 
         MemberBadgeStatus memberBadgeStatus = new MemberBadgeStatus(member, badge);
         memberBadgeStatusRepository.save(memberBadgeStatus);
+
+        // 뱃지 타입에 연결된 점수 가져오기
+        int score = badge.getBadgeType().getScore();
+
+        // 점수가 0보다 클 경우에만 ScoreLog 생성
+        if (score > 0) {
+            scoreLogService.createScoreLog(member, (long) score, SourceType.BADGE_REWARD);
+        }
     }
 
 
