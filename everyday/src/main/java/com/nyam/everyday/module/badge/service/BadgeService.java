@@ -16,7 +16,8 @@ import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.module.scorelog.entity.SourceType;
 import com.nyam.everyday.module.scorelog.service.ScoreLogService;
 import com.nyam.everyday.web.badge.dto.AssignBadgeRequestDto;
-import com.nyam.everyday.web.badge.dto.BadgeDto;
+import com.nyam.everyday.web.badge.dto.BadgeCreateRequestDto;
+import com.nyam.everyday.web.badge.dto.BadgeResponseDto;
 import com.nyam.everyday.web.badge.dto.BadgeOwnershipDto;
 import com.nyam.everyday.web.badge.mapper.BadgeMapper;
 import java.time.LocalDateTime;
@@ -30,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -49,15 +51,24 @@ public class BadgeService {
      * 새로운 뱃지를 생성합니다.
      */
     @Transactional
-    public BadgeDto createBadge(BadgeDto badgeDto) {
+    public BadgeResponseDto createBadge(BadgeCreateRequestDto badgeDto, MultipartFile badgeImageFile) {
         Badge badge = new Badge();
         badge.setName(badgeDto.getName());
         badge.setDescription(badgeDto.getDescription());
-        if (badgeDto.getBadgeImage() != null) {
-            AwsS3Response newS3Url = awsS3Service.uploadFile(badgeDto.getBadgeImageFile());
+        if (badgeDto.getBadgeType() != null) {
+            badge.setBadgeType(badgeDto.getBadgeType());
+        }
+
+        if (badgeImageFile!= null
+            && !badgeImageFile.getOriginalFilename().isBlank()
+            && badgeImageFile.getOriginalFilename().contains(".")) {
+            AwsS3Response newS3Url = awsS3Service.uploadFile(badgeImageFile);
             badge.setBadgeImage(newS3Url.getUrl());
+            log.info("badgeImageFile.getOriginalFilename() : {ß}" , badgeImageFile.getOriginalFilename());
+            log.info("badgeImageFile is MultipartFile : {}" , newS3Url.getUrl());
         } else {
             badge.setBadgeImage(DEFAULT_BADGE_IMAGE.getValue());
+            log.info("badgeImageFile is null");
         }
         badgeRepository.save(badge);
 

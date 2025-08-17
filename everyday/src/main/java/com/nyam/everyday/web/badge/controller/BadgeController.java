@@ -1,13 +1,25 @@
 package com.nyam.everyday.web.badge.controller;
 
 import com.nyam.everyday.module.badge.service.BadgeService;
-import com.nyam.everyday.web.badge.dto.BadgeDto;
+import com.nyam.everyday.web.badge.dto.BadgeCreateRequestDto;
+import com.nyam.everyday.web.badge.dto.BadgeResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Tag(name = "Badge-Controller", description = "뱃지 관리")
@@ -18,20 +30,39 @@ public class BadgeController {
 
     private final BadgeService badgeService;
 
-    @PostMapping
-    @Operation(summary = "뱃지 생성", description = "새로운 뱃지를 생성합니다.")
-    public ResponseEntity<BadgeDto> createBadge (@RequestBody BadgeDto badgeDto) {
-        return ResponseEntity.ok(badgeService.createBadge(badgeDto));
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+        summary = "뱃지 생성",
+        requestBody = @RequestBody(
+            description = "뱃지 정보(json)와 이미지 파일(선택)",
+            required = true,
+            content = @Content(
+                mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                encoding = {
+                    @Encoding(name = "request", contentType = MediaType.APPLICATION_JSON_VALUE),
+                    @Encoding(name = "file", contentType = "image/png")
+                }
+            )
+        )
+    )
+    public ResponseEntity<BadgeResponseDto> createBadge(
+        @RequestPart("request")
+        @Parameter(
+            description = "뱃지 생성 정보(json)",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
+        )
+        BadgeCreateRequestDto request,
+        @RequestPart(value = "file", required = false) MultipartFile file) {
+
+        return ResponseEntity.ok(badgeService.createBadge(request, file));
     }
 
     @DeleteMapping("/{badgeId}")
     @Operation(summary = "뱃지 삭제", description = "지정된 ID의 뱃지를 삭제합니다.")
-    public ResponseEntity<Void> deleteBadge (@PathVariable Long badgeId) {
+    public ResponseEntity<Void> deleteBadge(@PathVariable Long badgeId) {
         log.info("[deleteBadge] badgeId: {}", badgeId);
         badgeService.deleteBadge(badgeId);
         return ResponseEntity.ok().build();
     }
-
-
 }
 
