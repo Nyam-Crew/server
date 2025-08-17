@@ -27,7 +27,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 @RequiredArgsConstructor
 @RequestMapping("/api/food/search")
 @Validated
-@Tag(name = "Food Search", description = "식품 검색 및 자동완성 API")
+@Tag(name = "Food-Search-Controller", description = "식품 검색 및 자동완성 API")
 public class FoodSearchController {
 
     private static final int MAX_PAGE_SIZE = 50;
