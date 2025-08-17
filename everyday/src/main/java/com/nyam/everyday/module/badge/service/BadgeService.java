@@ -13,8 +13,11 @@ import com.nyam.everyday.module.badge.repository.MemberBadgeStatusRepository;
 import com.nyam.everyday.module.badge.dto.OwnedBadgeDto;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
+import com.nyam.everyday.module.scorelog.entity.SourceType;
+import com.nyam.everyday.module.scorelog.service.ScoreLogService;
 import com.nyam.everyday.web.badge.dto.AssignBadgeRequestDto;
-import com.nyam.everyday.web.badge.dto.BadgeDto;
+import com.nyam.everyday.web.badge.dto.BadgeCreateRequestDto;
+import com.nyam.everyday.web.badge.dto.BadgeResponseDto;
 import com.nyam.everyday.web.badge.dto.BadgeOwnershipDto;
 import com.nyam.everyday.web.badge.mapper.BadgeMapper;
 import java.time.LocalDateTime;
@@ -28,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -38,6 +42,7 @@ public class BadgeService {
     private final BadgeRepository badgeRepository;
     private final MemberBadgeStatusRepository memberBadgeStatusRepository;
     private final MemberRepository memberRepository;
+    private final ScoreLogService scoreLogService;
 
     private final AwsS3Service awsS3Service;
     private final BadgeMapper badgeMapper;
@@ -46,15 +51,24 @@ public class BadgeService {
      * 새로운 뱃지를 생성합니다.
      */
     @Transactional
-    public BadgeDto createBadge(BadgeDto badgeDto) {
+    public BadgeResponseDto createBadge(BadgeCreateRequestDto badgeDto, MultipartFile badgeImageFile) {
         Badge badge = new Badge();
         badge.setName(badgeDto.getName());
         badge.setDescription(badgeDto.getDescription());
-        if (badgeDto.getBadgeImage() != null) {
-            AwsS3Response newS3Url = awsS3Service.uploadFile(badgeDto.getBadgeImageFile());
+        if (badgeDto.getBadgeType() != null) {
+            badge.setBadgeType(badgeDto.getBadgeType());
+        }
+
+        if (badgeImageFile!= null
+            && !badgeImageFile.getOriginalFilename().isBlank()
+            && badgeImageFile.getOriginalFilename().contains(".")) {
+            AwsS3Response newS3Url = awsS3Service.uploadFile(badgeImageFile);
             badge.setBadgeImage(newS3Url.getUrl());
+            log.info("badgeImageFile.getOriginalFilename() : {ß}" , badgeImageFile.getOriginalFilename());
+            log.info("badgeImageFile is MultipartFile : {}" , newS3Url.getUrl());
         } else {
             badge.setBadgeImage(DEFAULT_BADGE_IMAGE.getValue());
+            log.info("badgeImageFile is null");
         }
         badgeRepository.save(badge);
 
@@ -62,7 +76,7 @@ public class BadgeService {
     }
 
     /**
-     * 회원에게 뱃지를 부여합니다.
+     * 회원에게 뱃지를 부여하고, 뱃지 타입에 따라 점수를 지급합니다.
      */
     @Transactional
     public void assignBadgeToMember(Long memberId, AssignBadgeRequestDto requestDto) {
@@ -78,6 +92,14 @@ public class BadgeService {
 
         MemberBadgeStatus memberBadgeStatus = new MemberBadgeStatus(member, badge);
         memberBadgeStatusRepository.save(memberBadgeStatus);
+
+        // 뱃지 타입에 연결된 점수 가져오기
+        int score = badge.getBadgeType().getScore();
+
+        // 점수가 0보다 클 경우에만 ScoreLog 생성
+        if (score > 0) {
+            scoreLogService.createScoreLog(member, (long) score, SourceType.BADGE_REWARD);
+        }
     }
 
 
