@@ -13,8 +13,7 @@ public class DailyMissionScheduler {
     private final MissionAssignmentService assignmentService;
 
     // 00:00 KST: 정리 + D+1 보정
-    //@Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
-    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     @SchedulerLock(name = "rolloverAndAssignNextDay",
             lockAtLeastFor = "PT30S", lockAtMostFor = "PT10M")
     public void rolloverAndAssign() {
