@@ -1,4 +1,4 @@
-package com.nyam.everyday.web.food;
+package com.nyam.everyday.web.food.controller;
 
 import com.nyam.everyday.search.food.dto.FoodSearchRequest;
 import com.nyam.everyday.search.food.dto.FoodSearchResponse;
