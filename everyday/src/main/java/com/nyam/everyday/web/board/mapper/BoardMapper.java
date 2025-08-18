@@ -3,6 +3,7 @@ package com.nyam.everyday.web.board.mapper;
 
 import com.nyam.everyday.module.board.entity.Board;
 import com.nyam.everyday.module.member.entity.Member;
+import com.nyam.everyday.web.board.dto.BoardPageDto;
 import com.nyam.everyday.web.board.dto.CreateBoardRequestDto;
 import com.nyam.everyday.web.board.dto.BoardResponseDto;
 import org.mapstruct.Mapper;
@@ -16,6 +17,7 @@ public interface BoardMapper {
 
 
   //Entity->DTO
+  @Mapping(target = "nickname",source = "member.nickname")//엔티티가 작성자 닉네임을 DTO로 맵핑
   BoardResponseDto toDto(Board entity);
 
 
@@ -41,6 +43,9 @@ public interface BoardMapper {
 
   })
   void modify(@MappingTarget Board entity, BoardResponseDto dto);
+
+  @Mapping(source = "member.nickname", target = "nickname")
+  BoardPageDto toPageDto(Board entity);
 
 
 }
