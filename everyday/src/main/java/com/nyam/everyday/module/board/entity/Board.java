@@ -2,6 +2,7 @@ package com.nyam.everyday.module.board.entity;
 
 import com.nyam.everyday.common.entity.BaseEntity;
 import com.nyam.everyday.module.boardComment.entity.BoardComment;
+import com.nyam.everyday.module.boardLike.entity.BoardLike;
 import com.nyam.everyday.module.bookmark.entity.Bookmark;
 import com.nyam.everyday.module.member.entity.Member;
 import jakarta.persistence.CascadeType;
@@ -20,12 +21,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Comment;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @Builder(toBuilder = true)
 public class Board extends BaseEntity {
 
@@ -49,11 +52,11 @@ public class Board extends BaseEntity {
 
   @Comment("조회수")
   @Column(nullable = false)
-  private Long viewCount;
+  private Long viewCount = 0L;
 
   @Comment("좋아요 수")
   @Column(nullable = false)
-  private Long likeCount;
+  private Long likeCount = 0L;
 
   @Comment("댓글 수")
   @Column(nullable = false)
@@ -71,10 +74,20 @@ public class Board extends BaseEntity {
   @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<BoardComment> boardComments = new ArrayList<>();
 
+
+  @Builder.Default
+  @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<BoardLike> boardLikes = new ArrayList<>();
+
   public void increaseCommentCount() {
     this.commentCount++;
   }
 
+  public void increaseViewCount() {this.viewCount++;}
+
+  public void updateLikeCount(long likeCount) {
+    this.likeCount = likeCount;
+  }
 
 }
 
