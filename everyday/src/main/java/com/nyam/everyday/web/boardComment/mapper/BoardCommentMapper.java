@@ -18,8 +18,8 @@ public interface BoardCommentMapper {
   @Mappings({
       @Mapping(target = "board",source = "board"),
       @Mapping(target = "member", source = "member"),
-      @Mapping(target = "createdDate",expression = "java(java.time.LocalDateTime.now())")
-
+      @Mapping(target = "parent",ignore = true),
+      @Mapping(target = "commentId",ignore = true),
   })
   BoardComment toEntity(CreateCommentRequestDto dto, Board board, Member member);
 
@@ -27,7 +27,10 @@ public interface BoardCommentMapper {
   @Mappings({
       @Mapping(source = "boardComment.board.boardId", target = "boardId"),
       @Mapping(source = "boardComment.member.memberId", target = "memberId"),
+      @Mapping(source = "boardComment.member.nickname",target = "nickname"),
       @Mapping(source = "boardComment.commentId", target = "commentId"),
+      @Mapping(source = "boardComment.content",target = "content"),
+      @Mapping(source = "boardComment.parent.commentId",target = "parentId"),
       @Mapping(source = "boardComment.createdDate", target = "createdDate")
   })
   CreateCommentResponseDto toResponseDto(BoardComment boardComment);
