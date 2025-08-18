@@ -1,6 +1,6 @@
 package com.nyam.everyday.web.ranking.controller;
 
-import com.nyam.everyday.module.scorelog.service.RankingService;
+import com.nyam.everyday.module.ranking.service.RankingService;
 import com.nyam.everyday.web.ranking.dto.RankingDto;
 import com.nyam.everyday.web.ranking.dto.TeamRankingDto;
 import io.swagger.v3.oas.annotations.Operation;

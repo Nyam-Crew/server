@@ -1,4 +1,4 @@
-package com.nyam.everyday.module.scorelog.service;
+package com.nyam.everyday.module.ranking.service;
 
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;

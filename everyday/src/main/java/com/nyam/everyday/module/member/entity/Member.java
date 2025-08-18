@@ -6,6 +6,8 @@ import com.nyam.everyday.module.badge.entity.MemberBadgeStatus;
 import com.nyam.everyday.module.board.entity.Board;
 import com.nyam.everyday.module.boardLike.entity.BoardLike;
 import com.nyam.everyday.module.bookmark.entity.Bookmark;
+import com.nyam.everyday.module.ranking.entity.MemberGlobalRanking;
+import com.nyam.everyday.module.ranking.entity.MemberTeamRanking;
 import com.nyam.everyday.module.scorelog.entity.ScoreLog;
 import com.nyam.everyday.security.core.Role;
 import jakarta.persistence.CascadeType;
@@ -140,4 +142,14 @@ public class Member extends BaseEntity {
   @Builder.Default
   @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<BoardLike> boardLikes = new ArrayList<>();
+
+  @Builder.Default
+  @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<MemberGlobalRanking> memberGlobalRanking = new ArrayList<>();
+
+  @Builder.Default
+  @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<MemberTeamRanking> memberTeamRanking = new ArrayList<>();
+
+
 }

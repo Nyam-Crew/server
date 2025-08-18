@@ -1,6 +1,7 @@
 package com.nyam.everyday.module.scorelog.service;
 
 import com.nyam.everyday.module.member.entity.Member;
+import com.nyam.everyday.module.ranking.service.RankingService;
 import com.nyam.everyday.module.scorelog.entity.ScoreLog;
 import com.nyam.everyday.module.scorelog.entity.SourceType;
 import com.nyam.everyday.module.scorelog.repository.ScoreLogRepository;

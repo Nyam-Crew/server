@@ -5,6 +5,7 @@ import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.common.exception.ErrorCode;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
+import com.nyam.everyday.module.ranking.repository.TeamGlobalRankingRepository;
 import com.nyam.everyday.module.team.enums.ParticipationStatus;
 import com.nyam.everyday.module.team.entity.Team;
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
