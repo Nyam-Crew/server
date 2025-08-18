@@ -1,4 +1,4 @@
-package com.nyam.everyday.web.boardComment.dto;
+package com.nyam.everyday.web.board.dto;
 
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -8,17 +8,17 @@ import lombok.NoArgsConstructor;
 
 @Builder
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
-public class CreateCommentResponseDto {
+@AllArgsConstructor
+public class BoardPageDto {
 
-  private Long commentId;
   private Long boardId;
-  private Long memberId;
-  private String content;
+  private String boardTitle;
   private String nickname;
-  private Long parentId;
+  private String boardType;
   private LocalDateTime createdDate;
-
+  private Long viewCount;
+  private Long commentCount;
+  private Long likeCount;
 
 }

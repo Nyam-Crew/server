@@ -24,4 +24,5 @@ public interface BookmarkRepository extends JpaRepository<Bookmark,Long> {
       countQuery = "SELECT count(b) FROM Bookmark b WHERE b.member = :member")
   Page<BookmarkAndBoardDto> findBookmarkedBoardsByMember(@Param("member") Member member, Pageable pageable);
 
+  long deleteByMemberAndBoard(Member member, Board board);
 }
