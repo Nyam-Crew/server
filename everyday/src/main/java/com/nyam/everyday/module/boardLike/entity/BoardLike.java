@@ -29,7 +29,8 @@ public class BoardLike extends BaseCreatedEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Comment("게시글 좋아요")
-  private Long board_like_id;
+  @Column(name = "board_like_id")
+  private Long boardLikeId;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "member_id",  nullable = false)
@@ -40,6 +41,5 @@ public class BoardLike extends BaseCreatedEntity {
   @JoinColumn(name = "board_id",  nullable = false)
   @Comment("게시글 아이디")
   private Board board;
-
 
 }
