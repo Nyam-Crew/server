@@ -35,8 +35,8 @@ public class TeamNoticeDto {
     private String content;
 
     @Schema(name = "그룹공지 생성 시간")
-    private LocalDateTime teamNoticeCreatedDate;
+    private LocalDateTime createdDate;
 
     @Schema(name = "그룹공지 수정 시간")
-    private LocalDateTime teamNoticeModifiedDate;
+    private LocalDateTime modifiedDate;
 }
