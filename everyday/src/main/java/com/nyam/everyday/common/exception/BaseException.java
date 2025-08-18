@@ -31,6 +31,9 @@ public class BaseException extends RuntimeException {
   public static final BaseException AWSS3_UPLOAD_ERROR =  new  BaseException(ErrorCode.AWSS3_UPLOAD_ERROR);
   public static final BaseException AWSS3_DELETE_ERROR = new  BaseException(ErrorCode.AWSS3_DELETE_ERROR);
   public static final BaseException BOARD_NOT_FOUND =  new BaseException(ErrorCode.BOARD_NOT_FOUND);
+  public static final BaseException ALREADY_LIKED  =  new BaseException(ErrorCode.ALREADY_LIKED);
+  public static final BaseException INVALID_BOARD_TYPE =  new BaseException(ErrorCode.INVALID_BOARD_TYPE);
+  public static final BaseException BOOKMARK_NOT_FOUND  =  new BaseException(ErrorCode.BOOKMARK_NOT_FOUND);
 
   private final ErrorCode errorCode;
 
