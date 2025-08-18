@@ -63,5 +63,28 @@ public class BookmarkService {
     return  bookmarkRepository.findBookmarkedBoardsByMember(member, pageable);
   }
 
+  @Transactional
+  public void deleteBookmark(Long memberId, Long boardId) {
+
+    // 1.회원 조회
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
+
+
+    // 2. 게시글 조회
+    Board board = boardRepository.findById(boardId)
+        .orElseThrow(() -> new BaseException(ErrorCode.BOARD_NOT_FOUND));
+
+    // 3.북마크 삭제
+    long deleted = bookmarkRepository.deleteByMemberAndBoard(member, board);
+
+    // 4. 삭제 대상이 없으면 예외 처리(이미 취소, 애초에 북마크가 아니였을 경우)
+    if (deleted == 0) {
+      throw new BaseException(ErrorCode.BOOKMARK_NOT_FOUND);
+    }
+    // 5. 정상 삭제 시 반환값 없음
+
+  }
+
 
 }
