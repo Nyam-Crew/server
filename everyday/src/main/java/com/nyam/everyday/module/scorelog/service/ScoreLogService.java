@@ -2,7 +2,7 @@ package com.nyam.everyday.module.scorelog.service;
 
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.scorelog.entity.ScoreLog;
-import com.nyam.everyday.module.scorelog.entity.SourceType;
+import com.nyam.everyday.module.scorelog.entity.PointType;
 import com.nyam.everyday.module.scorelog.repository.ScoreLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,11 +16,11 @@ public class ScoreLogService {
     private final ScoreLogRepository scoreLogRepository;
     private final RankingService rankingService;
 
-    public void createScoreLog(Member member, Long scoreAmount, SourceType sourceType) {
+    public void createScoreLog(Member member,  PointType pointType) {
         ScoreLog scoreLog = ScoreLog.builder()
                 .member(member)
                 .scoreAmount(scoreAmount)
-                .sourceType(sourceType)
+                .pointType(pointType)
                 .build();
 
         scoreLogRepository.save(scoreLog);
