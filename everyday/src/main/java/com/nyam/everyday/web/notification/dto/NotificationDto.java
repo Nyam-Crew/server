@@ -1,10 +1,10 @@
-package com.nyam.everyday.common.alert.dto;
+package com.nyam.everyday.web.notification.dto;
 
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-public class AlertDto {
+public class NotificationDto {
   private String content;
 }
