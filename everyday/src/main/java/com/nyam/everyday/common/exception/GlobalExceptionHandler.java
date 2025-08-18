@@ -62,9 +62,7 @@ public class GlobalExceptionHandler {
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR) // 이 핸들러는 항상 500 (Internal Server Error) 상태 코드를 반환합니다.
   @ExceptionHandler(RuntimeException.class)
   protected ErrorResponse handleRuntimeException(RuntimeException e) {
-    // 서버 로그에 실제 에러 원인을 기록하여 개발자가 디버깅할 수 있도록 함
-    // 클라이언트에게는 상세 원인을 노출하지 않음
-    log.error(e.getMessage());
+    log.error("Unhandled Runtime Exception: ", e);
     // 미리 정의된 INTERNAL_SERVER_ERROR 응답을 클라이언트에게 반환합니다.
     return ErrorResponse.from(ErrorCode.INTERNAL_SERVER_ERROR);
   }

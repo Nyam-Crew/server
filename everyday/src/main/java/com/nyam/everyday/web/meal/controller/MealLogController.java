@@ -26,7 +26,7 @@ import java.util.Map;
  * @since : 25. 8. 5.
  */
 
-@Tag(name = "meal-log-controller", description = "식사 기록 관리")
+@Tag(name = "Meal-Log-Controller", description = "식사 기록 관리")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/meal")

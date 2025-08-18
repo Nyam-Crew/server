@@ -50,4 +50,7 @@ public interface TeamMemberStatusRepository extends JpaRepository<TeamMemberStat
     long countJoinedMembers(@Param("teamId") Long teamId);
 
     Boolean existsByTeam_TeamIdAndMember_MemberIdAndStatus(Long teamId, Long memberId, ParticipationStatus status);
+
+    // 특정 멤버가 속해있는 모든 그룹 리스트 찾기
+    List<TeamMemberStatus> getAllByMember_MemberId(Long memberId);
 }

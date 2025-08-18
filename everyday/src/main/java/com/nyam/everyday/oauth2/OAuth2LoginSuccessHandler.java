@@ -1,6 +1,6 @@
 package com.nyam.everyday.oauth2;
 
-import jakarta.servlet.ServletException;
+import com.nyam.everyday.module.member.service.MemberService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,6 +18,8 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
+
+  private final MemberService memberService;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request,
@@ -40,8 +42,11 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     Object idObj = attributes.get("memberId");
     if (idObj != null) {
       memberId = Long.valueOf(idObj.toString());
+      log.info("[OAuth2_LOG] memberId : {}" , memberId);
+
+      //로그인 성공 시, 로그인 연속 출석 정보 업데이트
+      memberService.updateLoginInfo(memberId);
     }
-    log.info("[OAuth2_LOG] memberId : {}" , memberId);
 
     Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
     accessTokenCookie.setHttpOnly(true);
@@ -56,7 +61,6 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     response.addCookie(refreshTokenCookie);
 
 
-    // response.sendRedirect("/main.html?" + "&memberId=" + memberId);
-    response.sendRedirect("http://localhost:5173/");//리액트
+    response.sendRedirect("/main.html?" + "&memberId=" + memberId);
   }
 }
