@@ -5,6 +5,7 @@ import com.nyam.everyday.module.auth.entity.Auth;
 import com.nyam.everyday.module.badge.entity.MemberBadgeStatus;
 import com.nyam.everyday.module.board.entity.Board;
 import com.nyam.everyday.module.bookmark.entity.Bookmark;
+import com.nyam.everyday.module.scorelog.entity.ScoreLog;
 import com.nyam.everyday.security.core.Role;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -18,6 +19,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -70,19 +72,20 @@ public class Member extends BaseEntity {
   @Column
   private BigDecimal height = BigDecimal.ZERO;
 
-  @Comment("몸무게")
+  @Comment("체중")
   @Builder.Default
   @Column
   private BigDecimal weight = BigDecimal.ZERO;
+
+  @Comment("목표체중")
+  @Builder.Default
+  @Column
+  private BigDecimal targetWeight = BigDecimal.ZERO;
 
   @Comment("나이")
   @Builder.Default
   @Column
   private int age = 0;
-
-  @Comment("기초대사량") // BMR
-  @Column
-  private int basalMetabolicRate;
 
   @Comment("권한")
   @Builder.Default
@@ -106,6 +109,17 @@ public class Member extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private ActivityLevel activityLevel = ActivityLevel.LIGHT;
 
+
+  @Comment("마지막 로그인 날짜")
+  @Column
+  private LocalDateTime lastLoginDate;
+
+  @Comment("연속 로그인 횟수")
+  @Builder.Default
+  @Column(nullable = false)
+  private int consecutiveLoginDays = 0;
+
+
   @Builder.Default
   @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Board> boards = new ArrayList<>();
@@ -117,5 +131,9 @@ public class Member extends BaseEntity {
   @Builder.Default
   @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<MemberBadgeStatus> memberBadgeStatuses = new ArrayList<>();
+
+  @Builder.Default
+  @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<ScoreLog> scoreLogs = new ArrayList<>();
 
 }

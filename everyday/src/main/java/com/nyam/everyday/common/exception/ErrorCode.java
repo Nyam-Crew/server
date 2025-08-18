@@ -14,6 +14,7 @@ public enum ErrorCode {
   ALREADY_IN_BOOKMARK(HttpStatus.BAD_REQUEST, "ALREADY_IN_BOOKMARK", "이미 북마크에 존재하는 게시글입니다"),
   ALREADY_EXIST_JOIN(HttpStatus.BAD_REQUEST, "ALREADY_EXIST_JOIN", "이미 신청한 그룹입니다."),
   ALREADY_JOINED_GROUP(HttpStatus.BAD_REQUEST, "ALREADY_JOINED_GROUP", "이미 그룹에 가입되어 있습니다."), // ✅ 추가
+  ALREADY_ASSIGN_BADGE(HttpStatus.BAD_REQUEST, "ALREADY_ASSIGN_BADGE", "해당 멤버가 이미 뱃지를 보유하고 있습니다"), // ✅ 추가
   TEAM_CAPACITY_FULL(HttpStatus.BAD_REQUEST, "TEAM_CAPACITY_FULL", "그룹 정원이 초과되었습니다."),
   VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "입력값 유효성 검사에 실패했습니다."),
   ALREADY_PROCESSED(HttpStatus.BAD_REQUEST, "ALREADY_PROCESSED", "이미 처리된 참가 신청입니다."),
@@ -36,6 +37,7 @@ public enum ErrorCode {
 
   /* 404 - Not Found */
   MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND,"MEMBER_NOT_FOUND","해당 사용자를 찾을 수 없습니다"),
+  BADGE_NOT_FOUND(HttpStatus.NOT_FOUND,"BADGE_NOT_FOUND","해당 뱃지를 찾을 수 없습니다"),
   GROUP_NOT_FOUND(HttpStatus.NOT_FOUND, "GROUP_NOT_FOUND", "해당 모임을 찾을 수 없습니다."),
   POST_NOT_FOUND(HttpStatus.BAD_REQUEST, "POST_NOT_FOUND", "게시글을 찾을 수 없습니다."),
   COMMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "COMMENT_NOT_FOUND", "댓글을 찾을 수 없습니다."),

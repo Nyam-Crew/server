@@ -4,8 +4,10 @@ import com.nyam.everyday.module.summary.entity.MemberDailySummary;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.List;
+import java.time.LocalDate;
+
 /**
  * MemberDailySummaryRepository
  *
@@ -17,6 +19,10 @@ import java.util.Optional;
 @Repository
 public interface MemberDailySummaryRepository extends JpaRepository<MemberDailySummary, Long> {
 
-    // 회원별, 날짜별 조회를 위해 추가 가능 (예: 특정 날짜에 해당하는 summary 조회)
-    Optional<MemberDailySummary> findByMember_MemberIdAndCreatedDateBetween(Long memberId, LocalDateTime start, LocalDateTime end);
+    // 월간 캘린더용: 요약 날짜(summary_date) 기준 범위 조회
+    List<MemberDailySummary> findAllByMember_MemberIdAndSummaryDateBetweenOrderBySummaryDateAsc(
+            Long memberId, LocalDate startDate, LocalDate endDate);
+
+    Optional<MemberDailySummary> findByMember_MemberIdAndSummaryDate(Long memberId, LocalDate summaryDate);
+
 }

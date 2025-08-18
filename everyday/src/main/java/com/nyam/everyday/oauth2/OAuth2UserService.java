@@ -8,6 +8,7 @@ import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.security.jwt.JwtTokenProvider;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -82,7 +83,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
           newMember.setEmail(email != null ? email : "");
           if(username != null) newMember.setNickname(username);
           newMember.setMemberImg(S3DefaultValue.DEFAULT_PROFILE_IMAGE.getValue());
-
+          newMember.setLastLoginDate(LocalDateTime.now());
           return memberRepository.save(newMember);
         });
     log.info("[OAuth2UserService] 찾은 유저 : {}  ", member.getProviderId());

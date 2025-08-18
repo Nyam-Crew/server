@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Setter;
+import org.hibernate.annotations.Comment;
 
 @Entity
 @Getter
@@ -33,6 +34,13 @@ public class Badge extends BaseCreatedEntity {
 
     @Column(name = "badge_image", nullable = false)
     private String badgeImage;
+
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "badge_type", nullable = false)
+    @Comment("뱃지타입")
+    @Builder.Default
+    private BadgeType badgeType = BadgeType.REGULAR_CHALLENGE;
 
     @OneToMany(mappedBy = "badge")
     @Builder.Default

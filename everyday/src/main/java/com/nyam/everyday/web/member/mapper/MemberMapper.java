@@ -1,7 +1,8 @@
 package com.nyam.everyday.web.member.mapper;
 
 import com.nyam.everyday.module.member.entity.Member;
-import com.nyam.everyday.web.member.dto.MemberDto;
+import com.nyam.everyday.web.member.dto.MemberRequestDto;
+import com.nyam.everyday.web.member.dto.MemberResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -10,13 +11,15 @@ import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface MemberMapper {
-  MemberDto toDto(Member member); // Entity → DTO
-  Member toEntity(MemberDto dto); // DTO → Entity
+  MemberResponseDto toDto(Member member); // Entity → DTO
+  Member toEntity(MemberRequestDto dto); // DTO → Entity
 
   @Mappings({
-      @Mapping(target = "memberId", ignore = true // 수정 시 ID는 유지
-      )}
-  )
-  Member modify(MemberDto dto, @MappingTarget Member member);
+      @Mapping(target = "memberId", ignore = true), // 수정 시 ID는 유지
+      @Mapping(target = "providerId", ignore = true),
+      @Mapping(target = "memberStatus", ignore = true),
+      @Mapping(target = "createdDate", ignore = true)
+  })
+  Member modify(MemberRequestDto dto, @MappingTarget Member member);
 
 }
