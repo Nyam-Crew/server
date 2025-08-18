@@ -18,9 +18,8 @@ public class BoardResponseDto {
 
 
   private Long boardId;
-  private Long writerId;
+  private String nickname;
   private String boardTitle;
-
   private String boardType;
   private LocalDateTime createdDate;
 
@@ -31,7 +30,7 @@ public class BoardResponseDto {
   public static BoardResponseDto toDto(Board entity){
     return BoardResponseDto.builder()
         .boardId(entity.getBoardId())
-        .writerId(entity.getMember().getMemberId())
+        .nickname(entity.getMember().getNickname())
         .boardTitle(entity.getBoardTitle())
         .boardType(entity.getBoardType())
         .createdDate(entity.getCreatedDate())

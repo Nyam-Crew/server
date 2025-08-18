@@ -20,6 +20,8 @@ public enum ErrorCode {
   ALREADY_PROCESSED(HttpStatus.BAD_REQUEST, "ALREADY_PROCESSED", "이미 처리된 참가 신청입니다."),
   INVALID_STATUS(HttpStatus.BAD_REQUEST, "INVALID_STATUS", "올바르지 않은 상태입니다."),
   INVALID_REQUEST(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "올바르지 않은 요청입니다."),
+  ALREADY_LIKED(HttpStatus.BAD_REQUEST,"ALREADY_LIKED","이미 좋아요를 누른 게시물입니다"),
+  INVALID_BOARD_TYPE(HttpStatus.BAD_REQUEST,"INVALID_BOARD_TYPE","올바르지 않은 게시글 타입 입니다."),
 
   /* 401 - Unauthorized */
   AUTHENTICATION_FAILED(HttpStatus.BAD_REQUEST, "AUTHENTICATION_FAILED", "인증에 실패했습니다."),
@@ -42,8 +44,12 @@ public enum ErrorCode {
   POST_NOT_FOUND(HttpStatus.BAD_REQUEST, "POST_NOT_FOUND", "게시글을 찾을 수 없습니다."),
   COMMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "COMMENT_NOT_FOUND", "댓글을 찾을 수 없습니다."),
   BOARD_NOT_FOUND(HttpStatus.NOT_FOUND,"BOARD_NOT_FOUND","게시글을 찾을 수 없습니다"),
+  NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND,"NOTICE_NOT_FOUND","공지를 찾을 수 없습니다." ),
+  BOOKMARK_NOT_FOUND(HttpStatus.NOT_FOUND,"BOOKMARK_NOT_FOUND","북마크를 찾을 수 없습니다"),
+
 
   /* 409 - Conflict */
+  NOTICE_ALREADY_EXISTS(HttpStatus.CONFLICT,"NOTICE_ALREADY_EXISTS", "이미 활성 공지가 존재합니다."),
   LEADER_CANNOT_LEAVE(HttpStatus.CONFLICT,"LEADER_CANNOT_LEAVE", "방장은 그룹을 탈퇴할 수 없습니다."),
   LEADER_CANNOT_BAN(HttpStatus.CONFLICT, "LEADER_CANNOT_BAN", "리더/부리더는 강퇴할 수 없습니다."),
 
@@ -51,7 +57,7 @@ public enum ErrorCode {
   AWSS3_UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AWSS3_UNKNOWN_ERROR", "S3 연결 과정에서 에러가 발생했습니다"),
   INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "서버에 오류가 발생했습니다."),
   AWSS3_UPLOAD_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AWSS3_UPLOAD_ERROR", "S3에 업로드하는 과정에서 에러가 발생했습니다"),
-  AWSS3_DELETE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AWSS3_DELETE_ERROR", "S3에서 파일을 삭제하는 과정에서 에러가 발생했습니다");
+  AWSS3_DELETE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AWSS3_DELETE_ERROR", "S3에서 파일을 삭제하는 과정에서 에러가 발생했습니다"), ;
 
 
 

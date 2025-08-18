@@ -16,11 +16,12 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TeamNoticeMapper {
 
-    @Mapping(source = "team.teamId", target = "teamId", ignore = true)
-    @Mapping(source = "member.memberId", target = "memberId", ignore = true)
-    TeamNoticeDto toDTO(TeamNotice entity);
+    @Mapping(source = "team.teamId",     target = "teamId")
+    @Mapping(source = "member.memberId", target = "memberId")
+        // createdDate, modifiedDate, teamNoticeId, title, content 는 이름이 같아서 자동 매핑
+    TeamNoticeDto toNoticeDTO(TeamNotice entity);
 
-    @Mapping(source = "teamId", target = "team.teamId", ignore = true)
-    @Mapping(source = "memberId", target = "member.memberId", ignore = true)
-    TeamNotice toEntity(TeamNoticeDto dto);
+    @Mapping(source = "teamId",    target = "team.teamId", ignore = true)
+    @Mapping(source = "memberId",  target = "member.memberId", ignore = true)
+    TeamNotice toNoticeEntity(TeamNoticeDto dto);
 }
