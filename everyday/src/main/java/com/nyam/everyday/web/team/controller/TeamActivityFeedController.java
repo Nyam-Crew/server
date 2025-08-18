@@ -1,17 +1,13 @@
 package com.nyam.everyday.web.team.controller;
 
-import com.nyam.everyday.module.team.service.TeamActivityFeedRedisService;
+import com.nyam.everyday.module.team.service.TeamActivityFeedService;
 import com.nyam.everyday.security.core.CustomUserDetails;
-import com.nyam.everyday.web.team.dto.TeamActivityFeedItem;
+import com.nyam.everyday.web.team.dto.FeedSlice;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.Instant;
-import java.util.List;
 
 /**
  *
@@ -27,27 +23,51 @@ import java.util.List;
 @RequestMapping("/api/v1/teams/activity-feed/{teamId}")
 public class TeamActivityFeedController {
 
-    private final TeamActivityFeedRedisService feedService;
+    private final TeamActivityFeedService feedService;
 
-    @Operation(summary = "팀 실시간 피드 최근 N개 조회")
+    /**
+     * 초기 로드(최신 페이지) — FeedSlice로 반환
+     * nextCursorEpochMs는 이번 페이지의 마지막 아이템 score(=createdAtMs)
+     */
+    @Operation(summary = "팀 실시간 피드 최신 페이지 조회(초기 로드)")
     @GetMapping
-    public ResponseEntity<List<TeamActivityFeedItem>> listRecent(
+    public ResponseEntity<FeedSlice> getLatestPage(
             @PathVariable Long teamId,
             @RequestParam(defaultValue = "30") int size,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails user // 권한 확인이 필요하면 여기서 처리
     ) {
-        return ResponseEntity.ok(feedService.listRecent(teamId, userDetails.getId(), size));
+        // 초기 페이지는 cursor=null 로 before API 사용
+        FeedSlice slice = feedService.listFeedBefore(teamId, null, size);
+        return ResponseEntity.ok(slice);
     }
 
-    @Operation(summary = "커서 기반 조회(무한스크롤)")
+    /**
+     * 아래로 더 보기(무한스크롤) — cursor(미포함) 이전 구간을 최신순으로 반환
+     */
+    @Operation(summary = "커서 기반 조회(무한스크롤: 아래로 더 보기)")
     @GetMapping("/before")
-    public ResponseEntity<List<TeamActivityFeedItem>> listBefore(
+    public ResponseEntity<FeedSlice> getBefore(
             @PathVariable Long teamId,
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant cursor,
+            @RequestParam(name = "cursor", required = false) Long cursorEpochMs,
             @RequestParam(defaultValue = "30") int size,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        return ResponseEntity.ok(feedService.listBefore(teamId, user.getId(), cursor, size));
+        FeedSlice slice = feedService.listFeedBefore(teamId, cursorEpochMs, size);
+        return ResponseEntity.ok(slice);
+    }
+
+    /**
+     * 위로 당겨 새로고침 — cursor(미포함) 이후의 신규 구간을 최신순으로 반환
+     */
+    @Operation(summary = "커서 기반 조회(당겨서 새로고침: 위로 신규만)")
+    @GetMapping("/after")
+    public ResponseEntity<FeedSlice> getAfter(
+            @PathVariable Long teamId,
+            @RequestParam(name = "cursor") Long cursorEpochMs,
+            @RequestParam(defaultValue = "30") int size,
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        FeedSlice slice = feedService.listFeedAfter(teamId, cursorEpochMs, size);
+        return ResponseEntity.ok(slice);
     }
 }

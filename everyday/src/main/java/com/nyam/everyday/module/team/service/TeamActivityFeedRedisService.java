@@ -1,28 +1,19 @@
 package com.nyam.everyday.module.team.service;
 
-import com.nyam.everyday.common.exception.BaseException;
-import com.nyam.everyday.common.exception.ErrorCode;
-import com.nyam.everyday.common.util.FileNameGenerator;
-import com.nyam.everyday.module.team.entity.TeamMemberStatus;
-import com.nyam.everyday.module.team.enums.ActivityType;
-import com.nyam.everyday.module.team.enums.ParticipationStatus;
-import com.nyam.everyday.module.team.repository.TeamMemberStatusRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nyam.everyday.module.team.view.TeamFeedMessageFormatter;
+import com.nyam.everyday.web.team.dto.FeedSlice;
 import com.nyam.everyday.web.team.dto.TeamActivityFeedItem;
-import com.nyam.everyday.web.team.mapper.TeamActivityFeedItemMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -38,117 +29,313 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TeamActivityFeedRedisService implements TeamActivityFeedService {
 
-    private final TeamMemberStatusRepository teamMemberStatusRepository;
-    private final RedisTemplate<String, Object> redisTemplate;           // value: GenericJackson2JsonRedisSerializer
-    private final SimpMessagingTemplate messagingTemplate;
-    private final TeamActivityFeedItemMapper feedMapper;                 // ✅ 네가 준 Mapper 시그니처
-    private final FileNameGenerator fileNameGenerator;                   // @Context로 주입
+    private final RedisTemplate<String, String> redisTemplate; // value는 JSON 문자열 저장
+    private final ObjectMapper objectMapper;
 
-    // 24시간 만료 (아이템 키에 TTL)
-    private static final Duration TTL_24H = Duration.ofHours(24);
-    // ZSET 인덱스에서 가져올 때, 존재하지 않는(만료된) 아이템은 스캔 중 정리
-    private static final int BATCH_FETCH = 100;  // 스케줄 청소용
+    private String indexKey(Long teamId) { return "team:%d:activity:index".formatted(teamId); }
+    private String itemKey(Long teamId, String feedId) { return "team:%d:activity:item:%s".formatted(teamId, feedId); }
 
-    private String itemKey(String feedId) {
-        return "team:feed:item:" + feedId;
-    }
+    /* ===================== 생성(복수형) ===================== */
 
-    private String indexKey(Long teamId) {
-        return "team:" + teamId + ":feed:index";
-    }
-
-    public void record(Long teamId, Long actorMemberId,
-                       ActivityType activityType,
-                       String title, String message, Map<String, Object> payload) {
-
-        // 1) 권한: APPROVED 멤버만
-        verifyApproved(teamId, actorMemberId);
-
-        // 2) 보여줄 메시지(간단 규칙: title 우선, 없으면 message)
-        String activityContent = (title != null && !title.isBlank()) ? title : message;
-
-        // 3) DTO 생성 (ID/생성시각은 매퍼에서 자동 세팅)
-        TeamActivityFeedItem item = feedMapper.create(
-                teamId, actorMemberId, activityType, activityContent, fileNameGenerator);
-
-        // 4) 아이템 저장 + TTL(24h) 예약
-        String itemK = itemKey(item.getFeedId());
-        redisTemplate.opsForValue().set(itemK, item, TTL_24H);
-
-        // 5) 팀별 인덱스(ZSET)에 feedId 추가 (score=createdAt epochMillis)
-        String indexK = indexKey(teamId);
-        long score = toEpochMillis(item.getFeedCreatedDate());
-        redisTemplate.opsForZSet().add(indexK, item.getFeedId(), score);
-
-        // (선택) 인덱스에서 24h 이전 score 제거 (쓰기 시 정리)
-        long cutoff = System.currentTimeMillis() - TTL_24H.toMillis();
-        redisTemplate.opsForZSet().removeRangeByScore(indexK, 0, cutoff);
-
-        // 6) 실시간 브로드캐스트
-        messagingTemplate.convertAndSend("/topic/teams/" + teamId + "/feed", item);
-    }
-
+    /** 최초 생성(여러 팀). 이미 존재하면 score/TTL은 유지하고 값만 덮음(남은 TTL 유지). */
     @Override
-    public List<TeamActivityFeedItem> listRecent(Long teamId, Long requesterMemberId, int size) {
-        verifyApproved(teamId, requesterMemberId);
-        String kIndex = indexKey(teamId);
+    public void addFeedItemToTeams(Set<Long> teamIds,
+                                   String feedId,
+                                   long createdAtMs,
+                                   TeamActivityFeedItem item,
+                                   Duration ttl) {
+        if (teamIds == null || teamIds.isEmpty()) return;
 
-        // 최신 feedId들 조회
-        Set<Object> ids = redisTemplate.opsForZSet().reverseRange(kIndex, 0, Math.max(0, size - 1));
-        return loadExistingItemsAndCleanupMissing(kIndex, ids);
-    }
+        // 메시지 준비(팀별 teamId만 주입해서 사용)
+        ensureCreatedAt(item, createdAtMs);
 
-    @Override
-    public List<TeamActivityFeedItem> listBefore(Long teamId, Long requesterMemberId, Instant cursor, int size) {
-        verifyApproved(teamId, requesterMemberId);
-        String kIndex = indexKey(teamId);
+        for (Long teamId : teamIds) {
+            TeamActivityFeedItem perTeam = copyForTeam(item, teamId);
+            perTeam.setActivityMessage(TeamFeedMessageFormatter.formatLine(perTeam));
 
-        double max = (cursor == null ? Double.POSITIVE_INFINITY : cursor.toEpochMilli() - 1);
-        Set<Object> ids = redisTemplate.opsForZSet()
-                .reverseRangeByScore(kIndex, max, 0, 0, size);
+            final String idxKey = indexKey(teamId);
+            final String itKey  = itemKey(teamId, feedId);
 
-        return loadExistingItemsAndCleanupMissing(kIndex, ids);
-    }
+            // 1) ZSET: 최초에만 score 세팅(순서 고정)
+            Double existingScore = redisTemplate.opsForZSet().score(idxKey, feedId);
+            if (existingScore == null) {
+                redisTemplate.opsForZSet().add(idxKey, feedId, createdAtMs);
+            }
 
-    /* ===== 내부 유틸 ===== */
-
-    private void verifyApproved(Long teamId, Long memberId) {
-        teamMemberStatusRepository.findByTeam_TeamIdAndMember_MemberId(teamId, memberId)
-                .filter(rel -> rel.getStatus() == ParticipationStatus.APPROVED)
-                .orElseThrow(() -> new BaseException(ErrorCode.ACCESS_DENIED));
-    }
-
-    private List<TeamActivityFeedItem> loadExistingItemsAndCleanupMissing(String indexKey, Set<Object> ids) {
-        if (ids == null || ids.isEmpty()) return List.of();
-
-        List<TeamActivityFeedItem> result = new ArrayList<>(ids.size());
-        List<String> toRemove = new ArrayList<>();
-
-        for (Object idObj : ids) {
-            String feedId = String.valueOf(idObj);
-            Object val = redisTemplate.opsForValue().get(itemKey(feedId));
-            if (val == null) {
-                // 아이템은 TTL로 만료됨 → 인덱스에서 제거 (게으른 정리)
-                toRemove.add(feedId);
+            // 2) KV 저장: 존재하면 값만 갱신 + 남은 TTL 유지, 없으면 TTL 부여
+            Long remainMs = redisTemplate.getExpire(itKey, TimeUnit.MILLISECONDS);
+            String json = toJson(perTeam);
+            if (remainMs == null || remainMs <= 0) {
+                redisTemplate.opsForValue().set(itKey, json, ttl);
             } else {
-                result.add((TeamActivityFeedItem) val);
+                redisTemplate.opsForValue().set(itKey, json);
+                redisTemplate.expire(itKey, remainMs, TimeUnit.MILLISECONDS);
             }
         }
-        if (!toRemove.isEmpty()) {
-            // 현재 시점에서 missing id 정리
-            redisTemplate.opsForZSet().remove(indexKey, toRemove.toArray());
+    }
+
+    /* ===================== 갱신(복수형, 값만) ===================== */
+
+    /**
+     * 내용만 갱신(여러 팀). 순서(score)·TTL 유지.
+     * 존재하지 않거나 TTL 만료된 팀은 false 반환(재생성하지 않음).
+     */
+    @Override
+    public Map<Long, Boolean> updateFeedItemValueInTeams(Set<Long> teamIds,
+                                                         String feedId,
+                                                         TeamActivityFeedItem updated) {
+        Map<Long, Boolean> result = new LinkedHashMap<>();
+        if (teamIds == null || teamIds.isEmpty()) return result;
+
+        for (Long teamId : teamIds) {
+            final String itKey = itemKey(teamId, feedId);
+
+            // 0) 남은 TTL (없으면 만료/삭제됨 → 갱신 생략)
+            Long remainMs = redisTemplate.getExpire(itKey, TimeUnit.MILLISECONDS);
+            if (remainMs == null || remainMs <= 0) {
+                result.put(teamId, false);
+                continue;
+            }
+
+            // 1) 기존 로드
+            String originJson = redisTemplate.opsForValue().get(itKey);
+            if (originJson == null) {
+                result.put(teamId, false);
+                continue;
+            }
+
+            TeamActivityFeedItem origin = fromJson(originJson);
+
+            // 2) 정렬/식별 필드 유지
+            if (updated.getFeedId() == null) updated.setFeedId(origin.getFeedId());
+            if (updated.getTeamId() == null) updated.setTeamId(origin.getTeamId());
+            if (updated.getMemberId() == null) updated.setMemberId(origin.getMemberId());
+            if (updated.getNickname() == null) updated.setNickname(origin.getNickname());
+            if (updated.getProfileImageUrl() == null) updated.setProfileImageUrl(origin.getProfileImageUrl());
+            if (updated.getActivityType() == null) updated.setActivityType(origin.getActivityType());
+            if (updated.getFeedCreatedDate() == null) updated.setFeedCreatedDate(origin.getFeedCreatedDate());
+
+            // 3) 메시지 재생성
+            updated.setActivityMessage(TeamFeedMessageFormatter.formatLine(updated));
+
+            // 4) 값만 교체 + 남은 TTL 유지
+            redisTemplate.opsForValue().set(itKey, toJson(updated));
+            redisTemplate.expire(itKey, remainMs, TimeUnit.MILLISECONDS);
+
+            result.put(teamId, true);
         }
-        // DTO는 최신순으로 읽혔으므로 추가 정렬 불필요
         return result;
     }
 
-    private long toEpochMillis(LocalDateTime ldt) {
-        // 서버 표준시(UTC) 기준으로 처리; 프론트에서 타임존 렌더링
-        return ldt.atZone(ZoneOffset.UTC).toInstant().toEpochMilli();
+    /* ===================== 삭제(복수형) ===================== */
+
+    /** 단건 삭제(여러 팀). KV 삭제 + 인덱스 멤버 제거(멱등). */
+    @Override
+    public void removeFeedItem(Set<Long> teamIds, String feedId) {
+        if (teamIds == null || teamIds.isEmpty()) return;
+
+        for (Long teamId : teamIds) {
+            redisTemplate.delete(itemKey(teamId, feedId));
+            redisTemplate.opsForZSet().remove(indexKey(teamId), feedId);
+        }
     }
 
-    /* (참고) 디버깅용 */
-    private String fmt(LocalDateTime ldt) {
-        return ldt.atZone(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    /* ===================== 조회(팀 단위) ===================== */
+
+    /** 피드 조회(최신순, start/size 기반) */
+    @Override
+    public List<TeamActivityFeedItem> listFeed(Long teamId, int start, int size) {
+        String idxKey = indexKey(teamId);
+        long end = start + size - 1;
+        Set<String> feedIds = castStringSet(redisTemplate.opsForZSet().reverseRange(idxKey, start, end));
+        if (feedIds == null || feedIds.isEmpty()) return List.of();
+
+        List<String> keys = feedIds.stream().map(fid -> itemKey(teamId, fid)).collect(Collectors.toList());
+        List<String> jsons = redisTemplate.opsForValue().multiGet(keys);
+
+        List<TeamActivityFeedItem> out = new ArrayList<>();
+        List<String> missing = new ArrayList<>();
+
+        int i = 0;
+        for (String fid : feedIds) {
+            String json = (jsons != null && i < jsons.size()) ? jsons.get(i) : null;
+            if (json == null) {
+                missing.add(fid); // TTL 만료 등 → 게으른 정리
+            } else {
+                TeamActivityFeedItem item = fromJson(json);
+                if (item.getActivityMessage() == null || item.getActivityMessage().isBlank()) {
+                    item.setActivityMessage(TeamFeedMessageFormatter.formatLine(item));
+                }
+                out.add(item);
+            }
+            i++;
+        }
+        if (!missing.isEmpty()) {
+            redisTemplate.opsForZSet().remove(idxKey, missing.toArray());
+        }
+        return out;
+    }
+
+    @Override
+    public FeedSlice listFeedBefore(Long teamId, Long cursorEpochMs, int size) {
+        String idxKey = indexKey(teamId);
+
+        double max = (cursorEpochMs == null) ? Double.POSITIVE_INFINITY : (double) (cursorEpochMs - 1L);
+        double min = 0d;
+
+        Set<ZSetOperations.TypedTuple<String>> tuples =
+                redisTemplate.opsForZSet().reverseRangeByScoreWithScores(idxKey, max, min, 0, size);
+
+        if (tuples == null || tuples.isEmpty()) {
+            return FeedSlice.builder().items(Collections.emptyList()).nextCursorEpochMs(null).hasNext(false).build();
+        }
+
+        List<String> feedIds = tuples.stream().map(ZSetOperations.TypedTuple::getValue).collect(Collectors.toList());
+        List<String> keys = feedIds.stream().map(fid -> itemKey(teamId, fid)).collect(Collectors.toList());
+        List<String> jsons = redisTemplate.opsForValue().multiGet(keys);
+
+        List<TeamActivityFeedItem> items = new ArrayList<>();
+        List<String> missing = new ArrayList<>();
+        List<Long> scoresKept = new ArrayList<>();
+
+        int i = 0;
+        for (ZSetOperations.TypedTuple<String> t : tuples) {
+            String fid = t.getValue();
+            Double sc = t.getScore();
+            String json = (jsons != null && i < jsons.size()) ? jsons.get(i) : null;
+
+            if (json == null) {
+                missing.add(fid);
+            } else {
+                TeamActivityFeedItem item = fromJson(json);
+                if (item.getActivityMessage() == null || item.getActivityMessage().isBlank()) {
+                    item.setActivityMessage(TeamFeedMessageFormatter.formatLine(item));
+                }
+                items.add(item);
+                scoresKept.add(sc == null ? null : sc.longValue());
+            }
+            i++;
+        }
+        if (!missing.isEmpty()) redisTemplate.opsForZSet().remove(idxKey, missing.toArray());
+
+        Long nextCursor = items.isEmpty() ? null : scoresKept.get(scoresKept.size() - 1);
+
+        boolean hasMore = false;
+        if (nextCursor != null) {
+            Long more = redisTemplate.opsForZSet().count(idxKey, 0d, (double) (nextCursor - 1));
+            hasMore = more != null && more > 0;
+        }
+
+        return FeedSlice.builder().items(items).nextCursorEpochMs(nextCursor).hasNext(hasMore).build();
+    }
+
+    @Override
+    public FeedSlice listFeedAfter(Long teamId, Long cursorEpochMs, int size) {
+        String idxKey = indexKey(teamId);
+
+        if (cursorEpochMs == null) {
+            List<TeamActivityFeedItem> latest = listFeed(teamId, 0, size);
+            Long nextCursor = latest.isEmpty() ? null : getMinCreatedAtMs(latest);
+            return FeedSlice.builder().items(latest).nextCursorEpochMs(nextCursor).hasNext(!latest.isEmpty()).build();
+        }
+
+        double min = (double) (cursorEpochMs + 1L);
+        double max = Double.POSITIVE_INFINITY;
+
+        Set<ZSetOperations.TypedTuple<String>> asc =
+                redisTemplate.opsForZSet().rangeByScoreWithScores(idxKey, min, max, 0, size);
+
+        if (asc == null || asc.isEmpty()) {
+            return FeedSlice.builder().items(Collections.emptyList()).nextCursorEpochMs(null).hasNext(false).build();
+        }
+
+        List<ZSetOperations.TypedTuple<String>> tuples = new ArrayList<>(asc);
+        Collections.reverse(tuples); // 최신순으로 전환
+
+        List<String> feedIds = tuples.stream().map(ZSetOperations.TypedTuple::getValue).collect(Collectors.toList());
+        List<String> keys = feedIds.stream().map(fid -> itemKey(teamId, fid)).collect(Collectors.toList());
+        List<String> jsons = redisTemplate.opsForValue().multiGet(keys);
+
+        List<TeamActivityFeedItem> items = new ArrayList<>();
+        List<String> missing = new ArrayList<>();
+
+        int i = 0;
+        for (ZSetOperations.TypedTuple<String> t : tuples) {
+            String fid = t.getValue();
+            String json = (jsons != null && i < jsons.size()) ? jsons.get(i) : null;
+
+            if (json == null) {
+                missing.add(fid);
+            } else {
+                TeamActivityFeedItem item = fromJson(json);
+                if (item.getActivityMessage() == null || item.getActivityMessage().isBlank()) {
+                    item.setActivityMessage(TeamFeedMessageFormatter.formatLine(item));
+                }
+                items.add(item);
+            }
+            i++;
+        }
+        if (!missing.isEmpty()) redisTemplate.opsForZSet().remove(idxKey, missing.toArray());
+
+        Long nextCursor = items.isEmpty() ? null : getMinCreatedAtMs(items);
+        boolean hasMore = items.size() == size;
+
+        return FeedSlice.builder().items(items).nextCursorEpochMs(nextCursor).hasNext(hasMore).build();
+    }
+
+    /* ===================== 유틸 ===================== */
+
+    private void ensureCreatedAt(TeamActivityFeedItem item, long createdAtMs) {
+        if (item.getFeedCreatedDate() == null) {
+            item.setFeedCreatedDate(Instant.ofEpochMilli(createdAtMs).atZone(ZoneOffset.UTC).toLocalDateTime());
+        }
+    }
+
+    private TeamActivityFeedItem copyForTeam(TeamActivityFeedItem src, Long teamId) {
+        return TeamActivityFeedItem.builder()
+                .feedId(src.getFeedId())
+                .teamId(teamId)
+                .memberId(src.getMemberId())
+                .nickname(src.getNickname())
+                .profileImageUrl(src.getProfileImageUrl())
+                .activityType(src.getActivityType())
+                .activityMessage(src.getActivityMessage())
+                .feedCreatedDate(src.getFeedCreatedDate())
+                .amountMl(src.getAmountMl())
+                .mealPeriod(src.getMealPeriod())
+                .kcal(src.getKcal())
+                //.menu(src.getMenu())
+                .thumbnailUrl(src.getThumbnailUrl())
+                .weightKg(src.getWeightKg())
+                .deltaKg(src.getDeltaKg())
+                .challengeName(src.getChallengeName())
+                .build();
+    }
+
+    private String toJson(TeamActivityFeedItem item) {
+        try { return objectMapper.writeValueAsString(item); }
+        catch (Exception e) { throw new RuntimeException("Feed JSON serialize error", e); }
+    }
+
+    private TeamActivityFeedItem fromJson(String json) {
+        try { return objectMapper.readValue(json, TeamActivityFeedItem.class); }
+        catch (Exception e) { throw new RuntimeException("Feed JSON deserialize error", e); }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Set<String> castStringSet(Set<?> s) {
+        if (s == null) return null;
+        Set<String> out = new LinkedHashSet<>(s.size());
+        for (Object o : s) out.add(String.valueOf(o));
+        return out;
+    }
+
+    private static Long getMinCreatedAtMs(List<TeamActivityFeedItem> items) {
+        return items.stream()
+                .map(TeamActivityFeedItem::getFeedCreatedDate)
+                .filter(Objects::nonNull)
+                .map(dt -> dt.atZone(ZoneOffset.UTC).toInstant().toEpochMilli())
+                .min(Long::compareTo)
+                .orElse(null);
     }
 }
