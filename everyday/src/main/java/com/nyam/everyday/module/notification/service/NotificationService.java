@@ -1,6 +1,6 @@
-package com.nyam.everyday.common.alert.service;
+package com.nyam.everyday.module.notification.service;
 
-import com.nyam.everyday.common.alert.dto.AlertDto;
+import com.nyam.everyday.web.notification.dto.NotificationDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Transactional(rollbackFor = Exception.class)
 @RequiredArgsConstructor
-public class AlertService {
+public class NotificationService {
 
   private final SimpMessagingTemplate simpMessagingTemplate;
 
@@ -43,7 +43,7 @@ public class AlertService {
    * 구독 경로:
    *   /topic/notification
    */
-  public void NoticeBroadcast(AlertDto notificationDto) {
+  public void NoticeBroadcast(NotificationDto notificationDto) {
     simpMessagingTemplate.convertAndSend("/topic/notification", notificationDto.getContent());
     log.info("전체 유저에게 알림 전송 완료");
   }
@@ -60,7 +60,7 @@ public class AlertService {
    * 구독 경로:
    *   /user/queue/notification
    */
-  public void NoticeToMember(AlertDto notificationDto, Long memberId) {
+  public void NoticeToMember(NotificationDto notificationDto, Long memberId) {
     simpMessagingTemplate.convertAndSendToUser(memberId.toString(), "/queue/notification", notificationDto.getContent());
     log.info("{}번 유저에게 알림 전송 완료", memberId);
   }
@@ -77,7 +77,7 @@ public class AlertService {
    * 구독 경로:
    *   /topic/team/{teamId}
    */
-  public void NoticeToTeam(AlertDto notificationDto, Long teamId) {
+  public void NoticeToTeam(NotificationDto notificationDto, Long teamId) {
     simpMessagingTemplate.convertAndSend("/topic/team/" + teamId, notificationDto.getContent());
     log.info("{}팀에 알림 전송 완료", teamId);
   }
