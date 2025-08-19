@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -31,6 +31,7 @@ public class MemberNotificationStatus {
   private Member member;
 
   @Column(nullable = false)
+  @Setter
   @Builder.Default
   private Long lastNotificationNum = 0L;
 }
