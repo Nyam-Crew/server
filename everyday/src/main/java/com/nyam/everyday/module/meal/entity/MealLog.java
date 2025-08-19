@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Date;
+
 import lombok.*;
 import org.hibernate.annotations.Comment;
 
@@ -38,6 +40,10 @@ public class MealLog {
     @JoinColumn(name = "food_id", nullable = false)
     private Food food;
 
+    @Comment("등록일자")
+    @Column(name = "meal_log_date", nullable = false)
+    private Date mealLogDate;
+
     @Comment("섭취량")
     @Column(nullable = false)
     private Integer intakeAmount;
@@ -69,4 +75,5 @@ public class MealLog {
     @Comment("수정일시")
     @Column(nullable = false)
     private LocalDateTime modifiedDate;
+
 }

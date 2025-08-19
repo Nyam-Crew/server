@@ -53,7 +53,9 @@ public class MissionController {
             summary = "미션 완료/해제",
             description = "체크/해제 시 스탬프(도장)를 자동 업서트합니다."
     )
+
     @ApiResponse(responseCode = "200", description = "업데이트 성공")
+
     @PostMapping("/{dailyMissionId}/complete")
     public ResponseEntity<Void> completeMission(
             @Parameter(name = "dailyMissionId", description = "일일 미션 PK", in = ParameterIn.PATH, required = true, example = "123")
