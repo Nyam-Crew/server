@@ -11,17 +11,21 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
 @Entity
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Notification extends BaseCreatedEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long notification_id;
+  private Long notificationId;
 
   @JoinColumn(name = "member_id")
   @ManyToOne(fetch = FetchType.LAZY)
@@ -30,10 +34,9 @@ public class Notification extends BaseCreatedEntity {
 
   @Column(nullable = false, length = 255)
   @Comment("알림의 내용")
-  private String notification_content;
+  private String notificationContent;
 
   @Column(nullable = false, length = 20)
   @Comment("알림의 Type, Enum으로 정의")
-  private NotificationType notification_type;
-
+  private NotificationType notificationType;
 }
