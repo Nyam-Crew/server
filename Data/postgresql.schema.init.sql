@@ -205,6 +205,7 @@ CREATE TABLE challenge (
                            badge_id BIGINT NOT NULL,
                            title VARCHAR(30) NOT NULL,
                            description VARCHAR(255) NOT NULL,
+                           challenge_code VARCHAR(50) NOT NULL,
                            type VARCHAR(30) NOT NULL,
                            start_date TIMESTAMP,
                            end_date TIMESTAMP,
@@ -393,6 +394,8 @@ COMMENT ON COLUMN team.team_img IS 'AWS의 URL을 그대로 사용합니다';
 COMMENT ON COLUMN team_member_status.status IS '0:HOLD, 1:REGIST, 2:APPROVED, 3:REJECT 등';
 
 COMMENT ON COLUMN team_notification.notification_type IS '1:물섭취, 2:칼로리섭취, 3:몸무게변화. 4:챌린지달성 등';
+
+COMMENT ON COLUMN challenge.challenge_code IS '백엔드에서 가질 챌린지 이름';
 
 COMMENT ON COLUMN challenge.type IS 'REGULAR_CHALLENGE, EVENT_CHALLENGE 중 하나';
 
