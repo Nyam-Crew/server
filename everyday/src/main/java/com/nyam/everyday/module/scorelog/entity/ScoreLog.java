@@ -18,6 +18,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
+import java.time.LocalDate;
+
 @Getter
 @Entity
 @Builder
@@ -45,4 +47,13 @@ public class ScoreLog extends BaseCreatedEntity {
     @Column(name = "source_type", nullable = false)
     @Comment("점수 출처")
     private SourceType sourceType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="meal_type")
+    @Comment("점수체크를 위한 식사타입")
+    private MealType mealType;
+
+    @Column(name="scored_on")
+    @Comment("점수 산정 기준일")
+    private LocalDate scoredOn;
 }

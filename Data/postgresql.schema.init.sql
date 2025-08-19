@@ -232,6 +232,8 @@ CREATE TABLE score_log (
                            member_id BIGINT NOT NULL,
                            score_amount BIGINT NOT NULL,
                            source_type VARCHAR(50) NOT NULL,
+                           meal_type VARCHAR(50) NOT NULL,
+                           scored_on DATE NOT NULL,
                            created_date TIMESTAMP NOT NULL,
                            PRIMARY KEY (score_log_id)
 );
