@@ -1,7 +1,8 @@
 package com.nyam.everyday.module.challenge.entity;
 
-import com.nyam.everyday.common.entity.BaseCreatedEntity;
+import com.nyam.everyday.common.entity.BaseEntity;
 import com.nyam.everyday.module.member.entity.Member;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -18,19 +19,28 @@ import org.hibernate.annotations.Comment;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberChallengeStatus extends BaseCreatedEntity {
+public class MemberChallengeStatus extends BaseEntity {
 
   @Id
+  @Column(name = "member_challenge_status_id")
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long mcs_id;
+  private Long id;
 
   @Comment("member 테이블의 PK")
-  @JoinColumn(nullable = false)
+  @JoinColumn(name = "member_id", nullable = false)
   @ManyToOne(fetch = FetchType.LAZY)
   private Member member;
 
   @Comment("challenge 테이블의 PK")
-  @JoinColumn(nullable = false)
+  @JoinColumn(name = "challenge_id", nullable = false)
   @ManyToOne(fetch = FetchType.LAZY)
   private Challenge challenge;
+
+  @Column(nullable = false)
+  @Builder.Default
+  private Boolean isCleared = false;
+
+  @Column(nullable = false)
+  @Builder.Default
+  private Integer progressCount = 0;
 }
