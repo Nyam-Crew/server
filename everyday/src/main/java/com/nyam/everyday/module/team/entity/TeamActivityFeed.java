@@ -2,6 +2,7 @@ package com.nyam.everyday.module.team.entity;
 
 import com.nyam.everyday.common.entity.BaseCreatedEntity;
 import com.nyam.everyday.module.member.entity.Member;
+import com.nyam.everyday.module.team.enums.ActivityType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,7 +46,8 @@ public class TeamActivityFeed extends BaseCreatedEntity {
     private Team team;
 
     @Column(name = "activity_type", nullable = false)
-    private String activityType;
+    @Enumerated(EnumType.STRING)
+    private ActivityType activityType;
 
     @Column(name = "activity_content")
     private String activityContent;

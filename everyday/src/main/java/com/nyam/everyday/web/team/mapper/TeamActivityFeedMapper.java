@@ -1,7 +1,7 @@
 package com.nyam.everyday.web.team.mapper;
 
 import com.nyam.everyday.module.team.entity.TeamActivityFeed;
-import com.nyam.everyday.web.team.dto.TeamActivityFeedDto;
+import com.nyam.everyday.web.team.dto.TeamActivityFeedItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -16,11 +16,11 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TeamActivityFeedMapper {
 
-    @Mapping(source = "team.teamId", target = "teamId", ignore = true)
-    @Mapping(source = "member.memberId", target = "memberId", ignore = true)
-    TeamActivityFeedDto toDTO(TeamActivityFeed entity);
+    @Mapping(source = "team.teamId", target = "teamId")
+    @Mapping(source = "member.memberId", target = "memberId")
+    TeamActivityFeedItem toFeedDTO(TeamActivityFeed entity);
 
     @Mapping(source = "teamId", target = "team.teamId", ignore = true)
     @Mapping(source = "memberId", target = "member.memberId", ignore = true)
-    TeamActivityFeed toEntity(TeamActivityFeedDto dto);
+    TeamActivityFeed toEntity(TeamActivityFeedItem dto);
 }

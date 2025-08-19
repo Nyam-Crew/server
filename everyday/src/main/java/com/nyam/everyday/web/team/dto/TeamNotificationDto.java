@@ -1,5 +1,6 @@
 package com.nyam.everyday.web.team.dto;
 
+import com.nyam.everyday.module.team.enums.TeamNotificationType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -30,7 +31,7 @@ public class TeamNotificationDto {
     private Long memberId;
 
     @Schema(name = "", example = "")
-    private String notificationType;
+    private TeamNotificationType notificationType;
 
     @Schema(name = "", example = "")
     private LocalDateTime teamAlarmCreatedDate;
