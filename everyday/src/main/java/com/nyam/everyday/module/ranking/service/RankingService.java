@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -32,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class RankingService {
 
@@ -44,7 +43,15 @@ public class RankingService {
 
   private final Clock clock = Clock.systemDefaultZone();
 
-  // ========== 쓰기 API ========== 
+    public RankingService(@Qualifier("redisRankingTemplate") RedisTemplate<String, String> redisTemplate, MemberRepository memberRepository, TeamRepository teamRepository, TeamMemberStatusRepository teamMemberStatusRepository, RankingKeys keys) {
+        this.redisTemplate = redisTemplate;
+        this.memberRepository = memberRepository;
+        this.teamRepository = teamRepository;
+        this.teamMemberStatusRepository = teamMemberStatusRepository;
+        this.keys = keys;
+    }
+
+    // ========== 쓰기 API ========== 
 
   /**
    * 특정 시각을 기준으로 멤버의 점수를 업데이트합니다. 개인/팀내/팀간 랭킹을 모두 갱신합니다.
