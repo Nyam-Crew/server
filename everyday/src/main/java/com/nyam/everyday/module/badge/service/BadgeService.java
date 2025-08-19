@@ -13,7 +13,7 @@ import com.nyam.everyday.module.badge.repository.MemberBadgeStatusRepository;
 import com.nyam.everyday.module.badge.dto.OwnedBadgeDto;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
-import com.nyam.everyday.module.scorelog.entity.PointType;
+import com.nyam.everyday.module.scorelog.entity.SourceType;
 import com.nyam.everyday.module.scorelog.service.ScoreLogService;
 import com.nyam.everyday.web.badge.dto.AssignBadgeRequestDto;
 import com.nyam.everyday.web.badge.dto.BadgeCreateRequestDto;
@@ -98,7 +98,7 @@ public class BadgeService {
 
         // 점수가 0보다 클 경우에만 ScoreLog 생성
         if (score > 0) {
-            scoreLogService.createScoreLog(member, (long) score, PointType.BADGE_REWARD);
+            scoreLogService.createScoreLog(member, (long) score, SourceType.BADGE_REWARD);
         }
     }
 

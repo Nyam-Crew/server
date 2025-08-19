@@ -44,5 +44,5 @@ public class ScoreLog extends BaseCreatedEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "source_type", nullable = false)
     @Comment("점수 출처")
-    private PointType pointType;
+    private SourceType sourceType;
 }
