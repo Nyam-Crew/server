@@ -18,8 +18,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
@@ -32,11 +32,11 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class RankingArchivingService {
 
     private static final int BATCH_SIZE = 1000; // 한 번에 스캔하고 처리할 랭킹 데이터 수
 
+    @Qualifier("redisRankingTemplate")
     private final RedisTemplate<String, String> redisTemplate;
     private final RankingKeys keys;
     private final MemberRepository memberRepository;
@@ -46,6 +46,23 @@ public class RankingArchivingService {
     private final MemberTeamRankingRepository memberTeamRankingRepository;
 
     private final Clock clock = Clock.systemDefaultZone();
+
+    public RankingArchivingService(@Qualifier("redisRankingTemplate") RedisTemplate<String, String> redisTemplate,
+        RankingKeys keys,
+        MemberRepository memberRepository,
+        TeamRepository teamRepository,
+        MemberGlobalRankingRepository memberGlobalRankingRepository,
+        TeamGlobalRankingRepository teamGlobalRankingRepository,
+        MemberTeamRankingRepository memberTeamRankingRepository
+        ) {
+        this.redisTemplate = redisTemplate;
+        this.keys = keys;
+        this.memberRepository = memberRepository;
+        this.teamRepository = teamRepository;
+        this.memberGlobalRankingRepository = memberGlobalRankingRepository;
+        this.teamGlobalRankingRepository = teamGlobalRankingRepository;
+        this.memberTeamRankingRepository = memberTeamRankingRepository;
+    }
 
     // ================= 월초: 팀 멤버수 스냅샷 =================
 

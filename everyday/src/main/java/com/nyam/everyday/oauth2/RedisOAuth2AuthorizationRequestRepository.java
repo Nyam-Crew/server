@@ -3,6 +3,7 @@ package com.nyam.everyday.oauth2;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -15,6 +16,7 @@ public class RedisOAuth2AuthorizationRequestRepository implements AuthorizationR
 
   private static final String PREFIX = "oauth2_auth_request:";
 
+  @Qualifier("redisLoginTemplate")
   private final RedisTemplate<String, Object> redisTemplate;
 
   @Override
