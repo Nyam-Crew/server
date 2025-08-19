@@ -15,6 +15,7 @@ import org.hibernate.annotations.Comment;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@lombok.Builder
 @Table(name = "member_team_ranking")
 public class MemberTeamRanking extends BaseCreatedEntity {
 
@@ -46,4 +47,6 @@ public class MemberTeamRanking extends BaseCreatedEntity {
     @Column(nullable = false)
     @Comment("점수")
     private Integer score;
+
+
 }

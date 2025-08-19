@@ -9,11 +9,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
-/** 전체 멤버 랭킹 */
+/** 전체 멤버 랭킹 (월간) */
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@lombok.Builder
 @Table(name = "member_global_ranking")
 public class MemberGlobalRanking extends BaseCreatedEntity {
 
@@ -41,4 +42,5 @@ public class MemberGlobalRanking extends BaseCreatedEntity {
     @Column(nullable = false)
     @Comment("순위")
     private Integer rank;
+
 }

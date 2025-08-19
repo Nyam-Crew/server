@@ -11,12 +11,14 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import org.hibernate.annotations.Comment;
 
+/** 팀간 랭킹 (월간) */
 @Entity
 @Getter
+@lombok.Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "team_global_ranking")
-public class TeamGlobalRanking extends BaseCreatedEntity {
+public class TeamGlobalRanking extends BaseCreatedEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,4 +52,5 @@ public class TeamGlobalRanking extends BaseCreatedEntity {
     @Column(nullable = false)
     @Comment("팀원 수")
     private Integer memberCount;
+
 }
