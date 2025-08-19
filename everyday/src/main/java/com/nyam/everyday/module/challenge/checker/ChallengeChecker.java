@@ -1,5 +1,6 @@
 package com.nyam.everyday.module.challenge.checker;
 
+import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.challenge.entity.ChallengeType;
 import com.nyam.everyday.module.member.entity.Member;
 
@@ -8,8 +9,8 @@ import com.nyam.everyday.module.member.entity.Member;
 public interface ChallengeChecker {
 
   // 타입 반환 함수 (어떤 태그의 챌린지인지 확인하기 위함)
-  ChallengeType getSupportedType();
+  ChallengeTag getChallengeTag();
 
-  // 챌린디 잘성 여부를 체크하는 함수
+  // 챌린지 달성 여부를 체크하는 함수
   Boolean check(Member member);
 }
