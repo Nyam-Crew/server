@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -23,24 +24,24 @@ public class MemberDailySummaryService {
 
     /** 물 섭취량 추가/수정 (오늘 summaryDate 기준) */
     @Transactional
-    public void addOrUpdateWater(Long memberId, Integer amount) {
-        LocalDate today = LocalDate.now();
+    public void addOrUpdateWater(Long memberId, Integer amount, Date date) {
+
         LocalDateTime now = LocalDateTime.now();
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
 
         MemberDailySummary summary = summaryRepository
-                .findByMember_MemberIdAndSummaryDate(memberId, today)
+                .findByMember_MemberIdAndSummaryDate(memberId, date)
                 .orElseGet(() -> MemberDailySummary.builder()
                         .member(member)
-                        .summaryDate(today)
+                        .summaryDate(date)
                         .weight(member.getWeight())              // null 가능
                         .totalProtein(BigDecimal.ZERO)           // g
                         .totalCarbohydrate(BigDecimal.ZERO)      // g
                         .totalFat(BigDecimal.ZERO)               // g
                         .totalWater(BigDecimal.ZERO)             // ml
-                        .totalKcal(0)                            // kcal (정수)
+                        .totalKcal(BigDecimal.ZERO)                            // kcal (정수)
                         .createdDate(now)
                         .modifiedDate(now)
                         .build()
@@ -56,24 +57,23 @@ public class MemberDailySummaryService {
 
     /** 체중 추가/수정 (오늘 summaryDate 기준) */
     @Transactional
-    public void addOrUpdateWeight(Long memberId, Double weight) {
-        LocalDate today = LocalDate.now();
+    public void addOrUpdateWeight(Long memberId, Double weight, Date date) {
         LocalDateTime now = LocalDateTime.now();
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
 
         MemberDailySummary summary = summaryRepository
-                .findByMember_MemberIdAndSummaryDate(memberId, today)
+                .findByMember_MemberIdAndSummaryDate(memberId, date)
                 .orElseGet(() -> MemberDailySummary.builder()
                         .member(member)
-                        .summaryDate(today)
+                        .summaryDate(date)
                         .weight(null)                            // 아래에서 세팅
                         .totalProtein(BigDecimal.ZERO)
                         .totalCarbohydrate(BigDecimal.ZERO)
                         .totalFat(BigDecimal.ZERO)
                         .totalWater(BigDecimal.ZERO)
-                        .totalKcal(0)
+                        .totalKcal(BigDecimal.ZERO)
                         .createdDate(now)
                         .modifiedDate(now)
                         .build()
@@ -84,4 +84,5 @@ public class MemberDailySummaryService {
 
         summaryRepository.save(summary);
     }
+
 }

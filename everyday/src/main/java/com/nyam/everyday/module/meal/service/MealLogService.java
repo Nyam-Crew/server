@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -48,6 +49,8 @@ public class MealLogService {
        ========================= */
     @Transactional
     public Long addMealLog(MealLogRequestDto dto) {
+        Date selectedDate = dto.getMealLogDate();
+
         // 1) DTO -> Entity
         MealLog mealLog = mealLogMapStruct.toEntity(dto);
 
@@ -60,6 +63,8 @@ public class MealLogService {
         mealLog.setFood(food);
         mealLog.setMember(member);
 
+        mealLog.setMealLogDate(selectedDate);
+
         LocalDateTime now = LocalDateTime.now();
         if (mealLog.getCreatedDate() == null) mealLog.setCreatedDate(now);
         if (mealLog.getModifiedDate() == null) mealLog.setModifiedDate(now);
@@ -68,10 +73,10 @@ public class MealLogService {
         MealLog saved = mealLogRepository.save(mealLog);
 
         // 4) 요약 로우 upsert(요약일자는 "오늘")
-        LocalDate summaryDate = LocalDate.now();
+
         MemberDailySummary summary = memberDailySummaryRepository
-                .findByMember_MemberIdAndSummaryDate(member.getMemberId(), summaryDate)
-                .orElseGet(() -> createNewSummary(member, summaryDate, now));
+                .findByMember_MemberIdAndSummaryDate(member.getMemberId(), selectedDate)
+                .orElseGet(() -> createNewSummary(member, selectedDate, now));
 
         // 5) DTO 내 total(=합계) 값을 그대로 누적
         BigDecimal protein      = nz(dto.getProtein());       // g
@@ -84,8 +89,9 @@ public class MealLogService {
         summary.setTotalFat         ( nz(summary.getTotalFat()).add(fat) );
         // 물 섭취는 식사 로그에 없다면 0 유지 (별도 API에서 증가)
         // 칼로리만 Integer 누적
-        int addKcal = kcalBD.setScale(0, RoundingMode.HALF_UP).intValue();
-        summary.setTotalKcal( safeInt(summary.getTotalKcal()) + addKcal );
+        BigDecimal addKcal = kcalBD.setScale(1, RoundingMode.HALF_UP);
+
+        summary.setTotalKcal(summary.getTotalKcal().add(addKcal));
 
         summary.setModifiedDate(now);
         memberDailySummaryRepository.save(summary);
@@ -127,19 +133,28 @@ public class MealLogService {
         BigDecimal dKcal    = newKcal.subtract(oldKcal);
 
         // 5) 요약 로우(해당 로그 날짜)
-        LocalDate logDate = log.getCreatedDate().toLocalDate();
+        Date logDate = log.getMealLogDate();
+        LocalDateTime now = LocalDateTime.now();
+
         MemberDailySummary summary = memberDailySummaryRepository
                 .findByMember_MemberIdAndSummaryDate(userId, logDate)
-                .orElseThrow(() -> new IllegalStateException("MemberDailySummary not found for user/date"));
+                // 선택: 혹시 과거 데이터로 summary가 없을 수도 있으니 안전하게 upsert
+                .orElseGet(() -> createNewSummary(log.getMember(), logDate, now));
 
         // 6) 요약 누적(=기존 + delta)
         summary.setTotalProtein     ( nz(summary.getTotalProtein()).add(dProtein) );
         summary.setTotalCarbohydrate( nz(summary.getTotalCarbohydrate()).add(dCarb) );
         summary.setTotalFat         ( nz(summary.getTotalFat()).add(dFat) );
 
-        int kcalDelta = dKcal.setScale(0, RoundingMode.HALF_UP).intValue();
-        int newTotalKcal = safeInt(summary.getTotalKcal()) + kcalDelta;
-        summary.setTotalKcal(Math.max(0, newTotalKcal));
+        BigDecimal kcalDelta = dKcal.setScale(1, RoundingMode.HALF_UP);
+        BigDecimal newTotalKcal = summary.getTotalKcal().add(kcalDelta);
+
+        BigDecimal safeTotal = newTotalKcal.compareTo(BigDecimal.ONE) < 0
+                ? BigDecimal.ONE
+                : newTotalKcal;
+
+        summary.setTotalKcal(safeTotal);
+
         summary.setModifiedDate(LocalDateTime.now());
 
         // 7) 로그 자체 갱신(총량 저장)
@@ -170,9 +185,11 @@ public class MealLogService {
         BigDecimal oldFat     = nz(log.getFat());
         BigDecimal oldKcal    = nz(log.getIntakeKcal());
 
-        LocalDate logDate = log.getCreatedDate().toLocalDate();
+        // ✅ 여기서 날짜를 로그에서 읽는다 (컨트롤러가 줄 필요 없음)
+        Date date = log.getMealLogDate();
+
         MemberDailySummary summary = memberDailySummaryRepository
-                .findByMember_MemberIdAndSummaryDate(userId, logDate)
+                .findByMember_MemberIdAndSummaryDate(userId, date)
                 .orElseThrow(() -> new IllegalStateException("MemberDailySummary not found for user/date"));
 
         // 누적값에서 해당 로그 총량 차감
@@ -180,9 +197,18 @@ public class MealLogService {
         summary.setTotalCarbohydrate( clampNz(summary.getTotalCarbohydrate().subtract(oldCarb)) );
         summary.setTotalFat         ( clampNz(summary.getTotalFat().subtract(oldFat)) );
 
-        int minusKcal = oldKcal.setScale(0, RoundingMode.HALF_UP).intValue();
-        summary.setTotalKcal(Math.max(0, safeInt(summary.getTotalKcal()) - minusKcal));
+
+        BigDecimal minusKcal = oldKcal.setScale(1, RoundingMode.HALF_UP);
+        BigDecimal newTotalKcal = summary.getTotalKcal().subtract(minusKcal);
+
+        // 0 미만 방지
+        BigDecimal safeTotal = newTotalKcal.compareTo(BigDecimal.ZERO) < 0
+                ? BigDecimal.ZERO
+                : newTotalKcal;
+
+        summary.setTotalKcal(safeTotal);
         summary.setModifiedDate(LocalDateTime.now());
+
 
         memberDailySummaryRepository.save(summary);
         mealLogRepository.delete(log);
@@ -198,11 +224,8 @@ public class MealLogService {
         if (v == null) return BigDecimal.ZERO;
         return v.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : v;
     }
-    private static int safeInt(Integer v) {
-        return v == null ? 0 : v;
-    }
 
-    private MemberDailySummary createNewSummary(Member member, LocalDate summaryDate, LocalDateTime now) {
+    private MemberDailySummary createNewSummary(Member member, Date summaryDate, LocalDateTime now) {
         return MemberDailySummary.builder()
                 .member(member)
                 .summaryDate(summaryDate)
@@ -211,9 +234,10 @@ public class MealLogService {
                 .totalCarbohydrate(BigDecimal.ZERO)            // g
                 .totalFat(BigDecimal.ZERO)                     // g
                 .totalWater(BigDecimal.ZERO)                   // ml (별도 API에서 업데이트)
-                .totalKcal(0)                                  // kcal (정수 누적)
+                .totalKcal(BigDecimal.ZERO)                                  // kcal (정수 누적)
                 .createdDate(now)
                 .modifiedDate(now)
                 .build();
     }
+
 }
