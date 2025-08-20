@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -27,9 +26,6 @@ public class MemberRequestDto {
   @Schema(description = "회원 프로필 이미지 주소.(S3 url)")
   private String memberImg;
 
-  @Schema(description = "회원 프로필 이미지 파일(파일업로드)")
-  private MultipartFile memberImgFile;
-
   @Schema(description = "회원 성별", allowableValues = {"U", "M", "F"}, example = "U" )
   private String gender;
 
@@ -42,7 +38,7 @@ public class MemberRequestDto {
   @Schema(description = "회원 나이")
   private int age;
 
-  @Schema(description = "활동레벨")
+  @Schema(description = "활동레벨", allowableValues = { "SEDENTARY", "LIGHT", "MODERATE", "ACTIVE", "VERY_ACTIVE"}, example = "MODERATE")
   private String activityLevel;
 
 }

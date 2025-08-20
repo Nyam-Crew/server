@@ -1,13 +1,14 @@
 package com.nyam.everyday.web.badge.controller;
 
+import static org.springframework.http.HttpStatus.CREATED;
+
+import com.nyam.everyday.common.util.FileValidationUtils;
 import com.nyam.everyday.module.badge.service.BadgeService;
 import com.nyam.everyday.web.badge.dto.BadgeCreateRequestDto;
 import com.nyam.everyday.web.badge.dto.BadgeResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,31 +31,26 @@ public class BadgeController {
 
     private final BadgeService badgeService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
         summary = "뱃지 생성",
-        requestBody = @RequestBody(
-            description = "뱃지 정보(json)와 이미지 파일(선택)",
-            required = true,
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(
                 mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
                 encoding = {
                     @Encoding(name = "request", contentType = MediaType.APPLICATION_JSON_VALUE),
-                    @Encoding(name = "file", contentType = "image/png")
+                    @Encoding(name = "file", contentType = "image/png, image/jpeg")
                 }
             )
         )
     )
     public ResponseEntity<BadgeResponseDto> createBadge(
-        @RequestPart("request")
-        @Parameter(
-            description = "뱃지 생성 정보(json)",
-            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
-        )
-        BadgeCreateRequestDto request,
+        @RequestPart("request") @jakarta.validation.Valid BadgeCreateRequestDto request,
         @RequestPart(value = "file", required = false) MultipartFile file) {
 
-        return ResponseEntity.ok(badgeService.createBadge(request, file));
+        FileValidationUtils.validateOptionalPngJpeg(file, 5 * 1024 * 1024L); // 5MB 제한
+        BadgeResponseDto created = badgeService.createBadge(request, file);
+        return ResponseEntity.status(CREATED).body(created);
     }
 
     @DeleteMapping("/{badgeId}")

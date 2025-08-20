@@ -14,12 +14,13 @@ import com.nyam.everyday.web.member.dto.MemberRequestDto;
 import com.nyam.everyday.web.member.dto.MemberResponseDto;
 import com.nyam.everyday.web.member.dto.NicknameDuplicationResponse;
 import com.nyam.everyday.web.member.mapper.MemberMapper;
-import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Slf4j
@@ -71,12 +72,12 @@ public class MemberService {
 
 
   @Transactional
-  public MemberResponseDto update(Long id, MemberRequestDto dto) {
-    Member member = memberRepository.findById(id)
-        .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "id " + id + "에 해당하는 사용자가 없습니다."));
+  public MemberResponseDto update(Long memberId, MemberRequestDto dto, MultipartFile file) {
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "id " +memberId+ "에 해당하는 사용자가 없습니다."));
 
-    if(dto.getMemberImgFile() != null){
-      AwsS3Response newS3Url = awsS3Service.replaceFile(member.getMemberImg(), dto.getMemberImgFile());
+    if(file != null){
+      AwsS3Response newS3Url = awsS3Service.replaceFile(member.getMemberImg(), file);
       dto.setMemberImg(newS3Url.getUrl());
     } else {
       dto.setMemberImg(S3DefaultValue.DEFAULT_PROFILE_IMAGE.getValue());
