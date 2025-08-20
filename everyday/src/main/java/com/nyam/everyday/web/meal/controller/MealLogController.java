@@ -121,7 +121,6 @@ public class MealLogController {
         return ResponseEntity.ok(Map.of("result", "ok"));
     }
 
-
     @Operation(summary = "하루 요약 조회", description = "한 날짜의 식사별 목록(라이트) + 물/체중 + 총칼로리를 반환합니다.")
     @GetMapping("/day")
     public ResponseEntity<MealDayLiteResponse> getDay(
