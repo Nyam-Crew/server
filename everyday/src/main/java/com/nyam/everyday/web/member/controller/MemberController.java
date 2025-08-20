@@ -1,8 +1,10 @@
 package com.nyam.everyday.web.member.controller;
 
+
 import com.nyam.everyday.common.dto.CustomPageResponseDto;
 import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.common.exception.ErrorCode;
+import com.nyam.everyday.common.util.FileValidationUtils;
 import com.nyam.everyday.module.badge.service.BadgeService;
 import com.nyam.everyday.module.board.dto.BoardWithNicknameDto;
 import com.nyam.everyday.module.board.service.BoardService;
@@ -16,6 +18,8 @@ import com.nyam.everyday.web.member.dto.MyBoardsResponseDto;
 import com.nyam.everyday.web.member.dto.NicknameDuplicationResponse;
 import com.nyam.everyday.web.member.mapper.MemberMapper;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,8 +36,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @Tag(name = "Member-Controller", description = "회원 관리")
 @RestController
@@ -67,10 +73,29 @@ public class MemberController {
     return ResponseEntity.ok(saved);
   }
 
-  @PutMapping("/{memberId}")
-  @Operation(summary = "회원 정보 수정", description = "회원 정보를 수정합니다.")
-  public ResponseEntity<MemberResponseDto> update(@PathVariable Long memberId, @RequestBody MemberRequestDto dto) {
-    MemberResponseDto updated = memberService.update(memberId, dto);
+  @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @Operation(
+      summary = "회원 정보 수정",
+      description = "JSON 데이터와 이미지 파일을 함께 받아 회원 정보를 수정합니다.",
+      requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+          content = @Content(
+              mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+              encoding = {
+                  @Encoding(name = "request", contentType = MediaType.APPLICATION_JSON_VALUE),
+                  @Encoding(name = "file", contentType = "image/png, image/jpeg")
+              }
+          )
+      )
+  )
+  public ResponseEntity<MemberResponseDto> update (
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @RequestPart("request") @jakarta.validation.Valid MemberRequestDto dto,
+      @RequestPart(value = "file", required = false) MultipartFile file
+  ) {
+    if (userDetails == null) throw new BaseException(ErrorCode.AUTHENTICATION_FAILED);
+
+    FileValidationUtils.validateOptionalPngJpeg(file, 5 * 1024 * 1024L); // 5MB 제한
+    MemberResponseDto updated = memberService.update(userDetails.getId(), dto, file);
     return ResponseEntity.ok(updated);
   }
 
@@ -131,3 +156,4 @@ public class MemberController {
 
 
 }
+
