@@ -18,14 +18,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-/**
- * MealLogController
- *
- * @author : 장소희
- * @fileName : MealLogController
- * @since : 25. 8. 5.
- */
-
 @Tag(name = "Meal-Log-Controller", description = "식사 기록 관리")
 @RestController
 @RequiredArgsConstructor
@@ -43,7 +35,6 @@ public class MealLogController {
             @RequestParam String mealType,
             @RequestParam String date
     ) {
-        // JWT 인증으로 memberId 추출 및 설정
         return mealLogService.getMealLogs(userDetails.getId(), mealType, date);
     }
 
@@ -54,8 +45,7 @@ public class MealLogController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody MealLogRequestDto requestDto
     ) {
-        requestDto.setMemberId(userDetails.getId());
-
+        requestDto.setMemberId(userDetails.getId()); // JWT에서 memberId 주입
         Long mealLogId = mealLogService.addMealLog(requestDto);
         return ResponseEntity.ok(Map.of(
                 "result", "ok",
@@ -63,8 +53,8 @@ public class MealLogController {
         ));
     }
 
-    // feat: 음식 기록 일부 수정 (intakeAmount, intakeKcal)
-    @Operation(summary = "음식 기록 일부 수정", description = "섭취량 또는 섭취 칼로리만 수정합니다.")
+    // feat: 음식 기록 일부 수정 (intakeAmount, intakeKcal, 탄/단/지)
+    @Operation(summary = "음식 기록 일부 수정", description = "섭취량/칼로리/3대영양소를 부분 수정합니다.")
     @PatchMapping("/log/{mealLogId}")
     public ResponseEntity<?> updateMealLog(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -72,9 +62,9 @@ public class MealLogController {
             @RequestBody Map<String, Object> updates
     ){
         Integer intakeAmount = (Integer) updates.get("intakeAmount");
-        Double intakeKcal = updates.get("intakeKcal") instanceof Integer ?
-                ((Integer) updates.get("intakeKcal")).doubleValue() :
-                (Double) updates.get("intakeKcal");
+        Double intakeKcal = updates.get("intakeKcal") instanceof Integer
+                ? ((Integer) updates.get("intakeKcal")).doubleValue()
+                : (Double) updates.get("intakeKcal");
 
         BigDecimal protein = updates.get("protein") != null
                 ? new BigDecimal(updates.get("protein").toString())
@@ -88,6 +78,7 @@ public class MealLogController {
                 ? new BigDecimal(updates.get("fat").toString())
                 : BigDecimal.ZERO;
 
+        // ✅ 날짜는 바디에서 받지 않음. 서비스가 해당 로그의 mealLogDate로 summary 갱신
         mealLogService.updateIntakeAmountAndKcal(
                 userDetails.getId(),
                 mealLogId,
@@ -106,21 +97,18 @@ public class MealLogController {
     @DeleteMapping("/log/{mealLogId}")
     public ResponseEntity<Void> deleteMealLog(@AuthenticationPrincipal CustomUserDetails userDetails,
                                               @PathVariable Long mealLogId) {
+        // ✅ 서비스에서 해당 로그의 mealLogDate 기준으로 summary 차감
         mealLogService.deleteMealLog(userDetails.getId(), mealLogId);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
 
-    // 물 섭취 기록 추가
+    // 물 섭취 기록 추가 (현재는 오늘 기준. 선택일 기능이 필요하면 DTO/Service에 LocalDate date 추가로 확장)
     @Operation(summary = "물 섭취 기록 추가", description = "하루 물 섭취량을 기록하거나 수정합니다.")
     @PostMapping("/water")
     public ResponseEntity<?> addWater(@RequestBody WaterRequestDto waterRequestDto,
                                       @AuthenticationPrincipal CustomUserDetails userDetails) {
-        // JWT에서 memberId 추출
         Long memberId = userDetails.getId();
-
-        // 서비스에 위임
-        memberDailySummaryService.addOrUpdateWater(memberId, waterRequestDto.getAmount());
-
+        memberDailySummaryService.addOrUpdateWater(memberId, waterRequestDto.getAmount(), waterRequestDto.getDate());
         return ResponseEntity.ok(Map.of("result", "ok"));
     }
 
@@ -129,11 +117,8 @@ public class MealLogController {
     public ResponseEntity<?> addWeight(
             @RequestBody WeightRequestDto weightRequestDto,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-
         Long memberId = userDetails.getId();
-
-        memberDailySummaryService.addOrUpdateWeight(memberId, weightRequestDto.getWeight());
-
+        memberDailySummaryService.addOrUpdateWeight(memberId, weightRequestDto.getWeight(),  weightRequestDto.getDate());
         return ResponseEntity.ok(Map.of("result", "ok"));
     }
 }

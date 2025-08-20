@@ -1,85 +1,140 @@
 package com.nyam.everyday.module.notification.service;
 
+import com.nyam.everyday.common.exception.BaseException;
+import com.nyam.everyday.module.member.entity.Member;
+import com.nyam.everyday.module.member.repository.MemberRepository;
+import com.nyam.everyday.module.notification.entity.MemberNotificationStatus;
+import com.nyam.everyday.module.notification.entity.Notification;
+import com.nyam.everyday.module.notification.entity.NotificationType;
+import com.nyam.everyday.module.notification.repository.MemberNotificationStatusRepository;
+import com.nyam.everyday.module.notification.repository.NotificationRepository;
 import com.nyam.everyday.web.notification.dto.NotificationDto;
+import com.nyam.everyday.web.notification.dto.NotificationStatusDto;
+import com.nyam.everyday.web.notification.dto.NotifyToReactDto;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Slf4j
-@Transactional(rollbackFor = Exception.class)
+@Transactional
 @RequiredArgsConstructor
 public class NotificationService {
 
-  private final SimpMessagingTemplate simpMessagingTemplate;
+  private final MemberRepository memberRepository;
+  private final NotifyToReactService notifyToReactService;
+  private final NotificationRepository notificationRepository;
+  private final MemberNotificationStatusRepository memberNotificationStatusRepository;
 
-  /**
-   * NotificationService
-   *
-   * 웹소켓 기반 알림 전송 기능을 제공합니다.
-   * 구독 경로(Subscribe Endpoint) 규칙:
-   *   - /topic/notification         : 전체 사용자 대상 Broadcast 알림
-   *   - /user/queue/notification    : 특정 사용자 대상 개인 알림
-   *   - /topic/team/{teamId}        : 특정 팀 전체 대상 팀 알림
-   *
-   * 사용 예시:
-   *   - 공지사항/이벤트 시작 → NoticeBroadcast()
-   *   - 특정 유저만 초대/경고 알림 → NoticeToMember()
-   *   - 팀 과제 완료, 팀 공지 → NoticeToTeam()
-   */
+  /// 특정 회원의 알림 목록을 최신순으로 20개 조회하고
+  /// 해당 회원의 마지막 확인 알림 번호(lastNotificationNum)를 최신값으로 갱신합니다.
+  // notification 리스트를 불러오고 해당 유저가 어디까지 알림을 확인했는지 갱신
+  public List<NotificationDto> getNotifications(Long memberId) {
 
-  /**
-   * 전체 사용자에게 알림을 전송합니다.
-   *
-   * @param notificationDto  전송할 알림 DTO (title, content 등 포함)
-   *
-   * 예시:
-   *   notificationService.NoticeBroadcast(
-   *       new NotificationDto("서버 점검", "오늘 밤 12시 서버 점검 예정")
-   *   );
-   *
-   * 구독 경로:
-   *   /topic/notification
-   */
-  public void NoticeBroadcast(NotificationDto notificationDto) {
-    simpMessagingTemplate.convertAndSend("/topic/notification", notificationDto.getContent());
-    log.info("전체 유저에게 알림 전송 완료");
+    // 멤버가 어디까지 알림을 읽었는지 불러오기
+    MemberNotificationStatus memberNotificationStatus = memberNotificationStatusRepository.findByMemberId(
+        memberId).orElseThrow();
+    Long lastNotifySeen = memberNotificationStatus.getLastNotificationNum();
+
+    // 이 사람에게 전달할 알림 목록을 받아온다
+    Pageable pageable = PageRequest.of(0, 20);
+    List<Notification> notifyList = notificationRepository.findNotificationByMemberId(memberId, pageable);
+
+    // 반환할 결과 Dto 배열 만들기
+    List<NotificationDto> result = new ArrayList<>();
+    for (Notification notification : notifyList) {
+      result.add(NotificationDto.builder()
+          .content(notification.getNotificationContent())
+          .isRead(notification.getNotificationId() <= lastNotifySeen)
+          .createdAt(notification.getCreatedDate())
+          .build()
+      );
+    }
+
+    // 지금 가져온 첫 원소의 NotificationId를 받는다.
+    Long lastNotificationId = notifyList.isEmpty() ? -1 : notifyList.get(0).getNotificationId();
+
+    // 값을 업데이트하고, 결과 반환
+    memberNotificationStatus.setLastNotificationNum(lastNotificationId);
+    return result;
   }
 
-  /**
-   * 특정 사용자(개인)에게 알림을 전송합니다.
-   *
-   * @param notificationDto  전송할 알림 DTO
-   * @param memberId         대상 사용자 ID
-   *
-   * 예시:
-   *   notificationService.NoticeToMember(dto, 5L);
-   *
-   * 구독 경로:
-   *   /user/queue/notification
-   */
-  public void NoticeToMember(NotificationDto notificationDto, Long memberId) {
-    simpMessagingTemplate.convertAndSendToUser(memberId.toString(), "/queue/notification", notificationDto.getContent());
-    log.info("{}번 유저에게 알림 전송 완료", memberId);
+  /// 회원에게 새 알림이 존재하는지 확인하고 반환
+  /// @Param 확인하고자 하는 사용자의 id
+  /// @return 새 알림이 있으면 True, 없으면 False
+  public NotificationStatusDto hasNewNotifications(Long memberId) {
+    // 유저가 어디까지 알람을 읽었는지 찾기
+    MemberNotificationStatus memberNotificationStatus = memberNotificationStatusRepository.findByMemberId(
+        memberId).orElse(null);
+
+    // 유저가 알림을 읽은 정보가 없다면, 새로 등록
+    if (memberNotificationStatus == null) {
+      memberNotificationStatus = MemberNotificationStatus.builder()
+          .memberId(memberId)
+          .build();
+
+      memberNotificationStatusRepository.save(memberNotificationStatus);
+    }
+
+    // 현재 알람 테이블에서 가장 큰 키 값 조회
+    Long maxNotifyNum = notificationRepository.findMaxNotificationId(memberId);
+
+    // 키 값 기반으로 확인해서 새로 확인할 알림이 있다면 true, 아니면 false
+    return new NotificationStatusDto(maxNotifyNum > memberNotificationStatus.getLastNotificationNum());
   }
 
-  /**
-   * 특정 팀 전체에게 알림을 전송합니다.
-   *
-   * @param notificationDto  전송할 알림 DTO
-   * @param teamId           대상 팀 ID
-   *
-   * 예시:
-   *   notificationService.NoticeToTeam(dto, 10L);
-   *
-   * 구독 경로:
-   *   /topic/team/{teamId}
-   */
-  public void NoticeToTeam(NotificationDto notificationDto, Long teamId) {
-    simpMessagingTemplate.convertAndSend("/topic/team/" + teamId, notificationDto.getContent());
-    log.info("{}팀에 알림 전송 완료", teamId);
+  // 전체 공지 생성하고 /topic/notification 채널에 메세지 전송하기
+  public void addBroadcastNotification(String content, NotificationType type) {
+    Notification notification = Notification.builder()
+        .member(null)
+        .notificationContent(content)
+        .notificationType(type)
+        .build();
+
+    // 생성된 공지 저장
+    notification = notificationRepository.save(notification);
+
+    // Dto로 변경
+    NotifyToReactDto notifyToReactDto = NotifyToReactDto.builder()
+        .content(notification.getNotificationContent())
+        .createdAt(notification.getCreatedDate())
+        .build();
+
+    // 알림 전송
+    notifyToReactService.NotifyBroadcast(notifyToReactDto);
+  }
+
+  // 개인 공지 생성하고 /user/queue/notification 채널에 메세지 전송하기
+  public void addPrivateNotification(String content, Long memberId, NotificationType type) {
+    Member member = memberRepository.findByMemberId(memberId)
+        .orElseThrow(() -> BaseException.MEMBER_NOT_FOUND);
+
+    Notification notification = Notification.builder()
+        .member(member)
+        .notificationContent(content)
+        .notificationType(type)
+        .build();
+
+    // 생성된 공지 저장
+    notification = notificationRepository.save(notification);
+
+    // Dto로 변경
+    NotifyToReactDto notifyToReactDto = NotifyToReactDto.builder()
+        .content(notification.getNotificationContent())
+        .createdAt(notification.getCreatedDate())
+        .build();
+
+    // 알림 전송
+    notifyToReactService.NotifyToMember(notifyToReactDto, memberId);
+  }
+
+  /// 팀 공지 생성 시에 사용되어야 할 함수 지은님이 직접 구현해서 사용하시면 됩니다 (매개변수, 내용 등)
+  public void addTeamNotification(String content, Long teamId, NotificationType type) {
+
+    // 아래의 함수 사용하시면 Toast메세지가 해당 팀 멤버들에게 전달됩니다.
+    /// notifyToReactService.notifyToTeam(NotifyToReactDto dto, Long TeamId)
   }
 }
-

@@ -31,9 +31,23 @@ public class RedisConfig {
         return new LettuceConnectionFactory(configuration);
     }
 
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+
+    @Bean("redisLoginTemplate")
+    public RedisTemplate<String, Object> redisLoginTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        return template;
+    }
+    @Bean("redisRankingTemplate")
+    public RedisTemplate<String, String> redisRankingTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, String> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        return template;
+    }
+
+    @Bean("redisTeamFeedTemplate")
+    public RedisTemplate<String, String> redisTeamFeedTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, String> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
         // Key는 String 직렬화

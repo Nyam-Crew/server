@@ -1,7 +1,7 @@
 package com.nyam.everyday.web.team.dto;
 
+import java.math.BigDecimal;
 import lombok.*;
-import java.time.LocalDateTime;
 
 /**
  * 그룹 간 경쟁 관련 Dto
@@ -18,10 +18,14 @@ import java.time.LocalDateTime;
 public class TeamGlobalRankingDto {
 
     private Long id;
-    private String periodType;
-    private String periodValue;
+    private Integer rankingYear;
+    private Integer rankingMonth;
     private Long teamId;
-    private Integer totalScore;
+    private String teamName;
     private Integer rank;
-    private LocalDateTime recordedAt;
+    private BigDecimal averageScore;
+    private Long totalScore;
+    private Integer memberCount;
+
 }
+

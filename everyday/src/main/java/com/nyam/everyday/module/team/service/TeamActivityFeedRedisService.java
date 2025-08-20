@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nyam.everyday.module.team.view.TeamFeedMessageFormatter;
 import com.nyam.everyday.web.team.dto.FeedSlice;
 import com.nyam.everyday.web.team.dto.TeamActivityFeedItem;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
@@ -26,11 +26,17 @@ import java.util.stream.Collectors;
  *
  */
 @Service
-@RequiredArgsConstructor
 public class TeamActivityFeedRedisService implements TeamActivityFeedService {
 
+    @Qualifier("redisTeamFeedTemplate")
     private final RedisTemplate<String, String> redisTemplate; // value는 JSON 문자열 저장
     private final ObjectMapper objectMapper;
+
+    public TeamActivityFeedRedisService(@Qualifier("redisTeamFeedTemplate") RedisTemplate<String, String> redisTemplate,
+        ObjectMapper objectMapper ){
+        this.redisTemplate = redisTemplate;
+        this.objectMapper = objectMapper;
+    }
 
     private String indexKey(Long teamId) { return "team:%d:activity:index".formatted(teamId); }
     private String itemKey(Long teamId, String feedId) { return "team:%d:activity:item:%s".formatted(teamId, feedId); }

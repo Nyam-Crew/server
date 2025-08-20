@@ -1,10 +1,9 @@
 package com.nyam.everyday.web.team.mapper;
 
-import com.nyam.everyday.module.team.entity.TeamGlobalRanking;
+import com.nyam.everyday.module.ranking.entity.TeamGlobalRanking;
 import com.nyam.everyday.web.team.dto.TeamGlobalRankingDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
 import org.mapstruct.ReportingPolicy;
 
 /**

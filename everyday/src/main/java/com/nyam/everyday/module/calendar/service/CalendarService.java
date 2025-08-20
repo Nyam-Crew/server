@@ -11,7 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.*;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,44 +24,58 @@ public class CalendarService {
 
     private final MemberDailySummaryRepository summaryRepository;
     private final DailyMissionStampRepository stampRepository;
-    private final Clock clock; // Asia/Seoul
+    private final Clock clock; // Asia/Seoul 주입
 
     @Transactional(readOnly = true)
     public MonthlyCalendarResponse getMonthly(Long memberId, Integer year, Integer month) {
-        // 기본값: 오늘 기준
+        // 0) 기준 연/월 결정
         LocalDate today = LocalDate.now(clock);
         int y = (year == null) ? today.getYear() : year;
         int m = (month == null) ? today.getMonthValue() : month;
         YearMonth ym = YearMonth.of(y, m);
 
-        LocalDate start = ym.atDay(1);
-        LocalDate end   = ym.atEndOfMonth();
+        // 1) 월의 시작/끝(LocalDate)
+        LocalDate startLd = ym.atDay(1);
+        LocalDate endLd   = ym.atEndOfMonth();
 
-        // 1) 요약/스탬프 한 번에 로딩
+        // 2) Date 경계 계산: [fromInclusive, toExclusive)
+        ZoneId zone = clock.getZone();
+        Date fromInclusive = Date.from(startLd.atStartOfDay(zone).toInstant());
+        Date toExclusive   = Date.from(ym.plusMonths(1).atDay(1).atStartOfDay(zone).toInstant());
+
+        // 3) 요약 로드 (Date 경계 사용)
         List<MemberDailySummary> summaries =
-                summaryRepository.findAllByMember_MemberIdAndSummaryDateBetweenOrderBySummaryDateAsc(
-                        memberId, start, end);
+                summaryRepository
+                        .findAllByMember_MemberIdAndSummaryDateGreaterThanEqualAndSummaryDateLessThanOrderBySummaryDateAsc(
+                                memberId, fromInclusive, toExclusive
+                        );
 
+        // 4) 스탬프 로드 (스탬프는 LocalDate 컬럼이면 그대로 사용)
         List<DailyMissionStamp> stamps =
-                stampRepository.findByMemberIdAndMissionDateBetween(memberId, start, end);
+                stampRepository.findByMemberIdAndMissionDateBetween(memberId, startLd, endLd);
 
-        // 2) map으로 빠른 조회 준비
-        Map<LocalDate, MemberDailySummary> summaryMap = summaries.stream()
-                .collect(Collectors.toMap(MemberDailySummary::getSummaryDate, s -> s));
+        // 5) 요약 맵: 키를 LocalDate로 통일
+        Map<LocalDate, MemberDailySummary> summaryMap = new HashMap<>();
+        for (MemberDailySummary s : summaries) {
+            LocalDate key = s.getSummaryDate().toInstant().atZone(zone).toLocalDate();
+            summaryMap.putIfAbsent(key, s); // 중복 시 첫 번째 유지
+        }
 
         Set<LocalDate> achievedDays = stamps.stream()
                 .filter(DailyMissionStamp::isAchieved)
                 .map(DailyMissionStamp::getMissionDate)
                 .collect(Collectors.toSet());
 
-        // 3) 월 전체 날짜 loop 채우기(없으면 기본값)
+        // 6) 달력 채우기
         List<CalendarDayDto> items = new ArrayList<>(ym.lengthOfMonth());
-        for (LocalDate d = start; !d.isAfter(end); d = d.plusDays(1)) {
+        for (LocalDate d = startLd; !d.isAfter(endLd); d = d.plusDays(1)) {
             MemberDailySummary s = summaryMap.get(d);
 
-            Integer kcal = (s != null && s.getTotalKcal() != null) ? s.getTotalKcal() : 0;
-            BigDecimal weight = (s != null) ? s.getWeight() : null;
-            Integer water = (s != null && s.getTotalWater() != null) ? s.getTotalWater().intValue() : null;
+            BigDecimal kcal   = (s != null) ? s.getTotalKcal() : null;
+            BigDecimal weight = (s != null) ? s.getWeight()    : null;
+            Integer water     = (s != null && s.getTotalWater() != null)
+                    ? s.getTotalWater().intValue()
+                    : null;
 
             items.add(CalendarDayDto.builder()
                     .date(d)
@@ -69,6 +86,7 @@ public class CalendarService {
                     .build());
         }
 
+        // 7) 응답
         return MonthlyCalendarResponse.builder()
                 .year(y)
                 .month(m)
