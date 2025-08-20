@@ -12,11 +12,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
-@Builder
 @Entity
+@Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class MemberChallengeStatus extends BaseEntity {
@@ -43,4 +45,14 @@ public class MemberChallengeStatus extends BaseEntity {
   @Column(nullable = false)
   @Builder.Default
   private Integer progressCount = 0;
+
+  // 클리어 처리할 떄 사용
+  public void setAsCleared() {
+    this.isCleared = true;
+  }
+
+  // Progress count 1 증가시킬 때 사용
+  public void addProgressCount() {
+    this.progressCount++;
+  }
 }
