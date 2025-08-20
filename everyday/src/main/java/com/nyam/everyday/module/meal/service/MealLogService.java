@@ -2,10 +2,12 @@ package com.nyam.everyday.module.meal.service;
 
 import com.nyam.everyday.module.food.entity.Food;
 import com.nyam.everyday.module.food.repository.FoodRepository;
+import com.nyam.everyday.module.meal.type.MealType;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.module.summary.entity.MemberDailySummary;
 import com.nyam.everyday.module.summary.repository.MemberDailySummaryRepository;
+import com.nyam.everyday.web.meal.dto.MealDayLiteResponse;
 import com.nyam.everyday.web.meal.dto.MealLogRequestDto;
 import com.nyam.everyday.web.meal.dto.MealLogResponseDto;
 import com.nyam.everyday.module.meal.entity.MealLog;
@@ -18,10 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
+import java.time.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +33,8 @@ public class MealLogService {
     private final FoodRepository foodRepository;
     private final MemberRepository memberRepository;
     private final MemberDailySummaryRepository memberDailySummaryRepository;
+    private final MemberDailySummaryRepository summaryRepository;
+    private final Clock clock; // Asia/Seoul
 
     /* =========================
        날짜별 기록 조회
@@ -237,6 +240,75 @@ public class MealLogService {
                 .totalKcal(BigDecimal.ZERO)                                  // kcal (정수 누적)
                 .createdDate(now)
                 .modifiedDate(now)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public MealDayLiteResponse getDay(Long memberId, LocalDate date) {
+        // DB가 DATE 컬럼이므로 java.util.Date 로 변환
+        ZoneId zone = clock.getZone();
+        Date d = Date.from(date.atStartOfDay(zone).toInstant());
+
+        // 1) 식사 로그 라이트 조회
+        var rows = mealLogRepository.findLiteByMemberAndDate(memberId, d);
+
+        // 2) MealType별 그룹 + 합계
+        Map<MealType, List<MealDayLiteResponse.MealItemLite>> grouped =
+                rows.stream().collect(Collectors.groupingBy(
+                        MealLogRepository.LiteRow::getMealType,
+                        Collectors.mapping(r -> MealDayLiteResponse.MealItemLite.builder()
+                                        .id(r.getMealLogId())
+                                        .foodName(r.getFoodName())
+                                        .intakeKcal(r.getIntakeKcal())
+                                        .build(),
+                                Collectors.toList())
+                ));
+
+        Map<MealType, MealDayLiteResponse.MealBucket> buckets = new EnumMap<>(MealType.class);
+        for (MealType mt : MealType.values()) {
+            List<MealDayLiteResponse.MealItemLite> items = grouped.getOrDefault(mt, List.of());
+            BigDecimal total = items.stream()
+                    .map(MealDayLiteResponse.MealItemLite::getIntakeKcal)
+                    .filter(Objects::nonNull)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            buckets.put(mt, MealDayLiteResponse.MealBucket.builder()
+                    .totalKcal(total)
+                    .items(items)
+                    .build());
+        }
+
+        // 3) 요약(물, 체중, 총칼로리, 수정시각)
+        Integer water = null;
+        BigDecimal weight = null;
+        BigDecimal dayTotalKcal = null;
+        Instant updatedAt = null;
+
+        Optional<MemberDailySummary> opt = summaryRepository
+                .findByMember_MemberIdAndSummaryDate(memberId, d);
+        if (opt.isPresent()) {
+            var s = opt.get();
+            water = (s.getTotalWater() == null) ? null : s.getTotalWater().intValue();
+            weight = s.getWeight();
+            dayTotalKcal = s.getTotalKcal();
+            if (s.getModifiedDate() != null) {
+                updatedAt = s.getModifiedDate().atZone(zone).toInstant();
+            }
+        }
+
+        // 4) ETag (간단 해시)
+        String etag = String.format("W/\"meal-%d-%s-%d\"",
+                memberId, date, updatedAt == null ? 0 : updatedAt.toEpochMilli());
+
+        return MealDayLiteResponse.builder()
+                .date(date)
+                .meals(buckets)
+                .water(water)
+                .weight(weight)
+                .summaryTotalKcal(dayTotalKcal)
+                .meta(MealDayLiteResponse.Meta.builder()
+                        .updatedAt(updatedAt)
+                        .etag(etag)
+                        .build())
                 .build();
     }
 
