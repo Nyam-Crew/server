@@ -78,6 +78,9 @@ public class TeamActivityFeedRedisService implements TeamActivityFeedService {
                 redisTemplate.expire(itKey, remainMs, TimeUnit.MILLISECONDS);
             }
         }
+
+
+
     }
 
     /* ===================== 갱신(복수형, 값만) ===================== */

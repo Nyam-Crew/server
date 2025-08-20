@@ -132,6 +132,7 @@ public class NotificationService {
   }
 
   /// 팀 공지 생성 시에 사용되어야 할 함수 지은님이 직접 구현해서 사용하시면 됩니다 (매개변수, 내용 등)
+    /*팀알림 관련은 TeamNotificationService에서 처리합니다.*/
   public void addTeamNotification(String content, Long teamId, NotificationType type) {
 
     // 아래의 함수 사용하시면 Toast메세지가 해당 팀 멤버들에게 전달됩니다.

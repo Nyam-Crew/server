@@ -61,4 +61,18 @@ public class RedisConfig {
         return template;
     }
 
+    @Bean("redisTeamNotificationTemplate")
+    public RedisTemplate<String, String> redisTeamNotificationTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, String> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        // Key / Value 모두 String 직렬화 (쿨다운 키, dirty set 용도)
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new StringRedisSerializer());
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new StringRedisSerializer());
+
+        return template;
+    }
+
 }

@@ -12,5 +12,6 @@ package com.nyam.everyday.module.team.enums;
 public enum TeamNotificationType {
     NOTICE,
     FEED,
-    CHAT
+    CHAT,
+    SUMMARY;
 }

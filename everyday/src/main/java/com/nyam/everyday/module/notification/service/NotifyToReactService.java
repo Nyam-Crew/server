@@ -2,6 +2,7 @@ package com.nyam.everyday.module.notification.service;
 
 import com.nyam.everyday.web.notification.dto.NotificationDto;
 import com.nyam.everyday.web.notification.dto.NotifyToReactDto;
+import com.nyam.everyday.web.team.dto.TeamNotifyDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -69,7 +70,7 @@ public class NotifyToReactService {
   /**
    * 특정 팀 전체에게 알림을 전송합니다.
    *
-   * @param notifyToReactDto  전송할 알림 DTO
+   * @param teamNotifyDto  전송할 알림 DTO
    * @param teamId           대상 팀 ID
    *
    * 예시:
@@ -78,8 +79,8 @@ public class NotifyToReactService {
    * 구독 경로:
    *   /topic/team/{teamId}
    */
-  public void NotifyToTeam(NotifyToReactDto notifyToReactDto, Long teamId) {
-    simpMessagingTemplate.convertAndSend("/topic/team/" + teamId, notifyToReactDto);
+  public void NotifyToTeam(TeamNotifyDto teamNotifyDto, Long teamId) {
+    simpMessagingTemplate.convertAndSend("/topic/team/" + teamId, teamNotifyDto);
     log.info("{}팀에 알림 전송 완료", teamId);
   }
 }

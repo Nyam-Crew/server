@@ -53,4 +53,13 @@ public interface TeamMemberStatusRepository extends JpaRepository<TeamMemberStat
 
     // 특정 멤버가 속해있는 모든 그룹 리스트 찾기
     List<TeamMemberStatus> getAllByMember_MemberId(Long memberId);
+
+    //팀의 승인멤버 목록 조회
+    @Query("""
+        select tms.member.memberId
+        from TeamMemberStatus tms
+        where tms.team.teamId = :teamId
+          and tms.status = com.nyam.everyday.module.team.enums.ParticipationStatus.APPROVED
+    """)
+    List<Long> findApprovedMemberIdsByTeamId(Long teamId);
 }
