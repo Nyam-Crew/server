@@ -162,6 +162,7 @@ CREATE TABLE team_notification (
                                    notification_type VARCHAR(1) NOT NULL,
                                    team_noty_content VARCHAR(255) NOT NULL,
                                    is_checked BOOLEAN NOT NULL default false,
+                                   delivery_status VARCHAR(20) NOT NULL,
                                    created_date TIMESTAMP NOT NULL,
                                    PRIMARY KEY (team_alarm_id)
 );
