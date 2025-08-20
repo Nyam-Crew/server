@@ -1,14 +1,20 @@
 package com.nyam.everyday.web.member.controller;
 
 import com.nyam.everyday.common.dto.CustomPageResponseDto;
+import com.nyam.everyday.common.exception.BaseException;
+import com.nyam.everyday.common.exception.ErrorCode;
 import com.nyam.everyday.module.badge.service.BadgeService;
+import com.nyam.everyday.module.board.dto.BoardWithNicknameDto;
+import com.nyam.everyday.module.board.service.BoardService;
 import com.nyam.everyday.module.member.service.MemberService;
 import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.web.badge.dto.AssignBadgeRequestDto;
 import com.nyam.everyday.web.badge.dto.BadgeOwnershipDto;
 import com.nyam.everyday.web.member.dto.MemberRequestDto;
 import com.nyam.everyday.web.member.dto.MemberResponseDto;
+import com.nyam.everyday.web.member.dto.MyBoardsResponseDto;
 import com.nyam.everyday.web.member.dto.NicknameDuplicationResponse;
+import com.nyam.everyday.web.member.mapper.MemberMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +42,8 @@ public class MemberController {
 
   private final MemberService memberService;
   private final BadgeService badgeService;
+  private final BoardService boardService;
+  private final MemberMapper memberMapper;
 
   @GetMapping("/{memberId}")
   @Operation(summary = "회원 정보", description = "회원의 정보를 조회합니다.")
@@ -106,4 +114,20 @@ public class MemberController {
     Page<BadgeOwnershipDto> response = badgeService.getBadgeListWithOwnership(pageable, currentUserId);
     return ResponseEntity.ok(new CustomPageResponseDto<>(response));
   }
+
+  @GetMapping("/my-boards")
+  @Operation(summary = "내 게시글 목록 페이징", description = "로그인한 사용자의 게시글 목록을 페이징하여 조회합니다.")
+  public ResponseEntity<CustomPageResponseDto<MyBoardsResponseDto>> getMyBoards(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable) {
+    if (userDetails == null) {
+      throw new BaseException(ErrorCode.AUTHENTICATION_FAILED);
+    }
+    Page<BoardWithNicknameDto> myBoards =
+        boardService.getMyBoards(userDetails.getId(), pageable);
+
+    return ResponseEntity.ok(new CustomPageResponseDto<>(myBoards).map(memberMapper::toMyBoardsResponseDto));
+  }
+
+
 }

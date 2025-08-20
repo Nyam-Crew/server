@@ -2,6 +2,7 @@ package com.nyam.everyday.module.board.service;
 
 import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.common.exception.ErrorCode;
+import com.nyam.everyday.module.board.dto.BoardWithNicknameDto;
 import com.nyam.everyday.module.board.entity.Board;
 import com.nyam.everyday.module.board.repository.BoardRepository;
 import com.nyam.everyday.module.member.entity.Member;
@@ -82,7 +83,11 @@ public class BoardService {
     board.increaseViewCount(); // Board 엔티티 내부에서 +1 증가
     return boardMapper.toDto(board);
 
+  }
 
+  @Transactional(readOnly = true)
+  public Page<BoardWithNicknameDto> getMyBoards(Long memberId, Pageable pageable) {
+    return boardRepository.findByMemberId(memberId, pageable);
   }
 
 }

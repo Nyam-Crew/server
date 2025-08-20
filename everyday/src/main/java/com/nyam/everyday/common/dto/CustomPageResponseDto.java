@@ -1,8 +1,12 @@
 package com.nyam.everyday.common.dto;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 @Getter
 public class CustomPageResponseDto<T> {
@@ -21,5 +25,19 @@ public class CustomPageResponseDto<T> {
     this.totalPages = page.getTotalPages();
     this.totalElements = page.getTotalElements();
     this.isLast = page.isLast();
+  }
+
+  public <U> CustomPageResponseDto<U> map(Function<? super T, ? extends U> converter) {
+    List<U> convertedContent = this.content.stream()
+        .map(converter)
+        .collect(Collectors.toList());
+
+    Page<U> newPage = new PageImpl<>(
+        convertedContent,
+        PageRequest.of(this.pageNumber, this.pageSize),
+        this.totalElements
+    );
+
+    return new CustomPageResponseDto<>(newPage);
   }
 }

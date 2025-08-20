@@ -61,10 +61,13 @@ cloud:
 spring:
   data:
     redis:
+      repositories:
+        enabled: false
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
 
-# OAuth2 설정 예시
+
+  # OAuth2 설정 예시
 # 우선 미사용 처리
   security:
     oauth2:
