@@ -160,6 +160,8 @@ CREATE TABLE team_notification (
                                    team_id BIGINT NOT NULL,
                                    member_id BIGINT NOT NULL,
                                    notification_type VARCHAR(1) NOT NULL,
+                                   team_noty_content VARCHAR(255) NOT NULL,
+                                   is_checked BOOLEAN NOT NULL default false,
                                    created_date TIMESTAMP NOT NULL,
                                    PRIMARY KEY (team_alarm_id)
 );
