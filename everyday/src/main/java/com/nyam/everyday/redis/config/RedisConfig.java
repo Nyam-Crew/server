@@ -9,6 +9,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -38,11 +39,13 @@ public class RedisConfig {
         template.setConnectionFactory(connectionFactory);
         return template;
     }
+
     @Bean("redisRankingTemplate")
-    public RedisTemplate<String, String> redisRankingTemplate(RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, String> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory);
-        return template;
+    public StringRedisTemplate redisRankingTemplate(RedisConnectionFactory cf) {
+        StringRedisTemplate tpl = new StringRedisTemplate();
+        tpl.setConnectionFactory(cf);
+        tpl.afterPropertiesSet();
+        return tpl;
     }
 
     @Bean("redisTeamFeedTemplate")

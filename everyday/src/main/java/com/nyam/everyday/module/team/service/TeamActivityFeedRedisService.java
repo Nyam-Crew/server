@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 @Service
 public class TeamActivityFeedRedisService implements TeamActivityFeedService {
 
-    @Qualifier("redisTeamFeedTemplate")
     private final RedisTemplate<String, String> redisTemplate; // value는 JSON 문자열 저장
     private final ObjectMapper objectMapper;
 

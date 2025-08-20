@@ -22,6 +22,8 @@ public enum ErrorCode {
   INVALID_REQUEST(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "올바르지 않은 요청입니다."),
   ALREADY_LIKED(HttpStatus.BAD_REQUEST,"ALREADY_LIKED","이미 좋아요를 누른 게시물입니다"),
   INVALID_BOARD_TYPE(HttpStatus.BAD_REQUEST,"INVALID_BOARD_TYPE","올바르지 않은 게시글 타입 입니다."),
+  INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST,"INVALID_FILE_TYPE", "올바르지 않은 파일 타입 입니다."),
+  FILE_TOO_LARGE(HttpStatus.BAD_REQUEST,"FILE_TOO_LARGE", "파일 크기가 너무 큽니다."),
 
   /* 401 - Unauthorized */
   AUTHENTICATION_FAILED(HttpStatus.BAD_REQUEST, "AUTHENTICATION_FAILED", "인증에 실패했습니다."),
