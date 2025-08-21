@@ -40,9 +40,10 @@ public class Challenge {
   @Column(nullable = false, length = 255)
   private String description;
 
+  @Enumerated(EnumType.STRING)
   @Comment("챌린지 코드")
   @Column(nullable = false, length = 50)
-  private String challengeCode;
+  private ChallengeCode challengeCode;
 
   @Comment("챌린지 타입")
   @Column(nullable = false, length = 20)
