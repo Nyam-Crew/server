@@ -277,8 +277,7 @@ CREATE TABLE notification (
 
 CREATE TABLE member_notification_status (
                                             member_id BIGINT NOT NULL,
-                                            last_notification_num BIGINT NOT NULL DEFAULT 0,
-                                            last_team_notification_num BIGINT NOT NULL DEFAULT 0
+                                            last_notification_num BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE member_global_ranking (
