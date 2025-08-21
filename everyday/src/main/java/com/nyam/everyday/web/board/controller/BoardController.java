@@ -5,6 +5,7 @@ import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.web.board.dto.BoardPageDto;
 import com.nyam.everyday.web.board.dto.BoardResponseDto;
 import com.nyam.everyday.web.board.dto.CreateBoardRequestDto;
+import com.nyam.everyday.web.board.dto.EditBoardRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -20,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -80,9 +82,34 @@ public class BoardController {
   @GetMapping
   public ResponseEntity<Page<BoardPageDto>> getBoards(
       @RequestParam(required = false) String boardType,
-      @PageableDefault(size = 10, sort = "createdDate", direction = Direction.DESC)  Pageable pageable){
+      @PageableDefault(sort = "createdDate", direction = Direction.DESC)  Pageable pageable){
     Page<BoardPageDto> boardPage = boardService.getBoardPreviews(boardType, pageable);
     return ResponseEntity.ok(boardPage);
+  }
+  @Operation(summary = "게시글 수정",description = "제목/내용 일부 수정(PATCH). 작성자 또는 관리자만 가능.")
+  @PatchMapping("/edit/{boardId}")
+  public ResponseEntity<BoardResponseDto> editBoard(
+      @PathVariable Long boardId,
+      @Valid @RequestBody EditBoardRequestDto request,
+      @AuthenticationPrincipal CustomUserDetails userDetails
+  ){
+    Long requesterId = userDetails.getId();
+    BoardResponseDto res = boardService.editBoard(boardId, requesterId, request);
+    return ResponseEntity.status(HttpStatus.OK).body(res);
+
+  }
+  @Operation(summary = "게시글 검색", description = "field=title|content|nickname (비우면 기본: 제목+내용). type은 게시판 타입 필터(선택).")
+  @GetMapping("/search")
+  public ResponseEntity<Page<BoardPageDto>> searchBoard(
+          @RequestParam("q") String q,
+          @RequestParam(value = "type", required = false) String boardType,
+          @PageableDefault(sort = "createdDate", direction = Direction.DESC) Pageable pageable,
+          @RequestParam(value = "field", required = false) String field
+
+  ){
+    Page<BoardPageDto> page = boardService.searchBoards(q,boardType,pageable,field);
+    return ResponseEntity.ok(page);
+
   }
 
 }
