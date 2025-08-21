@@ -2,19 +2,17 @@ package com.nyam.everyday.web.meal.controller;
 
 import com.nyam.everyday.module.summary.service.MemberDailySummaryService;
 import com.nyam.everyday.security.core.CustomUserDetails;
-import com.nyam.everyday.web.meal.dto.MealLogRequestDto;
-import com.nyam.everyday.web.meal.dto.MealLogResponseDto;
+import com.nyam.everyday.web.meal.dto.*;
 import com.nyam.everyday.module.meal.service.MealLogService;
-import com.nyam.everyday.web.meal.dto.WaterRequestDto;
-import com.nyam.everyday.web.meal.dto.WeightRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -120,5 +118,14 @@ public class MealLogController {
         Long memberId = userDetails.getId();
         memberDailySummaryService.addOrUpdateWeight(memberId, weightRequestDto.getWeight(),  weightRequestDto.getDate());
         return ResponseEntity.ok(Map.of("result", "ok"));
+    }
+
+    @Operation(summary = "하루 요약 조회", description = "한 날짜의 식사별 목록(라이트) + 물/체중 + 총칼로리를 반환합니다.")
+    @GetMapping("/day")
+    public ResponseEntity<MealDayLiteResponse> getDay(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        return ResponseEntity.ok(mealLogService.getDay(user.getId(), date));
     }
 }

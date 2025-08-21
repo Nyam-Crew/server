@@ -22,6 +22,8 @@ public enum ErrorCode {
   INVALID_REQUEST(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "올바르지 않은 요청입니다."),
   ALREADY_LIKED(HttpStatus.BAD_REQUEST,"ALREADY_LIKED","이미 좋아요를 누른 게시물입니다"),
   INVALID_BOARD_TYPE(HttpStatus.BAD_REQUEST,"INVALID_BOARD_TYPE","올바르지 않은 게시글 타입 입니다."),
+  INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST,"INVALID_FILE_TYPE", "올바르지 않은 파일 타입 입니다."),
+  FILE_TOO_LARGE(HttpStatus.BAD_REQUEST,"FILE_TOO_LARGE", "파일 크기가 너무 큽니다."),
 
   /* 401 - Unauthorized */
   AUTHENTICATION_FAILED(HttpStatus.BAD_REQUEST, "AUTHENTICATION_FAILED", "인증에 실패했습니다."),
@@ -46,7 +48,9 @@ public enum ErrorCode {
   BOARD_NOT_FOUND(HttpStatus.NOT_FOUND,"BOARD_NOT_FOUND","게시글을 찾을 수 없습니다"),
   NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND,"NOTICE_NOT_FOUND","공지를 찾을 수 없습니다." ),
   BOOKMARK_NOT_FOUND(HttpStatus.NOT_FOUND,"BOOKMARK_NOT_FOUND","북마크를 찾을 수 없습니다"),
+  MEMBER_DAILY_SUMMARY_NOT_FOUND(HttpStatus.NOT_FOUND,"MEMBER_DAILY_SUMMARY_NOT_FOUND","유저의 기록을 찾을 수 없습니다."),
 
+  COMMENT_ALREADY_DELETED(HttpStatus.NOT_FOUND,"COMMENT_ALREADY_DELETED","이미 삭제 된 댓글입니다"),
 
   /* 409 - Conflict */
   NOTICE_ALREADY_EXISTS(HttpStatus.CONFLICT,"NOTICE_ALREADY_EXISTS", "이미 활성 공지가 존재합니다."),

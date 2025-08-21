@@ -6,6 +6,7 @@ import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.module.summary.entity.MemberDailySummary;
 import com.nyam.everyday.module.summary.repository.MemberDailySummaryRepository;
+import com.nyam.everyday.module.team.service.TeamActivityFeedService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,8 @@ public class MemberDailySummaryService {
 
     private final MemberDailySummaryRepository summaryRepository;
     private final MemberRepository memberRepository;
+
+    private final TeamActivityFeedService feedService;
 
     /** 물 섭취량 추가/수정 (오늘 summaryDate 기준) */
     @Transactional

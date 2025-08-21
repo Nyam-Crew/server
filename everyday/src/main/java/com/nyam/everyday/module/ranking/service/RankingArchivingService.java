@@ -36,7 +36,6 @@ public class RankingArchivingService {
 
     private static final int BATCH_SIZE = 1000; // 한 번에 스캔하고 처리할 랭킹 데이터 수
 
-    @Qualifier("redisRankingTemplate")
     private final RedisTemplate<String, String> redisTemplate;
     private final RankingKeys keys;
     private final MemberRepository memberRepository;

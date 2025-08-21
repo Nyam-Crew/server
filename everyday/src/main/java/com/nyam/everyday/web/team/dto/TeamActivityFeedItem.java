@@ -1,10 +1,11 @@
 package com.nyam.everyday.web.team.dto;
 
+import com.nyam.everyday.module.meal.type.MealType;
 import com.nyam.everyday.module.team.enums.ActivityType;
-import com.nyam.everyday.module.team.enums.MealPeriod;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -54,10 +55,10 @@ public class TeamActivityFeedItem{
     private Integer amountMl; // WATER 전용
 
     @Schema(description = "식단 구분", example = "MORNING")
-    private MealPeriod mealPeriod; // MEAL 전용 (아침/점심/저녁/간식)
+    private MealType mealPeriod; // MEAL 전용 (아침/점심/저녁/간식)
 
     @Schema(description = "식단 총 칼로리", example = "250")
-    private Integer kcal; // MEAL 전용
+    private BigDecimal kcal; // MEAL 전용
 
 //    @Schema(description = "식단 메뉴", example = "닭가슴살 샐러드")
 //    private String menu; // MEAL 전용
