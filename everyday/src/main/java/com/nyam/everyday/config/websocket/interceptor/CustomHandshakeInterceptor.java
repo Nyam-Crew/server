@@ -50,13 +50,9 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class CustomHandshakeInterceptor implements HandshakeInterceptor { // TODO: 클래스명 오탈자(Intercepter → Interceptor) 수정 고려
+public class CustomHandshakeInterceptor implements HandshakeInterceptor {
 
   // JWT 토큰을 검증하고 사용자 식별값을 꺼내는 컴포넌트
-  // TODO: 주입 누락 위험
-  //  - 방법 1) 아래 필드를 'private final'로 바꾸고 생성자 주입 사용 권장
-  //  - 방법 2) @Autowired로 필드 주입(권장도 낮음)
-  //  - 방법 3) 설정(WebSocketConfig)에서 직접 new 하며 의존성 주입
 
   private final JwtTokenProvider jwtTokenProvider;
 
