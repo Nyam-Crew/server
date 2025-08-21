@@ -1,6 +1,6 @@
 package com.nyam.everyday.module.challenge.entity;
 
-import com.nyam.everyday.common.entity.BaseEntity;
+import com.nyam.everyday.common.entity.BaseCreatedEntity;
 import com.nyam.everyday.module.member.entity.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,46 +10,33 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.Comment;
+import org.hibernate.annotations.CollectionIdJdbcTypeCode;
 
 @Entity
 @Getter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class MemberChallengeStatus extends BaseEntity {
+@NoArgsConstructor
+public class MemberChallengeDay extends BaseCreatedEntity {
 
   @Id
-  @Column(name = "member_challenge_status_id")
+  @Column(name = "member_challenge_day_id")
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Comment("member 테이블의 PK")
   @JoinColumn(name = "member_id", nullable = false)
   @ManyToOne(fetch = FetchType.LAZY)
   private Member member;
 
-  @Comment("challenge 테이블의 PK")
   @JoinColumn(name = "challenge_id", nullable = false)
   @ManyToOne(fetch = FetchType.LAZY)
   private Challenge challenge;
 
   @Column(nullable = false)
-  @Builder.Default
-  private Boolean isCleared = false;
-
-  @Column(nullable = false)
-  @Builder.Default
-  @Setter
-  private Integer progressCount = 0;
-
-  // 클리어 처리할 떄 사용
-  public void setAsCleared() {
-    this.isCleared = true;
-  }
+  private LocalDate targetDate;
 }
