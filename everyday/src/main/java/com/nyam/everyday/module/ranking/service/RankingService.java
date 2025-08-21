@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -32,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class RankingService {
 
@@ -44,7 +43,15 @@ public class RankingService {
 
   private final Clock clock = Clock.systemDefaultZone();
 
-  // ========== 쓰기 API ========== 
+    public RankingService(@Qualifier("redisRankingTemplate") RedisTemplate<String, String> redisTemplate, MemberRepository memberRepository, TeamRepository teamRepository, TeamMemberStatusRepository teamMemberStatusRepository, RankingKeys keys) {
+        this.redisTemplate = redisTemplate;
+        this.memberRepository = memberRepository;
+        this.teamRepository = teamRepository;
+        this.teamMemberStatusRepository = teamMemberStatusRepository;
+        this.keys = keys;
+    }
+
+    // ========== 쓰기 API ========== 
 
   /**
    * 특정 시각을 기준으로 멤버의 점수를 업데이트합니다. 개인/팀내/팀간 랭킹을 모두 갱신합니다.
@@ -64,7 +71,7 @@ public class RankingService {
     z.incrementScore(keys.userMonthlyKey(monthly), String.valueOf(memberId), scoreToAdd);
 
     // 2) 팀 소속이 있으면 팀내 주간 + 팀간 월간 업데이트
-    findCurrentTeam(memberId).ifPresent(team -> {
+    findAllApprovedTeams(memberId).forEach(team -> {
       long teamId = team.getTeamId();
       var teamIdStr = Long.toString(teamId);
 
@@ -246,13 +253,13 @@ public class RankingService {
     return list;
   }
 
-  /** 특정 멤버가 현재 소속된(참여 승인된) 팀을 찾습니다. */
-  private Optional<Team> findCurrentTeam(Long memberId) {
+  /** 특정 멤버가 현재 소속된(참여 승인된) 모든 팀을 찾습니다. */
+  private List<Team> findAllApprovedTeams(Long memberId) {
     return teamMemberStatusRepository.getAllByMember_MemberId(memberId)
         .stream()
         .filter(s -> s.getStatus() == ParticipationStatus.APPROVED)
-        .findFirst()
-        .map(TeamMemberStatus::getTeam);
+        .map(TeamMemberStatus::getTeam)
+        .collect(Collectors.toList());
   }
 
   /** 월 시작 시 저장된 멤버수 스냅샷을 우선 사용하고, 없으면(신규팀 등) DB의 현재 값을 사용합니다. */

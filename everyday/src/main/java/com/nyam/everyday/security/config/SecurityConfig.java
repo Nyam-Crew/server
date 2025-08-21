@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -34,6 +35,8 @@ public class SecurityConfig {
   private final JwtTokenFilter jwtTokenFilter;
   private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
   private final OAuth2UserService oAuth2UserService;
+
+  @Qualifier("redisLoginTemplate")
   private final RedisTemplate<String, Object> redisTemplate;
 
   private static final String[] STATIC_RESOURCES = {
@@ -49,7 +52,7 @@ public class SecurityConfig {
   private static final String[] PUBLIC_API_ROUTES = {
       "/api/auth/sign-up", "/api/auth/login", "/api/auth/logout",
       "/oauth2/**", "/login/**", "/actuator/prometheus", "/exception",
-      "/api/chat/**","/api/boards/**","/api/board-comments/**","/api/**"
+      "/api/boards/**","/api/board-comments/**"
   };
 
 

@@ -6,8 +6,8 @@ import lombok.*;
 import org.hibernate.annotations.Comment;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -36,7 +36,7 @@ public class MemberDailySummary {
 
     @Comment("요약 날짜")
     @Column(name = "summary_date", nullable = false)
-    private LocalDate summaryDate;
+    private Date summaryDate;
 
     @Comment("체중(kg)")
     @Column(name = "weight", precision = 4, scale = 1, nullable = false)
@@ -59,8 +59,8 @@ public class MemberDailySummary {
     private BigDecimal totalWater;
 
     @Comment("총 칼로리(kcal)")
-    @Column(name = "total_kcal", nullable = false)
-    private Integer totalKcal;
+    @Column(name = "total_kcal", precision = 6, scale = 1,  nullable = false)
+    private BigDecimal totalKcal;
 
     @Comment("생성일시")
     @Column(name = "created_date", nullable = false, updatable = false)

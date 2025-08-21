@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ChatMessageSaveRequest {
-  private Long roomId;
+
   private String content;
 }

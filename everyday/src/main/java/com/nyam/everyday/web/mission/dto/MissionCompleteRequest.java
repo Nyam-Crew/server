@@ -1,12 +1,10 @@
 package com.nyam.everyday.web.mission.dto;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
-@Getter
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MissionCompleteRequest {
+public final class MissionCompleteRequest {
     private boolean complete;
 }

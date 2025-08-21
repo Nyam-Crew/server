@@ -14,6 +14,7 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 
+/// 지금은 사용하지 않는 Interceptor입니다.
 @Component
 @Slf4j
 @RequiredArgsConstructor

@@ -12,11 +12,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -70,19 +67,10 @@ public class BookmarkController {
 
     Page<BookmarkAndBoardDto> serviceResult = bookmarkService.getMyBookmarks(userDetails.getId(), pageable);
 
-    List<MyBookmarkListResponseDto> webResponseContent = serviceResult.getContent().stream()
-        .map(bookmarkMapper::toResponseDto)
-        .collect(Collectors.toList());
-
-    Page<MyBookmarkListResponseDto> responsePage = new PageImpl<>(
-        webResponseContent,
-        pageable,
-        serviceResult.getTotalElements()
-    );
-    return ResponseEntity.ok(new CustomPageResponseDto<>(responsePage));
+    return ResponseEntity.ok(new CustomPageResponseDto<>(serviceResult).map(bookmarkMapper::toResponseDto));
   }
 
-  @Operation(summary = "북마크 삭제",description = "사용자가 본인이 선택했던 북마크를 삭제합니다")
+  @Operation(summary = "북마크 삭제", description = "사용자가 본인이 선택했던 북마크를 삭제합니다")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "204",description = "북마크 삭제 성공"),
       @ApiResponse(responseCode = "404",description = "북마크/게시글/회원 없음")

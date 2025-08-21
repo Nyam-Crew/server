@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -18,9 +17,6 @@ public class MemberResponseDto {
 
   @Schema(description = "아이디")
   private Long memberId;
-/*
-  @Schema(description = "회원아이디") //@kakao
-  private String providerId;*/
 
   @Schema(description = "회원 닉네임")
   private String nickname;
@@ -30,9 +26,6 @@ public class MemberResponseDto {
 
   @Schema(description = "회원 프로필 이미지 주소.(S3 url)")
   private String memberImg;
-
-  @Schema(description = "회원 프로필 이미지 파일(파일업로드)")
-  private MultipartFile memberImgFile;
 
   @Schema(description = "회원 성별", allowableValues = {"U", "M", "F"}, example = "U" )
   private String gender;
@@ -54,6 +47,12 @@ public class MemberResponseDto {
 
   @Schema(description = "총 일일 에너지 소비량")
   private BigDecimal tdee;
+
+  @Schema(description = "목표 체중")
+  private float targetWeight;
+
+  @Schema(description = "목표 체중 기반 권장 일일 섭취 칼로리")
+  private Integer recommendedCalories;
 
   @Schema(description = "활동레벨")
   private String activityLevel;
