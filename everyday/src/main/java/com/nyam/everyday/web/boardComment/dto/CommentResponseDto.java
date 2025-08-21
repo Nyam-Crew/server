@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateCommentResponseDto {
+public class CommentResponseDto {
 
   private Long commentId;
   private Long boardId;
@@ -19,6 +19,8 @@ public class CreateCommentResponseDto {
   private String nickname;
   private Long parentId;
   private LocalDateTime createdDate;
+  private LocalDateTime modifiedDate;
+  private boolean edited;
 
 
 }
