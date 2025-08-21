@@ -22,9 +22,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.Comment;
 
 @Entity
+@Slf4j
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -88,6 +90,22 @@ public class Board extends BaseEntity {
   public void updateLikeCount(long likeCount) {
     this.likeCount = likeCount;
   }
+
+  public void decreaseCommentCount() {
+
+    // 1.null 예외
+    if (this.commentCount == null){
+      log.warn("commentCount was null for boardId={}", this.boardId);
+      this.commentCount = 0L;
+      return;
+    }
+    if (this.commentCount <= 0L){
+      log.debug("commentCount already 0 for boardId={}", this.boardId);
+      this.commentCount = 0L;
+      return;
+    }
+
+    this.commentCount =  this.commentCount - 1L;}
 
 }
 

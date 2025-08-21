@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * MealLogRequestDto
@@ -25,6 +26,9 @@ public class MealLogRequestDto {
 
     @Schema(description = "음식 PK")
     private Long foodId;
+
+    @Schema(description = "섭취일")
+    private Date mealLogDate;
 
     @Schema(description = "섭취량 (g, ml 등)")
     private Integer intakeAmount;

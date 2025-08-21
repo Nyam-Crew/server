@@ -5,6 +5,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Date;
+
 /**
  * MemberDailySummaryDto
  *
@@ -25,6 +27,9 @@ public class MemberDailySummaryDto {
 
     @Schema(description = "회원 ID")
     private Long memberId;
+
+    @Schema(description = "요약 등록일")
+    private Date summaryDate;
 
     @Schema(description = "체중")
     private BigDecimal weight;
