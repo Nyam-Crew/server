@@ -13,5 +13,6 @@ public enum ActivityType {
     MEAL,   //식사
     WATER,  //물
     WEIGHT, //체중
-    CHALLENGE //챌린지 달성
+    CHALLENGE, //챌린지 달성
+    NOTICE
 }

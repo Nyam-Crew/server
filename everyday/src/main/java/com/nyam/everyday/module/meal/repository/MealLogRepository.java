@@ -50,4 +50,7 @@ public interface MealLogRepository extends JpaRepository<MealLog, Long> {
     List<LiteRow> findLiteByMemberAndDate(@Param("memberId") Long memberId,
                                           @Param("date") Date date);
 
+    //특정 멤버의 특정 날짜, 특정 식사 타입에 해당하는 모든 기록을 생성일 오름차순으로 조회합니다. (피드 score 계산을 위해)
+    List<MealLog> findByMember_MemberIdAndMealLogDateAndMealTypeOrderByCreatedDateAsc(Long memberId, Date date, MealType mealType);
+
 }
