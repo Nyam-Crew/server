@@ -5,7 +5,7 @@ import com.nyam.everyday.module.board.entity.Board;
 import com.nyam.everyday.module.boardComment.entity.BoardComment;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.web.boardComment.dto.CreateCommentRequestDto;
-import com.nyam.everyday.web.boardComment.dto.CreateCommentResponseDto;
+import com.nyam.everyday.web.boardComment.dto.CommentResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -31,8 +31,10 @@ public interface BoardCommentMapper {
       @Mapping(source = "boardComment.commentId", target = "commentId"),
       @Mapping(source = "boardComment.content",target = "content"),
       @Mapping(source = "boardComment.parent.commentId",target = "parentId"),
-      @Mapping(source = "boardComment.createdDate", target = "createdDate")
+      @Mapping(source = "boardComment.createdDate", target = "createdDate"),
+      @Mapping(source = "boardComment.modifiedDate", target = "modifiedDate"), // 수정시각 내려주기
+      @Mapping(expression = "java(!boardComment.getCreatedDate().equals(boardComment.getModifiedDate()))", target = "edited") // 수정 여부 계산
   })
-  CreateCommentResponseDto toResponseDto(BoardComment boardComment);
+  CommentResponseDto toResponseDto(BoardComment boardComment);
 
 }

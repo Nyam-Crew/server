@@ -1,8 +1,10 @@
 package com.nyam.everyday.module.meal.repository;
 
 import com.nyam.everyday.module.meal.entity.MealLog;
+import com.nyam.everyday.module.meal.type.MealType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import com.nyam.everyday.web.meal.dto.MealLogResponseDto;
 import org.springframework.data.jpa.repository.Query;
@@ -27,5 +29,25 @@ public interface MealLogRepository extends JpaRepository<MealLog, Long> {
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end
     );
+
+    interface LiteRow {
+        Long getMealLogId();
+        String getFoodName();
+        java.math.BigDecimal getIntakeKcal();
+        MealType getMealType();
+    }
+
+    @Query("""
+      select m.mealLogId as mealLogId,
+             f.foodName  as foodName,
+             m.intakeKcal as intakeKcal,
+             m.mealType  as mealType
+      from MealLog m join m.food f
+      where m.member.memberId = :memberId
+        and m.mealLogDate = :date
+      order by m.mealType, m.mealLogId
+    """)
+    List<LiteRow> findLiteByMemberAndDate(@Param("memberId") Long memberId,
+                                          @Param("date") Date date);
 
 }
