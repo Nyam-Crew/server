@@ -1,5 +1,8 @@
 package com.nyam.everyday.security.jwt;
 
+import com.nyam.everyday.module.member.entity.Member;
+import com.nyam.everyday.module.member.entity.Status;
+import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.security.core.CustomUserDetailsService;
 import com.nyam.everyday.security.threadlocal.TraceIdHolder;
 import jakarta.servlet.FilterChain;
@@ -27,6 +30,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
   private final JwtTokenProvider jwtTokenProvider;
   private final CustomUserDetailsService customUserDetailsService;
+  private final MemberRepository memberRepository;
 
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -62,6 +66,21 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
       if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
         log.info("[{}] Access Token 유효성 검증 성공.", traceId);
+
+        Long memberId = jwtTokenProvider.getUserIdFromToken(accessToken);
+        Member member = memberRepository.findById(memberId).orElse(null);
+
+        if (member == null) {
+          SecurityContextHolder.clearContext();
+          writeUnauthorized(response,"MEMBER_NOT_FOUND");
+          return;
+        }
+        if (member.getMemberStatus() == Status.DEACTIVATED){
+          SecurityContextHolder.clearContext();
+          writeForbidden(response,"MEMBER_DEACTIVATED");
+          return;
+        }
+
         UsernamePasswordAuthenticationToken authenticationToken = getAuthentication(accessToken);
         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
@@ -103,5 +122,17 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     log.info("[getAuthentication] 토큰에서 추출된 memberId: {}", memberId);
     UserDetails userDetails = customUserDetailsService.loadUserByMemberId(memberId);
     return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+  }
+
+  private void writeForbidden(HttpServletResponse res, String code) throws IOException {
+    res.setStatus(HttpServletResponse.SC_FORBIDDEN);               // 403
+    res.setContentType("application/json;charset=UTF-8");
+    res.getWriter().write("{\"error\":\"" + code + "\"}");
+  }
+
+  private void writeUnauthorized(HttpServletResponse res, String code) throws IOException {
+    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);            // 401
+    res.setContentType("application/json;charset=UTF-8");
+    res.getWriter().write("{\"error\":\"" + code + "\"}");
   }
 }
