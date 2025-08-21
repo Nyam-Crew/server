@@ -25,10 +25,10 @@ public class TeamActivityFeedItem{
     @Schema(name = "피드 ID", example = "MEAL:{memberId}:{mealLogId}")
     private String feedId;//도메인 기반 id
 
-    @Schema(description = "그룹 ID", example = "ssj@naver.com")
+    @Schema(description = "그룹 ID", example = "1")
     private Long teamId;
 
-    @Schema(description = "그룹 멤버 ID", example = "ssj@naver.com")
+    @Schema(description = "그룹 멤버 ID", example = "1")
     private Long memberId;
 
     @Schema(description = "작성자 닉네임", example = "민수")
@@ -37,10 +37,10 @@ public class TeamActivityFeedItem{
     @Schema(description = "작성자 프로필 이미지", example = "https://.../profile.jpg")
     private String profileImageUrl;
 
-    @Schema(description = "활동 타입", example = "ssj@naver.com")
+    @Schema(description = "활동 타입", example = "WATER")
     private ActivityType activityType;
 
-    @Schema(description = "활동 내용", example = "ssj@naver.com")
+    @Schema(description = "활동 내용", example = "200ml를 마셨습니다.")
     private String activityMessage;
 
     @Schema(name = "피드 생성 시간")
