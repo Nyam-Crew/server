@@ -18,7 +18,7 @@ public class ClientNoBroadcastInterceptor implements ChannelInterceptor {
   @Override
   public Message<?> preSend(Message<?> message, MessageChannel channel) {
     StompHeaderAccessor acc = StompHeaderAccessor.wrap(message);
-    log.info("[ClientNoBroadcastInterceptor] : 동작함 현재 프레임은 {}", acc.getCommand());
+//    log.info("[ClientNoBroadcastInterceptor] : 동작함 현재 프레임은 {}", acc.getCommand());
 
     if (StompCommand.SEND.equals(acc.getCommand())) {
       log.info("[ClientNoBroadcastInterceptor] : 전송 요청 받음");
