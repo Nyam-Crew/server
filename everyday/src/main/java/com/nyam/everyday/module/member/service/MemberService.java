@@ -16,6 +16,8 @@ import com.nyam.everyday.web.member.dto.MemberRequestDto;
 import com.nyam.everyday.web.member.dto.MemberResponseDto;
 import com.nyam.everyday.web.member.dto.NicknameDuplicationResponse;
 import com.nyam.everyday.web.member.mapper.MemberMapper;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +54,34 @@ public class MemberService {
       response.setBmr(healthInfo.bmr());
       response.setTdee(healthInfo.tdee());
     }
+
+    // 목표 체중 기반 권장 섭취칼로리 계산
+    if(member.getTargetWeight().compareTo(BigDecimal.ZERO) > 0 && healthInfo != null && healthInfo.tdee().compareTo(BigDecimal.ZERO) > 0){
+      BigDecimal currentWeight = member.getWeight();
+      BigDecimal targetWeight = member.getTargetWeight();
+      BigDecimal tdee = healthInfo.tdee();
+      
+      BigDecimal recommendedCaloriesBD;
+      
+      // 목표 체중에 따른 칼로리 조정
+      if (targetWeight.compareTo(currentWeight) < 0) {
+        // 체중 감량 목표: TDEE - 500 kcal
+        recommendedCaloriesBD = tdee.subtract(new BigDecimal("500"));
+        log.info("체중 감량 목표 - 현재: {}kg, 목표: {}kg, 권장 칼로리: {}", currentWeight, targetWeight, recommendedCaloriesBD);
+      } else if (targetWeight.compareTo(currentWeight) > 0) {
+        // 체중 증량 목표: TDEE + 500 kcal
+        recommendedCaloriesBD = tdee.add(new BigDecimal("500"));
+        log.info("체중 증량 목표 - 현재: {}kg, 목표: {}kg, 권장 칼로리: {}", currentWeight, targetWeight, recommendedCaloriesBD);
+      } else {
+        // 체중 유지 목표: TDEE 그대로
+        recommendedCaloriesBD = tdee;
+        log.info("체중 유지 목표 - 현재: {}kg, 목표: {}kg, 권장 칼로리: {}", currentWeight, targetWeight, recommendedCaloriesBD);
+      }
+      
+      // 가장 가까운 정수로 반올림하여 Integer로 변환
+      Integer recommendedCalories = recommendedCaloriesBD.setScale(0, RoundingMode.HALF_UP).intValue();
+      response.setRecommendedCalories(recommendedCalories);
+    }
     return response;
   }
 
@@ -85,8 +115,8 @@ public class MemberService {
     } else {
       dto.setMemberImg(S3DefaultValue.DEFAULT_PROFILE_IMAGE.getValue());
     }
-
     memberMapper.modify(dto, member);
+
     return getMemberResponseDto(member);
   }
 
