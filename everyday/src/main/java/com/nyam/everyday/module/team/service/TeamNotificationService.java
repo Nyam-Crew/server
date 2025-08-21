@@ -2,6 +2,7 @@ package com.nyam.everyday.module.team.service;
 
 import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.common.exception.ErrorCode;
+import com.nyam.everyday.module.chatting.chatroom.registry.ChatRoomRegistry;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.notification.repository.MemberNotificationStatusRepository;
 import com.nyam.everyday.module.notification.service.NotifyToReactService;
@@ -48,9 +49,10 @@ public class TeamNotificationService {
     private final TeamNotificationRepository teamNotificationRepository;
     private final TeamRepository teamRepository;
     private final TeamMemberStatusRepository teamMemberStatusRepository;
-    private final MemberNotificationStatusRepository memberNotificationStatusRepository;
 
     private final NotifyToReactService notifyToReactService;
+    private final ChatRoomRegistry chatRoomRegistry;
+
 
     // ✅ 팀 알림 전용 RedisTemplate 주입
     @Qualifier("redisTeamNotificationTemplate")
@@ -74,9 +76,29 @@ public class TeamNotificationService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new BaseException(ErrorCode.GROUP_NOT_FOUND));
 
-        List<Member> recipients = getApprovedTeamMembers(teamId).stream()
-                .filter(member -> !member.getMemberId().equals(actorMemberId))
-                .toList();
+        // 승인된 전체 팀원 조회
+        List<Member> allApprovedMembers = getApprovedTeamMembers(teamId);
+        List<Member> recipients; // 최종 알림 수신자 리스트
+
+        // << [2] 알림 타입에 따라 수신자 필터링 로직 분기
+        if (type == TeamNotificationType.CHAT) {
+            // 현재 채팅방을 구독 중인 멤버 ID 리스트를 가져옵니다.
+            List<Long> presentMemberIdsList = chatRoomRegistry.findSubscribers(teamId);
+
+            // 효율적인 비교를 위해 접속 중인 멤버의 ID를 Set으로 변환합니다.
+            java.util.Set<Long> presentMemberIds = new java.util.HashSet<>(presentMemberIdsList);
+
+            // 전체 팀원에서 발신자와 현재 채팅방 접속자를 모두 제외합니다.
+            recipients = allApprovedMembers.stream()
+                    .filter(member -> !member.getMemberId().equals(actorMemberId)) // 발신자 제외
+                    .filter(member -> !presentMemberIds.contains(member.getMemberId())) // 채팅방 접속자 제외
+                    .toList();
+        } else {
+            // CHAT 타입이 아닐 경우, 기존 로직과 동일하게 발신자만 제외합니다.
+            recipients = allApprovedMembers.stream()
+                    .filter(member -> !member.getMemberId().equals(actorMemberId))
+                    .toList();
+        }
 
         if (recipients.isEmpty()) {
             return;
@@ -240,5 +262,9 @@ public class TeamNotificationService {
     public void markOneTeamNotificationChecked(Long memberId, Long notificationId) {
         teamNotificationRepository.markOneChecked(memberId, notificationId);
         // idempotent 쿼리(이미 읽은 건 0건 업데이트)라 부작용 없음
+    }
+
+    public ChatRoomRegistry getChatRoomRegistry() {
+        return chatRoomRegistry;
     }
 }
