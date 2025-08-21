@@ -3,7 +3,7 @@ package com.nyam.everyday.module.team.service;
 import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.common.exception.ErrorCode;
 import com.nyam.everyday.module.member.entity.Member;
-import com.nyam.everyday.module.member.repository.MemberRepository;
+import com.nyam.everyday.module.notification.repository.MemberNotificationStatusRepository;
 import com.nyam.everyday.module.notification.service.NotifyToReactService;
 import com.nyam.everyday.module.team.entity.Team;
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
@@ -13,10 +13,13 @@ import com.nyam.everyday.module.team.enums.TeamNotificationType;
 import com.nyam.everyday.module.team.repository.TeamMemberStatusRepository;
 import com.nyam.everyday.module.team.repository.TeamNotificationRepository;
 import com.nyam.everyday.module.team.repository.TeamRepository;
-import com.nyam.everyday.web.notification.dto.NotifyToReactDto;
+import com.nyam.everyday.web.notification.dto.NotificationStatusDto;
+import com.nyam.everyday.web.team.dto.TeamNotificationBoxDto;
 import com.nyam.everyday.web.team.dto.TeamNotifyDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -45,6 +48,8 @@ public class TeamNotificationService {
     private final TeamNotificationRepository teamNotificationRepository;
     private final TeamRepository teamRepository;
     private final TeamMemberStatusRepository teamMemberStatusRepository;
+    private final MemberNotificationStatusRepository memberNotificationStatusRepository;
+
     private final NotifyToReactService notifyToReactService;
 
     // ✅ 팀 알림 전용 RedisTemplate 주입
@@ -185,5 +190,55 @@ public class TeamNotificationService {
         return approvedStatuses.stream()
                 .map(TeamMemberStatus::getMember)
                 .collect(Collectors.toList());
+    }
+
+    //=====================================================//
+
+    // 1) 최신 알림 조회
+    @Transactional(readOnly = true)
+    public List<TeamNotificationBoxDto> getTeamNotifications(Long memberId) {
+        Pageable pageable = PageRequest.of(0, 20);
+        List<TeamNotification> rows = teamNotificationRepository.findLatestByMember(memberId, pageable);
+
+        return rows.stream()
+                .map(n -> TeamNotificationBoxDto.builder()
+                        .content(n.getTeamNotyContent())
+                        .createdAt(n.getCreatedDate())
+                        .isRead(Boolean.TRUE.equals(n.getIsChecked()))
+                        .build())
+                .toList();
+    }
+
+    // 2) 새 알림이 있는지 판별 (안 읽은 isChecked=false가 1개라도 있으면 true)
+    @Transactional(readOnly = true)
+    public NotificationStatusDto hasNewTeamNotifications(Long memberId) {
+        boolean hasNew = teamNotificationRepository.existsUnreadForMember(memberId);
+        return new NotificationStatusDto(hasNew);
+    }
+
+    /**
+     * 채팅/피드/공지 페이지 진입 시:
+     * 해당 팀의 해당 타입 알림 + SUMMARY를 함께 읽음 처리
+     */
+    @Transactional
+    public int markPageOpened(Long memberId, Long teamId, TeamNotificationType type) {
+        int n1 = teamNotificationRepository.markCheckedByMemberTeamAndType(memberId, teamId, type);
+        int n2 = teamNotificationRepository.markSummaryCheckedByMemberAndTeam(memberId, teamId); // ← 요게 핵심
+        return n1 + n2;
+    }
+
+    /**
+     * 알림함 열었을 때: 멤버의 모든 미읽음(요약 포함) 일괄 읽음
+     */
+    @Transactional
+    public int markTeamInboxOpened(Long memberId) {
+        return teamNotificationRepository.markAllUncheckedForMember(memberId);
+    }
+
+    //추후 정책 변경 대비 단건 읽음처리
+    @Transactional
+    public void markOneTeamNotificationChecked(Long memberId, Long notificationId) {
+        teamNotificationRepository.markOneChecked(memberId, notificationId);
+        // idempotent 쿼리(이미 읽은 건 0건 업데이트)라 부작용 없음
     }
 }
