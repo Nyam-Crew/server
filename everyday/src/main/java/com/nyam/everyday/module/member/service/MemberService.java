@@ -8,6 +8,8 @@ import com.nyam.everyday.common.exception.ErrorCode;
 import com.nyam.everyday.common.util.HealthCalculator;
 import com.nyam.everyday.common.util.HealthCalculator.HealthInfo;
 import com.nyam.everyday.module.awsS3.dto.AwsS3Response;
+import com.nyam.everyday.module.challenge.entity.ChallengeTag;
+import com.nyam.everyday.module.challenge.checker.event.event.ChallengeCheckEvent;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.web.member.dto.MemberRequestDto;
@@ -18,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,7 +33,7 @@ public class MemberService {
   private final AwsS3Service awsS3Service;
   private final MemberRepository memberRepository;
   private final MemberMapper memberMapper;
-
+  private final ApplicationEventPublisher publisher;
 
   public MemberResponseDto getMemberById(Long id) {
     Member member = memberRepository.findById(id)
@@ -93,7 +96,6 @@ public class MemberService {
   }
 
 
-
   /** 로그인 연속 출석 정보 업데이트 */
   @Transactional
   public void updateLoginInfo(Long memberId) {
@@ -127,5 +129,9 @@ public class MemberService {
     }
     // 마지막 로그인 시간을 현재 시간으로 업데이트
     member.setLastLoginDate(now);
+
+    // 챌린지 달성 여부 확인을 위한 이벤트 발행
+    publisher.publishEvent(new ChallengeCheckEvent(memberId, ChallengeTag.LOGIN, LocalDate.now()));
+    log.info("로그인 기반 챌린지 체크 이벤트 발행 성공");
   }
 }
