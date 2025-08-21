@@ -4,6 +4,7 @@ import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.common.exception.ErrorCode;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
+import com.nyam.everyday.module.scorelog.service.ScoreAwardService;
 import com.nyam.everyday.module.summary.entity.MemberDailySummary;
 import com.nyam.everyday.module.summary.repository.MemberDailySummaryRepository;
 import com.nyam.everyday.module.team.enums.ActivityType;
@@ -31,7 +32,8 @@ public class MemberDailySummaryService {
     private final MemberRepository memberRepository;
 
     private final TeamActivityFeedService feedService;
-    private final TeamMemberService teamMemberService; // ✅ 의존성 주입
+    private final TeamMemberService teamMemberService;
+    private final ScoreAwardService scoreAwardService;
 
     /** 물 섭취량 추가/수정 (오늘 summaryDate 기준) */
     @Transactional
@@ -65,8 +67,15 @@ public class MemberDailySummaryService {
 
         MemberDailySummary savedSummary = summaryRepository.save(summary);
 
-        // ✅ 마지막에 물 섭취 피드 발행 메서드 호출
+        // ✅ 물 섭취 피드 발행 메서드 호출
         publishWaterFeed(savedSummary);
+
+        // ✅ 물 기록 점수 부여 로직 호출
+        // amount가 0보다 클 때만 호출하는 등의 조건을 걸 필요가 없다.
+        // ScoreAwardService가 이미 "하루 한 번"만 주도록 처리하기 때문
+        if (amount != null && amount > 0) { // 단, 물을 마시지 않았는데 점수를 주는 것을 방지하기 위해 0 초과 조건 추가
+            scoreAwardService.awardWaterDailyOnce(member);
+        }
     }
 
     /** 체중 추가/수정 (오늘 summaryDate 기준) */
@@ -98,12 +107,19 @@ public class MemberDailySummaryService {
 
         MemberDailySummary savedSummary = summaryRepository.save(summary);
 
-        // ✅ 마지막에 물 섭취 피드 발행 메서드 호출
+        // ✅ 물 섭취 피드 발행 메서드 호출
         publishWeightFeed(savedSummary);
+
+        // ✅ 체중 기록 점수 부여 로직 호출
+        // weight가 null이 아닐 때(즉, 기록이 삭제된 경우가 아닐 때) 호출합니다.
+        // "최초 한 번"만 주는 로직은 ScoreAwardService가 알아서 처리합니다.
+        if (weight != null) {
+            scoreAwardService.awardWeightFirstTime(member);
+        }
     }
 
     // =================================================================
-    // ✅ [신규] 물 섭취 피드를 발행하는 private 메서드
+    // ✅ 물 섭취 피드를 발행하는 private 메서드
     // =================================================================
     private void publishWaterFeed(MemberDailySummary summary) {
         Long memberId = summary.getMember().getMemberId();

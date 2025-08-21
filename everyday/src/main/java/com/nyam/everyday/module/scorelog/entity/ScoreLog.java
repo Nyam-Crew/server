@@ -1,6 +1,7 @@
 package com.nyam.everyday.module.scorelog.entity;
 
 import com.nyam.everyday.common.entity.BaseCreatedEntity;
+import com.nyam.everyday.module.meal.type.MealType;
 import com.nyam.everyday.module.member.entity.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
