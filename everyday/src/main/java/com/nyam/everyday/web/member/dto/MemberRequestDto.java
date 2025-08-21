@@ -32,8 +32,11 @@ public class MemberRequestDto {
   @Schema(description = "회원 키")
   private float height;
 
-  @Schema(description = "회원 몸무게")
+  @Schema(description = "체중")
   private float weight;
+
+  @Schema(description = "목표 체중")
+  private float targetWeight;
 
   @Schema(description = "회원 나이")
   private int age;

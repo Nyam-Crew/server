@@ -233,7 +233,7 @@ CREATE TABLE member_challenge_day (
                                       member_id BIGINT NOT NULL,
                                       challenge_id BIGINT NOT NULL,
                                       target_date DATE NOT NULL,
-                                      created_at TIMESTAMP NOT NULL,
+                                      created_date TIMESTAMP NOT NULL,
                                       PRIMARY KEY (member_challenge_day_id)
 );
 

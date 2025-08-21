@@ -8,16 +8,21 @@ import com.nyam.everyday.common.exception.ErrorCode;
 import com.nyam.everyday.common.util.HealthCalculator;
 import com.nyam.everyday.common.util.HealthCalculator.HealthInfo;
 import com.nyam.everyday.module.awsS3.dto.AwsS3Response;
+import com.nyam.everyday.module.challenge.entity.ChallengeTag;
+import com.nyam.everyday.module.challenge.checker.event.event.ChallengeCheckEvent;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.web.member.dto.MemberRequestDto;
 import com.nyam.everyday.web.member.dto.MemberResponseDto;
 import com.nyam.everyday.web.member.dto.NicknameDuplicationResponse;
 import com.nyam.everyday.web.member.mapper.MemberMapper;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,7 +35,7 @@ public class MemberService {
   private final AwsS3Service awsS3Service;
   private final MemberRepository memberRepository;
   private final MemberMapper memberMapper;
-
+  private final ApplicationEventPublisher publisher;
 
   public MemberResponseDto getMemberById(Long id) {
     Member member = memberRepository.findById(id)
@@ -48,6 +53,34 @@ public class MemberService {
       response.setBmi(healthInfo.bmi());
       response.setBmr(healthInfo.bmr());
       response.setTdee(healthInfo.tdee());
+    }
+
+    // 목표 체중 기반 권장 섭취칼로리 계산
+    if(member.getTargetWeight().compareTo(BigDecimal.ZERO) > 0 && healthInfo != null && healthInfo.tdee().compareTo(BigDecimal.ZERO) > 0){
+      BigDecimal currentWeight = member.getWeight();
+      BigDecimal targetWeight = member.getTargetWeight();
+      BigDecimal tdee = healthInfo.tdee();
+      
+      BigDecimal recommendedCaloriesBD;
+      
+      // 목표 체중에 따른 칼로리 조정
+      if (targetWeight.compareTo(currentWeight) < 0) {
+        // 체중 감량 목표: TDEE - 500 kcal
+        recommendedCaloriesBD = tdee.subtract(new BigDecimal("500"));
+        log.info("체중 감량 목표 - 현재: {}kg, 목표: {}kg, 권장 칼로리: {}", currentWeight, targetWeight, recommendedCaloriesBD);
+      } else if (targetWeight.compareTo(currentWeight) > 0) {
+        // 체중 증량 목표: TDEE + 500 kcal
+        recommendedCaloriesBD = tdee.add(new BigDecimal("500"));
+        log.info("체중 증량 목표 - 현재: {}kg, 목표: {}kg, 권장 칼로리: {}", currentWeight, targetWeight, recommendedCaloriesBD);
+      } else {
+        // 체중 유지 목표: TDEE 그대로
+        recommendedCaloriesBD = tdee;
+        log.info("체중 유지 목표 - 현재: {}kg, 목표: {}kg, 권장 칼로리: {}", currentWeight, targetWeight, recommendedCaloriesBD);
+      }
+      
+      // 가장 가까운 정수로 반올림하여 Integer로 변환
+      Integer recommendedCalories = recommendedCaloriesBD.setScale(0, RoundingMode.HALF_UP).intValue();
+      response.setRecommendedCalories(recommendedCalories);
     }
     return response;
   }
@@ -82,8 +115,8 @@ public class MemberService {
     } else {
       dto.setMemberImg(S3DefaultValue.DEFAULT_PROFILE_IMAGE.getValue());
     }
-
     memberMapper.modify(dto, member);
+
     return getMemberResponseDto(member);
   }
 
@@ -91,7 +124,6 @@ public class MemberService {
     boolean isDuplicate = memberRepository.existsByNickname(nickname);
     return new NicknameDuplicationResponse(isDuplicate);
   }
-
 
 
   /** 로그인 연속 출석 정보 업데이트 */
@@ -127,5 +159,9 @@ public class MemberService {
     }
     // 마지막 로그인 시간을 현재 시간으로 업데이트
     member.setLastLoginDate(now);
+
+    // 챌린지 달성 여부 확인을 위한 이벤트 발행
+    publisher.publishEvent(new ChallengeCheckEvent(memberId, ChallengeTag.LOGIN, LocalDate.now()));
+    log.info("로그인 기반 챌린지 체크 이벤트 발행 성공");
   }
 }

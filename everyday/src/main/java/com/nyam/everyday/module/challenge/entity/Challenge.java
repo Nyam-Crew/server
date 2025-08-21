@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,30 +23,38 @@ import org.hibernate.annotations.Comment;
 public class Challenge {
 
   @Id
+  @Column(name = "challenge_id")
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long challengeId;
+  private Long id;
+
+  @JoinColumn(name = "badge_id")
+  @Column(nullable = false)
+  @Comment("완료 시 전달될 Badge의 ID")
+  private Long badgeId;
 
   @Comment("챌린지 이름")
-  @Column(nullable = false, length = 20)
-  @Enumerated(EnumType.STRING)
-  private ChallengeTitle challengeTitle;
+  @Column(nullable = false, length = 30)
+  private String title;
 
   @Comment("챌린지 설명")
   @Column(nullable = false, length = 255)
-  private String challengeContent;
+  private String description;
 
-  @Comment("챌린지 시작일, 지정 없으면 항상 하는 챌린지")
-  @Column(nullable = false)
-  @Builder.Default
-  private LocalDateTime challengeStartDate = LocalDateTime.of(2000, 1, 1, 0, 0);
-
-  @Comment("챌린지 종료일, 지정 없으면 항상 하는 챌린지")
-  @Column(nullable = false)
-  @Builder.Default
-  private LocalDateTime challengeEndDate = LocalDateTime.of(2099, 12, 31, 0, 0);
+  @Enumerated(EnumType.STRING)
+  @Comment("챌린지 코드")
+  @Column(nullable = false, length = 50)
+  private ChallengeCode challengeCode;
 
   @Comment("챌린지 타입")
   @Column(nullable = false, length = 20)
   @Enumerated(EnumType.STRING)
-  private ChallengeType challengeType;
+  private ChallengeType type;
+
+  @Comment("챌린지 시작일, 지정 없으면 항상 하는 챌린지")
+  @Builder.Default
+  private LocalDateTime startDate = null;
+
+  @Comment("챌린지 종료일, 지정 없으면 항상 하는 챌린지")
+  @Builder.Default
+  private LocalDateTime endDate = null;
 }

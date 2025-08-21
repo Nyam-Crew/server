@@ -49,6 +49,7 @@ public enum ErrorCode {
   NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND,"NOTICE_NOT_FOUND","공지를 찾을 수 없습니다." ),
   BOOKMARK_NOT_FOUND(HttpStatus.NOT_FOUND,"BOOKMARK_NOT_FOUND","북마크를 찾을 수 없습니다"),
   LAST_TEAM_NOTY_NOT_FOUND(HttpStatus.NOT_FOUND,"LAST_TEAM_NOTY_NOT_FOUND","마지막으로 읽은 팀 알림을 찾을 수 없습니다."),
+  MEMBER_DAILY_SUMMARY_NOT_FOUND(HttpStatus.NOT_FOUND,"MEMBER_DAILY_SUMMARY_NOT_FOUND","유저의 기록을 찾을 수 없습니다."),
 
 
   /* 409 - Conflict */
