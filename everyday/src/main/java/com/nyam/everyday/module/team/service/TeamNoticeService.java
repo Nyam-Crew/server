@@ -7,11 +7,14 @@ import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.module.team.entity.Team;
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import com.nyam.everyday.module.team.entity.TeamNotice;
+import com.nyam.everyday.module.team.enums.ActivityType;
 import com.nyam.everyday.module.team.enums.ParticipationStatus;
 import com.nyam.everyday.module.team.enums.TeamRole;
 import com.nyam.everyday.module.team.repository.TeamMemberStatusRepository;
 import com.nyam.everyday.module.team.repository.TeamNoticeRepository;
 import com.nyam.everyday.module.team.repository.TeamRepository;
+import com.nyam.everyday.module.team.util.FeedIds;
+import com.nyam.everyday.web.team.dto.TeamActivityFeedItem;
 import com.nyam.everyday.web.team.dto.TeamNoticeCreatedDto;
 import com.nyam.everyday.web.team.dto.TeamNoticeDto;
 import com.nyam.everyday.web.team.dto.TeamNoticeUpdateDto;
@@ -19,6 +22,10 @@ import com.nyam.everyday.web.team.mapper.TeamNoticeMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Duration;
+import java.time.ZoneId;
+import java.util.Set;
 
 /**
  *그룹 공지 관련 서비스
@@ -38,6 +45,8 @@ public class TeamNoticeService {
     private final TeamMemberStatusRepository teamMemberStatusRepository;
     private final TeamNoticeRepository teamNoticeRepository;
     private final TeamNoticeMapper teamNoticeMapper;
+
+    private final TeamActivityFeedService feedService;
 
     @Transactional
     public TeamNoticeDto createNotice(Long teamId, Long actorMemberId, TeamNoticeCreatedDto req) {
@@ -61,6 +70,10 @@ public class TeamNoticeService {
                         .content(req.getContent())
                         .build()
         );
+
+        // ✅ 마지막에 공지사항 피드 발행
+        publishNoticeFeed(saved);
+
         return teamNoticeMapper.toNoticeDTO(saved);
     }
 
@@ -76,6 +89,10 @@ public class TeamNoticeService {
         } catch (IllegalArgumentException e) {
             throw new BaseException(ErrorCode.INVALID_REQUEST, e.getMessage());
         }
+
+        // ✅ 수정 후에도 피드를 다시 발행하여 내용 갱신 (수정됨 꼬리표 등)
+        publishNoticeFeed(notice);
+
         return teamNoticeMapper.toNoticeDTO(notice);
     }
 
@@ -95,9 +112,44 @@ public class TeamNoticeService {
                 .findByTeam_TeamIdAndTeamNoticeId(teamId, noticeId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOTICE_NOT_FOUND));
 
+
+        // ✅ DB에서 삭제하기 전에, 관련 피드를 먼저 삭제
+        removeNoticeFeed(teamId, noticeId);
+
         // 하드 삭제
         teamNoticeRepository.delete(notice);
         // 첨부/댓글 등 연관 데이터는 FK ON DELETE CASCADE 권장
+    }
+
+    // =================================================================
+    // ✅ [신규] 공지사항 피드 발행/수정 헬퍼 메서드
+    // =================================================================
+    private void publishNoticeFeed(TeamNotice notice) {
+        Long teamId = notice.getTeam().getTeamId();
+        Set<Long> teamIds = Set.of(teamId); // 공지는 해당 팀에만 적용
+
+        String feedId = FeedIds.notice(teamId, notice.getTeamNoticeId());
+
+        // 피드의 생성 시간(ZSET의 score)은 최초 생성 시각으로 고정
+        long createdAtMs = notice.getCreatedDate().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        TeamActivityFeedItem feedItem = TeamActivityFeedItem.builder()
+                .feedId(feedId)
+                .teamId(teamId) // 공지는 팀 전체 활동
+                .activityType(ActivityType.NOTICE)
+                // 공지 피드는 특정 멤버 정보가 필요 없음 (메시지 포맷터가 "새로운 공지가..." 형식으로 만듦)
+                .build();
+
+        // 공지 피드는 다른 피드보다 길게 유지 (예: 7일)
+        feedService.addFeedItemToTeams(teamIds, feedId, createdAtMs, feedItem, Duration.ofDays(7));
+    }
+
+    // =================================================================
+    // ✅ [신규] 공지사항 피드 삭제 헬퍼 메서드
+    // =================================================================
+    private void removeNoticeFeed(Long teamId, Long noticeId) {
+        String feedId = FeedIds.notice(teamId, noticeId);
+        feedService.removeFeedItem(Set.of(teamId), feedId);
     }
 
     /* ===== Helpers ===== */

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * 그룹 멤버 현황 관련 Repository
@@ -40,17 +41,21 @@ public interface TeamMemberStatusRepository extends JpaRepository<TeamMemberStat
     """)
     List<TeamMemberStatus> findApprovedMembers(@Param("teamId") Long teamId);
 
-    // JOINED 인원 카운트 (current_member_count 재검증/보정용)
+    // APPROVED 인원 카운트 (current_member_count 재검증/보정용)
     @Query("""
         SELECT COUNT(tms)
           FROM TeamMemberStatus tms
          WHERE tms.team.teamId = :teamId
-           AND tms.status = 'JOINED'
+           AND tms.status = 'APPROVED'
     """)
     long countJoinedMembers(@Param("teamId") Long teamId);
 
     Boolean existsByTeam_TeamIdAndMember_MemberIdAndStatus(Long teamId, Long memberId, ParticipationStatus status);
 
-    // 특정 멤버가 속해있는 모든 그룹 리스트 찾기
+    // 특정 멤버가 속해있는 모든 그룹 정보 리스트 찾기
     List<TeamMemberStatus> getAllByMember_MemberId(Long memberId);
+
+    //특정 멤버가 속해있는 모든 그룹 아이디 Set 찾기
+    @Query("SELECT tms.team.teamId FROM TeamMemberStatus tms WHERE tms.member.memberId = :memberId AND tms.status = 'APPROVED'")
+    Set<Long> findActiveTeamIdsByMemberId(@Param("memberId") Long memberId);
 }

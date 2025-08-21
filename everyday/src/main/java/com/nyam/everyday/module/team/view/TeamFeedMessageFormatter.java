@@ -1,8 +1,9 @@
 package com.nyam.everyday.module.team.view;
 
-import com.nyam.everyday.module.team.enums.MealPeriod;
+import com.nyam.everyday.module.meal.type.MealType;
 import com.nyam.everyday.web.team.dto.TeamActivityFeedItem;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -32,6 +33,7 @@ public class TeamFeedMessageFormatter {
             case WATER     -> formatWater(nick, item.getAmountMl(), time);
             case WEIGHT    -> formatWeight(nick, item.getDeltaKg(), time);
             case CHALLENGE -> formatChallenge(nick, item.getChallengeName(), time);
+            case NOTICE    -> formatNotice(time); // ✅ 공지사항 케이스 추가
         };
 
         // 필요 시 " · 수정됨" 꼬리표
@@ -42,7 +44,7 @@ public class TeamFeedMessageFormatter {
     }
 
     /** 식단: "닉네임 아침기록 250kcal 먹었어요 등록된 시간" */
-    private static String formatMeal(String nickname, MealPeriod period, Integer kcal, String time) {
+    private static String formatMeal(String nickname, MealType period, BigDecimal kcal, String time) {
         String label = (period != null ? period.getLabel() : "식단");
         String kcalTxt = (kcal != null ? kcal + "kcal" : "");
         return "%s %s기록 %s 먹었어요 %s".formatted(nickname, label, kcalTxt, time).trim();
@@ -78,6 +80,13 @@ public class TeamFeedMessageFormatter {
     private static String toLiterText(int ml) {
         if (ml % 1000 == 0) return (ml / 1000) + "L";
         return String.format(Locale.KOREAN, "%.1fL", ml / 1000.0);
+    }
+
+    /**
+     * ✅ 공지사항: "새로운 공지가 등록되었습니다. 등록된 시간"
+     */
+    private static String formatNotice(String time) {
+        return "새로운 공지가 등록되었습니다. %s".formatted(time).trim();
     }
 
     private static String nullToEmpty(String s) { return s == null ? "" : s; }
