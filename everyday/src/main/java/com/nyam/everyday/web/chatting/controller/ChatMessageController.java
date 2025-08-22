@@ -45,7 +45,9 @@ public class ChatMessageController {
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
     Long memberId = customUserDetails.getId();
 
-    return ResponseEntity.ok(chatMessageService.getMessageHistory(memberId, teamId));
+    List<ChatMessageBroadcastDto> result = chatMessageService.getMessageHistory(memberId, teamId);
+
+    return ResponseEntity.ok(result);
   }
 
   @GetMapping("/history/{teamId}/all")
@@ -55,6 +57,8 @@ public class ChatMessageController {
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
     Long memberId = customUserDetails.getId();
 
-    return ResponseEntity.ok(chatMessageService.getAllMessageHistory(memberId, teamId));
+    List<ChatMessageBroadcastDto> result = chatMessageService.getAllMessageHistory(memberId, teamId);
+
+    return ResponseEntity.ok(result);
   }
 }
