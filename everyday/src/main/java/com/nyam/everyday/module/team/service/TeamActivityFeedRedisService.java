@@ -192,7 +192,7 @@ public class TeamActivityFeedRedisService implements TeamActivityFeedService {
         double min = 0d;
 
         Set<ZSetOperations.TypedTuple<String>> tuples =
-                redisTemplate.opsForZSet().reverseRangeByScoreWithScores(idxKey, max, min, 0, size);
+                redisTemplate.opsForZSet().reverseRangeByScoreWithScores(idxKey, min, max, 0, size);
 
         if (tuples == null || tuples.isEmpty()) {
             return FeedSlice.builder().items(Collections.emptyList()).nextCursorEpochMs(null).hasNext(false).build();

@@ -1,5 +1,6 @@
 package com.nyam.everyday.web.meal.dto;
 
+import com.nyam.everyday.module.meal.type.MealType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -36,7 +37,7 @@ public class MealLogResponseDto {
     private final BigDecimal intakeKcal;
 
     @Schema(description = "식사 타입 (BREAKFAST:아침, LUNCH:점심, DINNER:저녁, SNACK:간식)")
-    private final String mealType;
+    private final MealType mealType;
 
     @Schema(description = "기록 생성일시")
     private final LocalDateTime createdDate;

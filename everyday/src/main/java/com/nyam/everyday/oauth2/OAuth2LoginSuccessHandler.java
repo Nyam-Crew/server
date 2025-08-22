@@ -1,6 +1,9 @@
 package com.nyam.everyday.oauth2;
 
+import com.nyam.everyday.module.member.entity.Member;
+import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.module.member.service.MemberService;
+import com.nyam.everyday.module.scorelog.service.ScoreAwardService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,6 +23,8 @@ import java.util.Map;
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
   private final MemberService memberService;
+  private final ScoreAwardService scoreAwardService;
+  private final MemberRepository memberRepository;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request,
@@ -46,6 +51,14 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
       //로그인 성공 시, 로그인 연속 출석 정보 업데이트
       memberService.updateLoginInfo(memberId);
+
+      // ✅출석 점수 부여 로직 호출
+      // memberId로 Member 객체를 찾아서 전달합니다.
+      Member member = memberRepository.findById(memberId)
+              .orElse(null);
+      if (member != null) {
+        scoreAwardService.awardAttendanceDailyOnce(member);
+      }
     }
 
     Cookie accessTokenCookie = new Cookie("accessToken", accessToken);

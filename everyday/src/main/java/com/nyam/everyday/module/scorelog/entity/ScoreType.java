@@ -15,7 +15,8 @@ public enum ScoreType {
     BADGE_REWARD(1),     // 뱃지(상시) - 팀원이 구현해둔 로직에서 필요시 명시 포인트로 덮어쓰기 가능
     CHALLENGE_EVENT(3),  // 이벤트/상시 챌린지
     MEAL_LOG(1),         // 식단 입력
-    WATER_INTAKE(1);     // 물 입력
+    WATER_INTAKE(1),     // 물 입력
+    WEIGHT_LOG(1);
 
     private final int defaultPoint;
     ScoreType(int score) { this.defaultPoint = score; }

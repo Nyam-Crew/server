@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "랭크 정보")
+@Schema(description = "개인 랭킹 정보")
 public class RankingDto {
 
     @Schema(description = "member ID", example = "101")
@@ -24,4 +24,7 @@ public class RankingDto {
 
     @Schema(description = "rank", example = "1")
     private Long rank;
+
+    @Schema(description = "이전 기간 대비 순위 변화(+n 상승, -n 하락, null: 이전 데이터 없음)", example = "+2")
+    private Integer rankDelta;
 }

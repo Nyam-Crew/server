@@ -9,5 +9,6 @@ public enum SourceType {
     CHALLENGE_CLEAR,//이벤트 챌린지 클리어
     STAMP,          //도장(데일리미션)
     WATER_INTAKE,   //물
-    ATTENDANCE      //출석
+    ATTENDANCE,    //출석
+    WEIGHT_LOG     //체중기록
 }

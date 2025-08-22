@@ -24,4 +24,7 @@ public class TeamRankingDto {
 
     @Schema(description = "팀 랭킹", example = "1")
     private Long rank;
+
+    @Schema(description = "이전 기간 대비 순위 변화(+n 상승, -n 하락, null: 이전 데이터 없음)", example = "+2")
+    private Integer rankDelta;
 }
