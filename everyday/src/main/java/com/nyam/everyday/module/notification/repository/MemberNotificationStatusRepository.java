@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MemberNotificationStatusRepository extends JpaRepository<MemberNotificationStatus, Long> {
 
-  Optional<MemberNotificationStatus> findByMemberId(Long memberId);
+  Optional<MemberNotificationStatus> findByMember_MemberId(Long memberId);
 }

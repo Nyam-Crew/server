@@ -125,7 +125,6 @@ public class ChatMessageService {
     // Mongo에서 값 불러오기
     Query q = new Query();
     q.addCriteria(Criteria.where("teamId").is(teamId));
-    q.with(Sort.by(Sort.Direction.DESC, "timestamp"));
     List<ChatMessage> result_mongo = mongoTemplate.find(q, ChatMessage.class);
 
     // 각 값을 ChatMessage -> ChatMessageBroadCastDto로 변경
@@ -139,7 +138,6 @@ public class ChatMessageService {
     }
 
     // 결과 반환
-    Collections.reverse(result);
     return result;
   }
 

@@ -4,6 +4,8 @@ import com.nyam.everyday.common.entity.BaseCreatedEntity;
 import com.nyam.everyday.module.member.entity.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -36,6 +38,7 @@ public class Notification extends BaseCreatedEntity {
   @Comment("알림의 내용")
   private String notificationContent;
 
+  @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 20)
   @Comment("알림의 Type, Enum으로 정의")
   private NotificationType notificationType;
