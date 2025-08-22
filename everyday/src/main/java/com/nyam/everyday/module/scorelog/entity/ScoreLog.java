@@ -1,6 +1,7 @@
 package com.nyam.everyday.module.scorelog.entity;
 
 import com.nyam.everyday.common.entity.BaseCreatedEntity;
+import com.nyam.everyday.module.meal.type.MealType;
 import com.nyam.everyday.module.member.entity.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,6 +18,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
+
+import java.time.LocalDate;
 
 @Getter
 @Entity
@@ -45,4 +48,10 @@ public class ScoreLog extends BaseCreatedEntity {
     @Column(name = "source_type", nullable = false)
     @Comment("점수 출처")
     private SourceType sourceType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="meal_type")
+    @Comment("점수체크를 위한 식사타입")
+    private MealType mealType;
+
 }
