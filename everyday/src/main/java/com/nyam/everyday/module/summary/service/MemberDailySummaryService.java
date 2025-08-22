@@ -114,7 +114,7 @@ public class MemberDailySummaryService {
         // weight가 null이 아닐 때(즉, 기록이 삭제된 경우가 아닐 때) 호출합니다.
         // "최초 한 번"만 주는 로직은 ScoreAwardService가 알아서 처리합니다.
         if (weight != null) {
-            scoreAwardService.awardWeightFirstTime(member);
+            scoreAwardService.awardWeightDailyOnce(member);
         }
     }
 

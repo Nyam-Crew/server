@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+
 /**
  *
  * 식단용 스코어 writer
@@ -34,7 +36,6 @@ public class MealScoreWriter {
                 .scoreAmount((long) ScoreType.MEAL_LOG.defaultPoint())
                 .sourceType(SourceType.MEAL_INPUT)
                 .mealType(mealType)                 // ★ 슬롯 저장
-                // scoredOn은 @PrePersist에서 LocalDate.now()로 셋업 권장
                 .build();
 
         scoreLogRepository.save(log);

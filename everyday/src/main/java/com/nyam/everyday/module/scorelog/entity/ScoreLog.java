@@ -54,7 +54,4 @@ public class ScoreLog extends BaseCreatedEntity {
     @Comment("점수체크를 위한 식사타입")
     private MealType mealType;
 
-    @Column(name="scored_on")
-    @Comment("점수 산정 기준일")
-    private LocalDate scoredOn;
 }

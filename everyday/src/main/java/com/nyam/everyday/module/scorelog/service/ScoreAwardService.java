@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 /**
  *
@@ -31,34 +33,46 @@ public class ScoreAwardService{
     // 출석: 하루 1회
     @Transactional
     public void awardAttendanceDailyOnce(Member member) {
-        LocalDate today = LocalDate.now();
-        if (scoreLogRepository.existsByMemberAndSourceTypeAndScoredOn(member, SourceType.ATTENDANCE, today)) return;
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
+
+        if (scoreLogRepository.existsByMemberAndSourceTypeAndCreatedDateBetween(
+                member, SourceType.ATTENDANCE, startOfDay, endOfDay)) return;
         scoreLogService.createScoreLog(member, (long) ScoreType.ATTENDANCE.defaultPoint(), SourceType.ATTENDANCE);
     }
 
     // 물기록: 하루 1회
     @Transactional
     public void awardWaterDailyOnce(Member member) {
-        LocalDate today = LocalDate.now();
-        if (scoreLogRepository.existsByMemberAndSourceTypeAndScoredOn(member, SourceType.WATER_INTAKE, today)) return;
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
+
+        if (scoreLogRepository.existsByMemberAndSourceTypeAndCreatedDateBetween(
+                member, SourceType.WATER_INTAKE, startOfDay, endOfDay)) return;
         scoreLogService.createScoreLog(member, (long) ScoreType.WATER_INTAKE.defaultPoint(), SourceType.WATER_INTAKE);
     }
 
-    // 체중: 최초 1회
+    // 체중: 최초 1회 (변경 없음)
     @Transactional
-    public void awardWeightFirstTime(Member member) {
-        if (scoreLogRepository.existsByMemberAndSourceType(member, SourceType.WEIGHT_LOG)) return;
+    public void awardWeightDailyOnce(Member member) { // [이름 변경] awardWeightFirstTime -> awardWeightDailyOnce
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
+
+        // [로직 변경] 날짜와 무관한 조회 -> 날짜 범위 조회로 변경
+        if (scoreLogRepository.existsByMemberAndSourceTypeAndCreatedDateBetween(
+                member, SourceType.WEIGHT_LOG, startOfDay, endOfDay)) return;
+
         scoreLogService.createScoreLog(member, (long) ScoreType.WEIGHT_LOG.defaultPoint(), SourceType.WEIGHT_LOG);
     }
 
     // 식단: 슬롯별 하루 1회 (아/점/저/간)
     @Transactional
     public void awardMealSlotOnce(Member member, MealType slot) {
-        LocalDate today = LocalDate.now();
-        if (scoreLogRepository.existsByMemberAndSourceTypeAndScoredOnAndMealSlot(
-                member, SourceType.MEAL_INPUT, today, slot)) return;
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
 
-        // ⬇️ 여기서만 별도 Writer를 호출(기존 메서드 건드리지 않기 위해)
+        if (scoreLogRepository.existsByMemberAndSourceTypeAndCreatedDateBetweenAndMealType(
+                member, SourceType.MEAL_INPUT, startOfDay, endOfDay, slot)) return;
         mealScoreWriter.createMealSlotScoreLog(member, slot);
     }
 }
