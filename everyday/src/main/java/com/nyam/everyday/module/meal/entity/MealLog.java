@@ -1,6 +1,7 @@
 package com.nyam.everyday.module.meal.entity;
 
 import com.nyam.everyday.module.food.entity.Food;
+import com.nyam.everyday.module.meal.type.MealType;
 import com.nyam.everyday.module.member.entity.Member;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -54,7 +55,8 @@ public class MealLog {
 
     @Schema(description = "식사 타입 (BREAKFAST:아침, LUNCH:점심, DINNER:저녁, SNACK:간식)")
     @Column(nullable = false, length = 16)
-    private String mealType;
+    @Enumerated(EnumType.STRING)
+    private MealType mealType;
 
     @Comment("단백질")
     @Column(precision = 4, scale = 1, nullable = false)

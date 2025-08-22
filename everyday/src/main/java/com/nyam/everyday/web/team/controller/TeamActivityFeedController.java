@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/teams/activity-feed/{teamId}")
+@RequestMapping("/api/teams/activity-feed/{teamId}")
 public class TeamActivityFeedController {
 
     private final TeamActivityFeedService feedService;
