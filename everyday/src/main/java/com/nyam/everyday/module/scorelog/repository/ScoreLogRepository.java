@@ -1,7 +1,7 @@
 package com.nyam.everyday.module.scorelog.repository;
 
+import com.nyam.everyday.module.meal.type.MealType;
 import com.nyam.everyday.module.member.entity.Member;
-import com.nyam.everyday.module.scorelog.entity.MealType;
 import com.nyam.everyday.module.scorelog.entity.ScoreLog;
 import com.nyam.everyday.module.scorelog.entity.ScoreType;
 import com.nyam.everyday.module.scorelog.entity.SourceType;

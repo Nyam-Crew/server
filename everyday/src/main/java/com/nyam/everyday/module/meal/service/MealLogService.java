@@ -5,14 +5,20 @@ import com.nyam.everyday.module.food.repository.FoodRepository;
 import com.nyam.everyday.module.meal.type.MealType;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
+import com.nyam.everyday.module.scorelog.service.ScoreAwardService;
 import com.nyam.everyday.module.summary.entity.MemberDailySummary;
 import com.nyam.everyday.module.summary.repository.MemberDailySummaryRepository;
+import com.nyam.everyday.module.team.enums.ActivityType;
+import com.nyam.everyday.module.team.service.TeamActivityFeedService;
+import com.nyam.everyday.module.team.service.TeamMemberService;
+import com.nyam.everyday.module.team.util.FeedIds;
 import com.nyam.everyday.web.meal.dto.MealDayLiteResponse;
 import com.nyam.everyday.web.meal.dto.MealLogRequestDto;
 import com.nyam.everyday.web.meal.dto.MealLogResponseDto;
 import com.nyam.everyday.module.meal.entity.MealLog;
 import com.nyam.everyday.web.meal.mapper.MealLogMapStruct;
 import com.nyam.everyday.module.meal.repository.MealLogRepository;
+import com.nyam.everyday.web.team.dto.TeamActivityFeedItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -35,6 +41,10 @@ public class MealLogService {
     private final MemberDailySummaryRepository memberDailySummaryRepository;
     private final MemberDailySummaryRepository summaryRepository;
     private final Clock clock; // Asia/Seoul
+
+    private final TeamMemberService teamMemberService;
+    private final TeamActivityFeedService teamActivityFeedService;
+    private final ScoreAwardService scoreAwardService;
 
     /* =========================
        날짜별 기록 조회
@@ -98,6 +108,13 @@ public class MealLogService {
 
         summary.setModifiedDate(now);
         memberDailySummaryRepository.save(summary);
+
+        // ✅ 중앙화된 피드 발행 메서드 호출
+        publishMealFeed(saved.getMember().getMemberId(), saved.getMealLogDate(), saved.getMealType());
+
+        // ✅ [신규] 식단 기록 점수 부여 로직 호출
+        // member 객체와 저장된 mealType을 전달합니다.
+        scoreAwardService.awardMealSlotOnce(member, saved.getMealType());
 
         return saved.getMealLogId();
     }
@@ -170,6 +187,9 @@ public class MealLogService {
 
         mealLogRepository.save(log);
         memberDailySummaryRepository.save(summary);
+
+        // ✅ 마지막에 중앙화된 피드 발행 메서드 호출
+        publishMealFeed(userId, log.getMealLogDate(), log.getMealType());
     }
 
     /* =========================
@@ -182,6 +202,10 @@ public class MealLogService {
         if (!log.getMember().getMemberId().equals(userId)) {
             throw new AccessDeniedException("권한이 없습니다.");
         }
+
+        // ✅ 삭제 전에 피드 갱신에 필요한 정보를 변수에 저장
+        Date mealLogDate = log.getMealLogDate();
+        MealType mealType = log.getMealType();
 
         BigDecimal oldProtein = nz(log.getProtein());
         BigDecimal oldCarb    = nz(log.getCarbohydrate());
@@ -215,6 +239,66 @@ public class MealLogService {
 
         memberDailySummaryRepository.save(summary);
         mealLogRepository.delete(log);
+
+        // ✅ 마지막에 중앙화된 피드 발행 메서드 호출
+        publishMealFeed(userId, mealLogDate, mealType);
+    }
+
+    // =================================================================
+    // ✅ [핵심] 식사 피드를 발행하는 중앙화된 private 메서드
+    // =================================================================
+    private void publishMealFeed(Long memberId, Date mealLogDate, MealType mealType) {
+        // 0. 이 식사를 한 사용자가 속한 팀 ID 목록 조회
+        Set<Long> teamIds = teamMemberService.findTeamIdsByMember(memberId);
+        if (teamIds == null || teamIds.isEmpty()) {
+            return; // 속한 팀이 없으면 아무것도 안함
+        }
+
+        // 1. FeedIds 유틸리티를 사용하여 고유한 그룹 ID 생성
+        String feedId = FeedIds.mealPeriod(memberId, mealLogDate, mealType);
+
+        // 2. DB에서 해당 식사의 최신 기록 목록을 모두 가져옴
+        //    (MealLogRepository에 이 메서드를 추가해야 합니다)
+        List<MealLog> currentLogs = mealLogRepository.findByMember_MemberIdAndMealLogDateAndMealTypeOrderByCreatedDateAsc(memberId, mealLogDate, mealType);
+
+        // 3. 기록이 모두 삭제된 경우, 피드도 삭제
+        if (currentLogs.isEmpty()) {
+            teamActivityFeedService.removeFeedItem(teamIds, feedId);
+            return;
+        }
+
+        // 4. 최신 정보로 피드 내용 계산
+        // 총 칼로리 합산
+        BigDecimal totalKcal = currentLogs.stream()
+                .map(MealLog::getIntakeKcal)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(1, RoundingMode.HALF_UP); // 소수점 한자리로 정리
+
+        // 피드의 대표 생성시각(score)은 '첫 음식'을 기록한 시간으로 고정
+        MealLog firstLog = currentLogs.get(0);
+        long createdAtMs = firstLog.getCreatedDate().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        Member member = firstLog.getMember(); // 멤버 정보 로드
+
+        // 피드에 표시할 정보 구성
+        TeamActivityFeedItem feedItem = TeamActivityFeedItem.builder()
+                .feedId(feedId)
+                .memberId(memberId)
+                .nickname(member.getNickname()) // Member 엔티티에 닉네임 필드가 있다고 가정
+                //.profileImageUrl(member.getProfileImageUrl()) // Member 엔티티에 프로필 이미지 URL 필드가 있다고 가정
+                .activityType(ActivityType.MEAL)
+                .mealPeriod(mealType)
+                .kcal(totalKcal) // ✅ 계산된 총 칼로리
+                .build();
+
+        // 5. 피드 생성/갱신 서비스 호출
+        teamActivityFeedService.addFeedItemToTeams(
+                teamIds,
+                feedId,
+                createdAtMs, // 첫 기록 시간 (ZSET score)
+                feedItem,
+                Duration.ofDays(3) // TTL
+        );
     }
 
     /* =========================

@@ -11,6 +11,8 @@ import com.nyam.everyday.module.team.repository.TeamRepository;
 import com.nyam.everyday.web.team.dto.MemberTeamListDto;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -236,5 +238,10 @@ public class TeamMemberService {
     List<TeamMemberStatus> tmp = teamMemberStatusRepository.getAllByMember_MemberId(memberId);
 
     return MemberTeamListDto.of(tmp);
+  }
+
+  @Transactional(readOnly = true)
+  public Set<Long> findTeamIdsByMember(Long memberId) {
+      return teamMemberStatusRepository.findActiveTeamIdsByMemberId(memberId);
   }
 }
