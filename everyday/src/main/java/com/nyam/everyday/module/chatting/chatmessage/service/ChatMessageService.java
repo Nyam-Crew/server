@@ -5,7 +5,9 @@ import com.nyam.everyday.module.chatting.chatmessage.mongo.entity.ChatMessage;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.module.team.enums.ParticipationStatus;
+import com.nyam.everyday.module.team.enums.TeamNotificationType;
 import com.nyam.everyday.module.team.repository.TeamMemberStatusRepository;
+import com.nyam.everyday.module.team.service.TeamNotificationService;
 import com.nyam.everyday.redis.service.ChatHistoryCacheService;
 import com.nyam.everyday.web.chatting.dto.ChatMessageBroadcastDto;
 import com.nyam.everyday.web.chatting.dto.ChatMessageSaveRequest;
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ChatMessageService {
 
+  private final TeamNotificationService teamNotificationService;
   private final ChatHistoryCacheService chatHistoryCacheService;
   private final TeamMemberStatusRepository teamMemberStatusRepository;
   private final SimpMessagingTemplate simpMessagingTemplate;
@@ -67,6 +70,19 @@ public class ChatMessageService {
     // Broadcast 수행
     simpMessagingTemplate.convertAndSend("/topic/chat/" + teamId, broadcast);
     log.info("[handleMessage] : Broadcast 완료");
+
+    try {
+      teamNotificationService.addTeamNotification(
+              memberId,                   // 발신자 ID
+              teamId,                     // 팀 ID
+              TeamNotificationType.CHAT,  // 알림 타입
+              "새로운 채팅이 발생하였습니다"        // 알림 내용 (채팅 메시지)
+      );
+    } catch (Exception e) {
+      // 알림 실패가 채팅의 핵심 기능을 절대 중단시키지 않도록 보장
+      log.error("[채팅 알림 생성 실패] 채팅 메시지는 정상 처리되었으나 알림 생성 중 예외 발생. teamId: {}. Error: {}",
+              teamId, e.getMessage(), e);
+    }
 
     return saved;
   }
