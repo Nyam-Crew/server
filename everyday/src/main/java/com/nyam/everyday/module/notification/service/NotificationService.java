@@ -35,7 +35,7 @@ public class NotificationService {
   public List<NotificationDto> getNotifications(Long memberId) {
 
     // 멤버가 어디까지 알림을 읽었는지 불러오기
-    MemberNotificationStatus memberNotificationStatus = memberNotificationStatusRepository.findByMemberId(
+    MemberNotificationStatus memberNotificationStatus = memberNotificationStatusRepository.findByMember_MemberId(
         memberId).orElseThrow();
     Long lastNotifySeen = memberNotificationStatus.getLastNotificationNum();
 
@@ -54,8 +54,8 @@ public class NotificationService {
       );
     }
 
-    // 지금 가져온 첫 원소의 NotificationId를 받는다.
-    Long lastNotificationId = notifyList.isEmpty() ? -1 : notifyList.get(0).getNotificationId();
+    // 지금 가져온 첫 원소의 NotificationId를 가져온다. 알림이 없으면 0으로 기본값 처리
+    Long lastNotificationId = notifyList.isEmpty() ? 0 : notifyList.get(0).getNotificationId();
 
     // 값을 업데이트하고, 결과 반환
     memberNotificationStatus.setLastNotificationNum(lastNotificationId);
@@ -66,21 +66,21 @@ public class NotificationService {
   /// @Param 확인하고자 하는 사용자의 id
   /// @return 새 알림이 있으면 True, 없으면 False
   public NotificationStatusDto hasNewNotifications(Long memberId) {
-    // 유저가 어디까지 알람을 읽었는지 찾기
-    MemberNotificationStatus memberNotificationStatus = memberNotificationStatusRepository.findByMemberId(
-        memberId).orElse(null);
-
-    // 유저가 알림을 읽은 정보가 없다면, 새로 등록
-    if (memberNotificationStatus == null) {
-      memberNotificationStatus = MemberNotificationStatus.builder()
-          .memberId(memberId)
-          .build();
-
-      memberNotificationStatusRepository.save(memberNotificationStatus);
-    }
+    // 멤버 정보 가져오기
+    Member member = memberRepository.findByMemberId(memberId).orElseThrow();
 
     // 현재 알람 테이블에서 가장 큰 키 값 조회
     Long maxNotifyNum = notificationRepository.findMaxNotificationId(memberId);
+
+    // 유저가 어디까지 알람을 읽었는지 찾기 (없으면 새로 생성하고 0으로 지정)
+    MemberNotificationStatus memberNotificationStatus = memberNotificationStatusRepository.findByMember_MemberId(memberId)
+        .orElseGet(() -> memberNotificationStatusRepository.save(
+            MemberNotificationStatus.builder()
+                .member(member)
+                .lastNotificationNum(0L)
+                .build()
+        ));
+
 
     // 키 값 기반으로 확인해서 새로 확인할 알림이 있다면 true, 아니면 false
     return new NotificationStatusDto(maxNotifyNum > memberNotificationStatus.getLastNotificationNum());
