@@ -18,6 +18,7 @@ import com.nyam.everyday.web.notification.dto.NotificationStatusDto;
 import com.nyam.everyday.web.team.dto.TeamNotificationBoxDto;
 import com.nyam.everyday.web.team.dto.TeamNotifyDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -42,8 +43,8 @@ import java.util.stream.Collectors;
  * @since : 25. 8. 20.
  *
  */
+@Slf4j
 @Service
-@RequiredArgsConstructor
 public class TeamNotificationService {
 
     private final TeamNotificationRepository teamNotificationRepository;
@@ -52,17 +53,31 @@ public class TeamNotificationService {
 
     private final NotifyToReactService notifyToReactService;
     private final ChatRoomRegistry chatRoomRegistry;
-
-
     // ✅ 팀 알림 전용 RedisTemplate 주입
-    @Qualifier("redisTeamNotificationTemplate")
-    private final RedisTemplate<String, String> redisTemplate;
+    @Qualifier("redisTeamNotificationTemplate") private final RedisTemplate<String, String> redisTemplate;
+
+    public TeamNotificationService(
+            TeamNotificationRepository teamNotificationRepository,
+            TeamRepository teamRepository,
+            TeamMemberStatusRepository teamMemberStatusRepository,
+            NotifyToReactService notifyToReactService,
+            ChatRoomRegistry chatRoomRegistry,
+            @Qualifier("redisTeamNotificationTemplate") RedisTemplate<String, String> redisTemplate // <-- 파라미터에 직접 @Qualifier 명시
+    ) {
+        this.teamNotificationRepository = teamNotificationRepository;
+        this.teamRepository = teamRepository;
+        this.teamMemberStatusRepository = teamMemberStatusRepository;
+        this.notifyToReactService = notifyToReactService;
+        this.chatRoomRegistry = chatRoomRegistry;
+        this.redisTemplate = redisTemplate;
+    }
 
     // 타입별 쿨다운 시간 설정
     private Duration cooldownOf(TeamNotificationType type) {
         return switch (type) {
             case CHAT -> Duration.ofSeconds(30);
             case FEED -> Duration.ofMinutes(3);
+            case NOTICE -> Duration.ZERO;
             default   -> Duration.ZERO; // NOTICE
         };
     }
@@ -105,7 +120,10 @@ public class TeamNotificationService {
         }
 
         boolean immediate = false;
-        if (cooldownOf(type).isZero()) {
+        if (type == TeamNotificationType.NOTICE) {
+            immediate = true;
+            log.info("[NOTICE] 공지 알림은 쿨다운 없이 즉시 발송됩니다. teamId: {}", teamId);
+        } else if (cooldownOf(type).isZero()) {
             immediate = true;
         } else {
             Boolean first = redisTemplate.opsForValue()
@@ -139,6 +157,9 @@ public class TeamNotificationService {
                     .notificationId(notifications.get(0).getTeamAlarmId())
                     .type(type)
                     .build();
+
+            log.info("WebSocket으로 팀 알림을 전송합니다. teamId: {}, type: {}, content: '{}'",
+                    teamId, type, dto.getContent());
             notifyToReactService.NotifyToTeam(dto, teamId);
         }
     }

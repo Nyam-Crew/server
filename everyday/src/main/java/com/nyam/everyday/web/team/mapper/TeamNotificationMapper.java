@@ -19,7 +19,7 @@ public interface TeamNotificationMapper {
     // ✅ Entity -> DTO: 연관관계 id, 생성일 매핑
     @Mapping(source = "team.teamId",    target = "teamId")
     @Mapping(source = "member.memberId", target = "memberId")
-    @Mapping(source = "createdAt",       target = "teamAlarmCreatedDate")
+    @Mapping(source = "createdDate",       target = "teamAlarmCreatedDate")
     TeamNotificationDto toDto(TeamNotification entity);
 
     // ✅ DTO -> Entity: 연관관계는 서비스에서 set, Mapper에선 무시

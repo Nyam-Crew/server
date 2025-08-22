@@ -9,6 +9,7 @@ import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import com.nyam.everyday.module.team.entity.TeamNotice;
 import com.nyam.everyday.module.team.enums.ActivityType;
 import com.nyam.everyday.module.team.enums.ParticipationStatus;
+import com.nyam.everyday.module.team.enums.TeamNotificationType;
 import com.nyam.everyday.module.team.enums.TeamRole;
 import com.nyam.everyday.module.team.repository.TeamMemberStatusRepository;
 import com.nyam.everyday.module.team.repository.TeamNoticeRepository;
@@ -47,6 +48,7 @@ public class TeamNoticeService {
     private final TeamNoticeMapper teamNoticeMapper;
 
     private final TeamActivityFeedService feedService;
+    private final TeamNotificationService teamNotificationService;
 
     @Transactional
     public TeamNoticeDto createNotice(Long teamId, Long actorMemberId, TeamNoticeCreatedDto req) {
@@ -74,6 +76,14 @@ public class TeamNoticeService {
         // ✅ 마지막에 공지사항 피드 발행
         publishNoticeFeed(saved);
 
+        // 공지 생성 후 팀 알림 생성 로직 호출
+        teamNotificationService.addTeamNotification(
+                actorMemberId,
+                teamId,
+                TeamNotificationType.NOTICE,
+                "새로운 공지가 등록되었습니다."
+        );
+
         return teamNoticeMapper.toNoticeDTO(saved);
     }
 
@@ -92,6 +102,14 @@ public class TeamNoticeService {
 
         // ✅ 수정 후에도 피드를 다시 발행하여 내용 갱신 (수정됨 꼬리표 등)
         publishNoticeFeed(notice);
+
+        // 공지 수정 알림 생성
+        teamNotificationService.addTeamNotification(
+                actorMemberId,
+                teamId,
+                TeamNotificationType.NOTICE,
+                "공지가 수정되었습니다."
+        );
 
         return teamNoticeMapper.toNoticeDTO(notice);
     }

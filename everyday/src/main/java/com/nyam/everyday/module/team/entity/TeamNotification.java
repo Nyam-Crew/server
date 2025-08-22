@@ -54,6 +54,7 @@ public class TeamNotification extends BaseCreatedEntity {
 //    private String notyLink;
 
     @Column(name = "is_checked")
+    @Builder.Default
     private Boolean isChecked = false;
 
     @Enumerated(EnumType.STRING)
