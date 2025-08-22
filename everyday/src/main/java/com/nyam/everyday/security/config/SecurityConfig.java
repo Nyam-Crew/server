@@ -6,7 +6,6 @@ import com.nyam.everyday.oauth2.RedisOAuth2AuthorizationRequestRepository;
 import com.nyam.everyday.security.jwt.JwtTokenFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -29,14 +28,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Slf4j
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
   private final JwtTokenFilter jwtTokenFilter;
   private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
   private final OAuth2UserService oAuth2UserService;
-
-  @Qualifier("redisLoginTemplate")
   private final RedisTemplate<String, Object> redisTemplate;
 
   private static final String[] STATIC_RESOURCES = {
@@ -55,6 +51,17 @@ public class SecurityConfig {
       "/api/boards/**","/api/board-comments/**"
   };
 
+  public SecurityConfig(
+      JwtTokenFilter jwtTokenFilter,
+      OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
+      OAuth2UserService oAuth2UserService,
+      @Qualifier("redisLoginTemplate") RedisTemplate<String, Object> redisTemplate
+  ) {
+    this.jwtTokenFilter = jwtTokenFilter;
+    this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+    this.oAuth2UserService = oAuth2UserService;
+    this.redisTemplate = redisTemplate;
+  }
 
   @Bean
   public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
@@ -119,7 +126,7 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowCredentials(true);
-    config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
+    config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173","http://localhost:8081"));
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     config.setAllowedHeaders(List.of("*"));
     config.setExposedHeaders(List.of("Authorization"));
