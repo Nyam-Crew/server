@@ -1,9 +1,11 @@
 package com.nyam.everyday.module.team.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nyam.everyday.module.team.enums.TeamNotificationType;
 import com.nyam.everyday.module.team.view.TeamFeedMessageFormatter;
 import com.nyam.everyday.web.team.dto.FeedSlice;
 import com.nyam.everyday.web.team.dto.TeamActivityFeedItem;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -25,16 +27,25 @@ import java.util.stream.Collectors;
  * @since : 25. 8. 13.
  *
  */
+@Slf4j
 @Service
 public class TeamActivityFeedRedisService implements TeamActivityFeedService {
 
     private final RedisTemplate<String, String> redisTemplate; // value는 JSON 문자열 저장
     private final ObjectMapper objectMapper;
+    private final TeamNotificationService teamNotificationService;
+    //private final ApplicationEventPublisher eventPublisher;
 
     public TeamActivityFeedRedisService(@Qualifier("redisTeamFeedTemplate") RedisTemplate<String, String> redisTemplate,
-        ObjectMapper objectMapper ){
+        ObjectMapper objectMapper,
+        TeamNotificationService teamNotificationService
+        //,this.eventPublisher = eventPublisher;
+    )
+    {
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
+        this.teamNotificationService = teamNotificationService;
+        //this.eventPublisher = eventPublisher;
     }
 
     private String indexKey(Long teamId) { return "team:%d:activity:index".formatted(teamId); }
@@ -54,30 +65,62 @@ public class TeamActivityFeedRedisService implements TeamActivityFeedService {
         // 메시지 준비(팀별 teamId만 주입해서 사용)
         ensureCreatedAt(item, createdAtMs);
 
+        List<Long> failedTeamIdsForNotification = new ArrayList<>(); // 알림 실패 팀 기록용
+
         for (Long teamId : teamIds) {
-            TeamActivityFeedItem perTeam = copyForTeam(item, teamId);
-            perTeam.setActivityMessage(TeamFeedMessageFormatter.formatLine(perTeam));
+            try {
+                TeamActivityFeedItem perTeam = copyForTeam(item, teamId);
+                perTeam.setActivityMessage(TeamFeedMessageFormatter.formatLine(perTeam));
 
-            final String idxKey = indexKey(teamId);
-            final String itKey  = itemKey(teamId, feedId);
+                final String idxKey = indexKey(teamId);
+                final String itKey = itemKey(teamId, feedId);
 
-            // 1) ZSET: 최초에만 score 세팅(순서 고정)
-            Double existingScore = redisTemplate.opsForZSet().score(idxKey, feedId);
-            if (existingScore == null) {
-                redisTemplate.opsForZSet().add(idxKey, feedId, createdAtMs);
-            }
+                // 1) ZSET: 최초에만 score 세팅(순서 고정)
+                Double existingScore = redisTemplate.opsForZSet().score(idxKey, feedId);
+                if (existingScore == null) {
+                    redisTemplate.opsForZSet().add(idxKey, feedId, createdAtMs);
+                }
 
-            // 2) KV 저장: 존재하면 값만 갱신 + 남은 TTL 유지, 없으면 TTL 부여
-            Long remainMs = redisTemplate.getExpire(itKey, TimeUnit.MILLISECONDS);
-            String json = toJson(perTeam);
-            if (remainMs == null || remainMs <= 0) {
-                redisTemplate.opsForValue().set(itKey, json, ttl);
-            } else {
-                redisTemplate.opsForValue().set(itKey, json);
-                redisTemplate.expire(itKey, remainMs, TimeUnit.MILLISECONDS);
+                // 2) KV 저장: 존재하면 값만 갱신 + 남은 TTL 유지, 없으면 TTL 부여
+                Long remainMs = redisTemplate.getExpire(itKey, TimeUnit.MILLISECONDS);
+                String json = toJson(perTeam);
+                if (remainMs == null || remainMs <= 0) {
+                    redisTemplate.opsForValue().set(itKey, json, ttl);
+                } else {
+                    redisTemplate.opsForValue().set(itKey, json);
+                    redisTemplate.expire(itKey, remainMs, TimeUnit.MILLISECONDS);
+                }
+
+                // Todo. [Refactor] 나중에 알림문구 변경이나 관리를 편하게 하기 위해 알림메세지를 별도 상수 파일로 보관하는게 어떨까?
+                //알림메서드 호출
+                teamNotificationService.addTeamNotification(
+                        item.getMemberId(),       // Long actorMemberId
+                        teamId,                   // Long teamId
+                        TeamNotificationType.FEED, // TeamNotificationType type
+                        "새로운 피드가 등록되었습니다."  // String content
+                );
+
+                //
+                // Todo. [Refactor]추후 성능 개선을 할때 주석으로 되어있는 비동기 처리를 위한 알림 서비스 직접 호출을 이벤트 발행으로 변경
+//            TeamFeedCreatedEvent event = new TeamFeedCreatedEvent(
+//                    item.getMemberId(),
+//                    teamId,
+//                    "새로운 피드가 등록되었습니다."
+//            );
+//            eventPublisher.publishEvent(event);
+
+            } catch (Exception e) {
+                // 어떤 예외가 발생하든 루프가 중단되지 않도록 catch 합니다.
+                log.error("[피드 생성 중 알림 실패] teamId: {} 에서 알림 생성 중 예외가 발생했습니다. 피드 생성은 계속 진행됩니다. Error: {}",
+                        teamId, e.getMessage(), e);
+                failedTeamIdsForNotification.add(teamId);
             }
         }
-
+        // 루프 종료 후, 실패한 팀이 있다면 최종적으로 로그를 남겨서 운영자가 인지할 수 있도록 함
+        if (!failedTeamIdsForNotification.isEmpty()) {
+            log.warn("[최종 알림 실패 보고] 총 {}개의 팀에 대한 피드 알림 생성에 실패했습니다. 실패한 teamId 목록: {}",
+                    failedTeamIdsForNotification.size(), failedTeamIdsForNotification);
+        }
 
 
     }

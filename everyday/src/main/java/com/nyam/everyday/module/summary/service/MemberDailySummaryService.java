@@ -13,6 +13,7 @@ import com.nyam.everyday.module.team.service.TeamMemberService;
 import com.nyam.everyday.module.team.util.FeedIds;
 import com.nyam.everyday.web.team.dto.TeamActivityFeedItem;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberDailySummaryService {
@@ -68,7 +70,13 @@ public class MemberDailySummaryService {
         MemberDailySummary savedSummary = summaryRepository.save(summary);
 
         // ✅ 물 섭취 피드 발행 메서드 호출
-        publishWaterFeed(savedSummary);
+        try {
+            publishWaterFeed(savedSummary);
+        } catch (Exception e) {
+            // 부가 기능(피드/알림)의 실패가 핵심 기능(물 기록 저장)에 영향을 주지 않도록 격리
+            log.error("[물 섭취 피드/알림 발행 실패] 물 기록은 정상 저장되었으나, 피드/알림 생성 중 예외가 발생했습니다. memberId: {}, summaryId: {}. Error: {}",
+                    memberId, savedSummary.getMemberDailyId(), e.getMessage(), e);
+        }
 
         // ✅ 물 기록 점수 부여 로직 호출
         // amount가 0보다 클 때만 호출하는 등의 조건을 걸 필요가 없다.
@@ -107,8 +115,14 @@ public class MemberDailySummaryService {
 
         MemberDailySummary savedSummary = summaryRepository.save(summary);
 
-        // ✅ 물 섭취 피드 발행 메서드 호출
-        publishWeightFeed(savedSummary);
+        // ✅ 체중 변화 피드 발행 메서드 호출
+        try {
+            publishWeightFeed(savedSummary);
+        } catch (Exception e) {
+            // 부가 기능(피드/알림)의 실패가 핵심 기능(체중 기록 저장)에 영향을 주지 않도록 격리
+            log.error("[체중 기록 피드/알림 발행 실패] 체중 기록은 정상 저장되었으나, 피드/알림 생성 중 예외가 발생했습니다. memberId: {}, summaryId: {}. Error: {}",
+                    memberId, savedSummary.getMemberDailyId(), e.getMessage(), e);
+        }
 
         // ✅ 체중 기록 점수 부여 로직 호출
         // weight가 null이 아닐 때(즉, 기록이 삭제된 경우가 아닐 때) 호출합니다.
@@ -186,6 +200,8 @@ public class MemberDailySummaryService {
 
         feedService.addFeedItemToTeams(teamIds, feedId, createdAtMs, feedItem, Duration.ofDays(3));
     }
+
+    //Todo.[Refactor] 중간에 중복로직이 있는데 혹시 줄이는 쪽으로 리팩터링 하신다면 아래 메서드를 쓰시면 됩니다.
 
     // =================================================================
     // ✅ addOrUpdateWater(),addOrUpdateWeight() 중간에 중복 코드 제거하실 거면 쓰세용

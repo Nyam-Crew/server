@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
@@ -86,7 +87,7 @@ public class TeamNotificationService {
         return "team:noty:cooldown:%s:team:%d".formatted(type.name(), teamId);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void addTeamNotification(Long actorMemberId, Long teamId, TeamNotificationType type, String content) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new BaseException(ErrorCode.GROUP_NOT_FOUND));
@@ -288,4 +289,25 @@ public class TeamNotificationService {
     public ChatRoomRegistry getChatRoomRegistry() {
         return chatRoomRegistry;
     }
+
+    /** todo. 성능 개선을 위한 비동기 처리를 위한 이벤트 발행 로직. 공부해본 후 변경해서 테스트 해볼것
+     * Pro-Tip: 더 안전한 방법
+     * 만약 이벤트를 발생시키는 로직이 DB 트랜잭션(@Transactional) 안에서 일어난다면
+     * @EventListener 대신 @TransactionalEventListener 를 사용하는 것이 좋습니다.
+     * 이는 트랜잭션이 성공적으로 '커밋'된 후에만 이벤트 리스너가 동작하도록 보장하여
+     * 데이터 불일치 문제를 방지합니다.
+     */
+//    @Async // 1. 이 메서드를 비동기(별도 스레드)로 실행
+//    @TransactionalEventListener // 2. 이벤트를 받아서 처리하는 리스너로 지정 (트랜잭션 커밋 후)
+//    // @EventListener // <-- 트랜잭션이 없다면 이것만 사용해도 됩니다.
+//    public void handleTeamFeedCreatedEvent(TeamFeedCreatedEvent event) {
+//        log.info("TeamFeedCreatedEvent 수신. 비동기 알림 처리를 시작합니다. teamId: {}", event.getTeamId());
+//        // 3. 이벤트 객체에서 데이터를 꺼내 기존 로직 호출
+//        addTeamNotification(
+//                event.getActorMemberId(),
+//                event.getTeamId(),
+//                TeamNotificationType.FEED,
+//                event.getContent()
+//        );
+//    }
 }

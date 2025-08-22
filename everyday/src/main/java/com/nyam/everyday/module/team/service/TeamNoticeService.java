@@ -155,7 +155,6 @@ public class TeamNoticeService {
                 .feedId(feedId)
                 .teamId(teamId) // 공지는 팀 전체 활동
                 .activityType(ActivityType.NOTICE)
-                // 공지 피드는 특정 멤버 정보가 필요 없음 (메시지 포맷터가 "새로운 공지가..." 형식으로 만듦)
                 .build();
 
         // 공지 피드는 다른 피드보다 길게 유지 (예: 7일)
