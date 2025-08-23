@@ -1,5 +1,6 @@
 package com.nyam.everyday.security.config;
 
+import com.nyam.everyday.oauth2.OAuth2LoginFailureHandler;
 import com.nyam.everyday.oauth2.OAuth2LoginSuccessHandler;
 import com.nyam.everyday.oauth2.OAuth2UserService;
 import com.nyam.everyday.oauth2.RedisOAuth2AuthorizationRequestRepository;
@@ -32,6 +33,7 @@ public class SecurityConfig {
 
   private final JwtTokenFilter jwtTokenFilter;
   private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+  private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
   private final OAuth2UserService oAuth2UserService;
   private final RedisTemplate<String, Object> redisTemplate;
 
@@ -54,11 +56,13 @@ public class SecurityConfig {
   public SecurityConfig(
       JwtTokenFilter jwtTokenFilter,
       OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
+      OAuth2LoginFailureHandler oAuth2LoginFailureHandler,
       OAuth2UserService oAuth2UserService,
       @Qualifier("redisLoginTemplate") RedisTemplate<String, Object> redisTemplate
   ) {
     this.jwtTokenFilter = jwtTokenFilter;
     this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+    this.oAuth2LoginFailureHandler = oAuth2LoginFailureHandler;
     this.oAuth2UserService = oAuth2UserService;
     this.redisTemplate = redisTemplate;
   }
@@ -108,7 +112,7 @@ public class SecurityConfig {
             .loginPage("/index.html")
             .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
             .successHandler(oAuth2LoginSuccessHandler)
-
+            .failureHandler(oAuth2LoginFailureHandler)
             .authorizationEndpoint(authorization -> authorization
                 .authorizationRequestRepository(authorizationRequestRepository()))
         )

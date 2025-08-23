@@ -5,6 +5,7 @@ import com.nyam.everyday.common.aws.s3.entity.S3DefaultValue;
 import com.nyam.everyday.module.auth.entity.Auth;
 import com.nyam.everyday.module.auth.repository.AuthRepository;
 import com.nyam.everyday.module.member.entity.Member;
+import com.nyam.everyday.module.member.entity.Status;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.security.jwt.JwtTokenProvider;
@@ -18,6 +19,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -87,6 +89,15 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
           return memberRepository.save(newMember);
         });
     log.info("[OAuth2UserService] 찾은 유저 : {}  ", member.getProviderId());
+
+    // 탈퇴한 회원의 경우 로그인 불가.
+    if(member.getMemberStatus().equals(Status.DEACTIVATED)) {
+      log.warn("탈퇴한 회원입니다. memberId={}", member.getMemberId());
+      // 실패 핸들러로 흐르게 한다
+      throw new OAuth2AuthenticationException(
+          new OAuth2Error("member_deactivated", "탈퇴한 회원입니다.", null)
+      );
+    }
 
     // 시큐리티에서 사용할 인증 객체 생성
     CustomUserDetails customUserDetails = new CustomUserDetails(member);

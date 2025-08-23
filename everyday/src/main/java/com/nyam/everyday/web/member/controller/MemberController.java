@@ -12,6 +12,7 @@ import com.nyam.everyday.module.member.service.MemberService;
 import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.web.badge.dto.AssignBadgeRequestDto;
 import com.nyam.everyday.web.badge.dto.BadgeOwnershipDto;
+import com.nyam.everyday.web.member.dto.BadgeCountResponse;
 import com.nyam.everyday.web.member.dto.MemberRequestDto;
 import com.nyam.everyday.web.member.dto.MemberResponseDto;
 import com.nyam.everyday.web.member.dto.MyBoardsResponseDto;
@@ -24,12 +25,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -121,7 +125,7 @@ public class MemberController {
    * 페이징 입력 형식
    * {
    *   "page": 0,
-   *   "size": 9,
+   *   "size": 6,
    *   "sort":
    *     "createdDate"
    * }
@@ -129,15 +133,31 @@ public class MemberController {
   @GetMapping("/my-badges")
   @Operation(summary = "뱃지 목록 조회 (페이지네이션)", description = "페이지네이션된 뱃지 목록을 조회합니다. 현재 사용자의 소유 여부도 포함됩니다.")
   public ResponseEntity<CustomPageResponseDto<BadgeOwnershipDto>> getBadges(
-      @PageableDefault(size = 9, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable,
+      @PageableDefault(size = 6 ) Pageable pageable,
       @AuthenticationPrincipal CustomUserDetails userDetails) {
     log.info("[getBadges] Pageable request: {}", pageable);
+    Sort sort = pageable.getSort().isUnsorted()
+        ? Sort.by(Sort.Order.desc("createdDate"))
+        : pageable.getSort();
+    sort = sort.and(Sort.by("id").descending());
+    Pageable fixed = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
 
     Long currentUserId = (userDetails != null) ? userDetails.getId() : null;
     log.info("[getBadges] 요청한 User ID: {}", currentUserId);
 
-    Page<BadgeOwnershipDto> response = badgeService.getBadgeListWithOwnership(pageable, currentUserId);
+    Page<BadgeOwnershipDto> response = badgeService.getBadgeListWithOwnership(fixed, currentUserId);
     return ResponseEntity.ok(new CustomPageResponseDto<>(response));
+  }
+
+  @GetMapping("/me/badges/count")
+  @Operation(summary = "획득한 뱃지 개수", description = "현재 사용자가 소유한 뱃지 총 개수")
+  public ResponseEntity<BadgeCountResponse> getBadgesCnt(
+      @AuthenticationPrincipal CustomUserDetails user) {
+    if (user == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+    long count = badgeService.getBadgesCnt(user.getId());
+    return ResponseEntity.ok(new BadgeCountResponse(count));
   }
 
   @GetMapping("/my-boards")
@@ -154,6 +174,14 @@ public class MemberController {
     return ResponseEntity.ok(new CustomPageResponseDto<>(myBoards).map(memberMapper::toMyBoardsResponseDto));
   }
 
+  @DeleteMapping("/me")
+  @Operation(summary = "로그인한 회원 탈퇴", description = "로그인한 회원 탈퇴. 성공하면 204 No Content를 반환합니다.")
+  public ResponseEntity<Void> deleteMember(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    Long id = userDetails.getId();
+    log.info("[deleteMember] memberId : {}", id);
+    memberService.deleteMember(id);
+    return ResponseEntity.noContent().build();
+  }
 
 }
 
