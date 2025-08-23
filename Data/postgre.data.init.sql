@@ -16,8 +16,9 @@ VALUES (1, '안 먹음', NULL, 0.0, 0, NULL);
 ALTER TABLE food ALTER COLUMN food_id RESTART WITH 2;
 
 insert into mission (category, title, type, is_active)
-values ('FOOD', '물 1L 마시기', 'AUTO', true),
-       ('FOOD', '음식 기록하기', 'AUTO', true),
+values ('WATER_1L', '물 1L 마시기', 'AUTO', true),
+       ('MEAL_LOGGED', '음식 1회 이상 기록하기', 'AUTO', true),
+       ('WEIGHT_LOGGED', '체중 기록하기', 'AUTO', true),
        ('ACTIVITY', '10분 산책하기', 'MANUAL', true),
        ('ACTIVITY', '자전거 타기 20분', 'MANUAL', true),
        ('ACTIVITY', '계단 오르내리기 10분', 'MANUAL', true),
@@ -32,6 +33,7 @@ values ('FOOD', '물 1L 마시기', 'AUTO', true),
        ('MIND', '휴대폰 1시간 줄이기', 'MANUAL', true),
        ('MIND', '자기 전 스트레칭', 'MANUAL', true),
        ('MIND', '하루 마무리 감사 인사하기', 'MANUAL', true);
+
 INSERT INTO nutrition_category (food_cate_id, category)
 VALUES (1, '탄수화물'),
        (2, '단백질'),

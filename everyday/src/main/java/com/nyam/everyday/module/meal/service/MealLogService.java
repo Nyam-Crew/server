@@ -5,6 +5,7 @@ import com.nyam.everyday.module.food.repository.FoodRepository;
 import com.nyam.everyday.module.meal.type.MealType;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
+import com.nyam.everyday.module.mission.service.AutoMissionService;
 import com.nyam.everyday.module.scorelog.service.ScoreAwardService;
 import com.nyam.everyday.module.summary.entity.MemberDailySummary;
 import com.nyam.everyday.module.summary.repository.MemberDailySummaryRepository;
@@ -44,6 +45,7 @@ public class MealLogService {
     private final TeamMemberService teamMemberService;
     private final TeamActivityFeedService teamActivityFeedService;
     private final ScoreAwardService scoreAwardService;
+    private final AutoMissionService autoMissionService;
 
     /* =========================
        날짜별 기록 조회
@@ -114,6 +116,8 @@ public class MealLogService {
         // ✅ [신규] 식단 기록 점수 부여 로직 호출
         // member 객체와 저장된 mealType을 전달합니다.
         scoreAwardService.awardMealSlotOnce(member, saved.getMealType());
+
+        autoMissionService.evaluateForMember(member.getMemberId(), LocalDate.now());
 
         return saved.getMealLogId();
     }
@@ -187,6 +191,8 @@ public class MealLogService {
         mealLogRepository.save(log);
         memberDailySummaryRepository.save(summary);
 
+        autoMissionService.evaluateForMember(userId, LocalDate.now());
+
         // ✅ 마지막에 중앙화된 피드 발행 메서드 호출
         publishMealFeed(userId, log.getMealLogDate(), log.getMealType());
     }
@@ -233,6 +239,8 @@ public class MealLogService {
         // 4. 저장 & 로그 삭제
         memberDailySummaryRepository.save(summary);
         mealLogRepository.delete(log);
+
+        autoMissionService.evaluateForMember(userId, LocalDate.now());
 
         // 5. feed 발행
         publishMealFeed(userId, date, log.getMealType());

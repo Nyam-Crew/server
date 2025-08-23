@@ -5,7 +5,7 @@ import com.nyam.everyday.module.mission.repository.DailyMissionStampRepository;
 import com.nyam.everyday.module.summary.entity.MemberDailySummary;
 import com.nyam.everyday.module.summary.repository.MemberDailySummaryRepository;
 import com.nyam.everyday.web.calendar.dto.CalendarDayDto;
-import com.nyam.everyday.web.calendar.dto.MonthlyCalendarResponse;
+import com.nyam.everyday.web.calendar.dto.MonthlyCalendarResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +27,7 @@ public class CalendarService {
     private final Clock clock; // Asia/Seoul 주입
 
     @Transactional(readOnly = true)
-    public MonthlyCalendarResponse getMonthly(Long memberId, Integer year, Integer month) {
+    public MonthlyCalendarResponseDto getMonthly(Long memberId, Integer year, Integer month) {
         // 0) 기준 연/월 결정
         LocalDate today = LocalDate.now(clock);
         int y = (year == null) ? today.getYear() : year;
@@ -87,7 +87,7 @@ public class CalendarService {
         }
 
         // 7) 응답
-        return MonthlyCalendarResponse.builder()
+        return MonthlyCalendarResponseDto.builder()
                 .year(y)
                 .month(m)
                 .days(ym.lengthOfMonth())

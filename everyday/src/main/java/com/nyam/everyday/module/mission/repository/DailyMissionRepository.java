@@ -10,10 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DailyMissionRepository extends JpaRepository<DailyMission, Long> {
-    boolean existsByMemberIdAndMissionDate(Long memberId, LocalDate missionDate);
-
-    List<DailyMission> findByMemberIdAndMissionDateOrderByDailyMissionIdAsc(Long memberId, LocalDate missionDate);
-
     int countByMemberIdAndMissionDateAndIsCompletedTrue(Long memberId, LocalDate missionDate);
 
     long countByMemberIdAndMissionDate(Long memberId, LocalDate missionDate);
@@ -37,6 +33,8 @@ public interface DailyMissionRepository extends JpaRepository<DailyMission, Long
             @Param("missionDate") LocalDate missionDate
     );
 
-    // 정리 배치용
     void deleteByMissionDateBefore(LocalDate cutoffDate);
+
+    List<DailyMission> findByMemberIdAndMissionDate(Long memberId, LocalDate date);
+
 }

@@ -22,7 +22,10 @@ public interface MealLogRepository extends JpaRepository<MealLog, Long> {
             "m.mealLogId, m.member.memberId, m.food.foodId, f.foodName, " +
             "m.intakeAmount, m.intakeKcal, m.mealType, m.createdDate, m.modifiedDate) " +
             "FROM MealLog m JOIN m.food f " +
-            "WHERE m.member.memberId = :memberId AND m.mealType = :mealType AND m.mealLogDate = :date")
+            "WHERE m.member.memberId = :memberId " +
+            "AND m.mealType = :mealType " +
+            "AND m.mealLogDate = :date " +
+            "AND f.foodId <> 1")
     List<MealLogResponseDto> findMealLogsWithFoodName(
             @Param("memberId") Long memberId,
             @Param("mealType") MealType mealType,
