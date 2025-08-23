@@ -58,4 +58,13 @@ public interface TeamMemberStatusRepository extends JpaRepository<TeamMemberStat
     //특정 멤버가 속해있는 모든 그룹 아이디 Set 찾기
     @Query("SELECT tms.team.teamId FROM TeamMemberStatus tms WHERE tms.member.memberId = :memberId AND tms.status = 'APPROVED'")
     Set<Long> findActiveTeamIdsByMemberId(@Param("memberId") Long memberId);
+
+    //팀의 승인멤버 목록 조회 -> 팀 알림 메서드 호출할때 사용
+    @Query("""
+        select tms.member.memberId
+        from TeamMemberStatus tms
+        where tms.team.teamId = :teamId
+          and tms.status = com.nyam.everyday.module.team.enums.ParticipationStatus.APPROVED
+    """)
+    List<Long> findApprovedMemberIdsByTeamId(Long teamId);
 }

@@ -18,7 +18,7 @@ public class ChatRoomRegistry {
   private final SimpUserRegistry userRegistry;
 
   // 특정 채팅방에 접속중인 유저의 리스트를 받는다
-  public List<Long> findSubscribers(String teamId) {
+  public List<Long> findSubscribers(Long teamId) {
     String destination = "/topic/chat/" + teamId;
     List<Long> result = new ArrayList<>();
     for (SimpUser user : userRegistry.getUsers()) {

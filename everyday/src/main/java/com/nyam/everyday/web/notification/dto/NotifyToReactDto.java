@@ -1,12 +1,14 @@
 package com.nyam.everyday.web.notification.dto;
 
 import java.time.LocalDateTime;
+
+import com.nyam.everyday.module.team.enums.TeamNotificationType;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
 public class NotifyToReactDto {
-  private String content;
-  private LocalDateTime createdAt;
+    private String content;
+    private LocalDateTime createdAt;
 }

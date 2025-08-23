@@ -16,11 +16,15 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TeamNotificationMapper {
 
-    @Mapping(source = "team.teamId", target = "teamId", ignore = true)
-    @Mapping(source = "member.memberId", target = "memberId", ignore = true)
-    TeamNotificationDto toDTO(TeamNotification entity);
+    // ✅ Entity -> DTO: 연관관계 id, 생성일 매핑
+    @Mapping(source = "team.teamId",    target = "teamId")
+    @Mapping(source = "member.memberId", target = "memberId")
+    @Mapping(source = "createdDate",       target = "teamAlarmCreatedDate")
+    TeamNotificationDto toDto(TeamNotification entity);
 
-    @Mapping(source = "teamId", target = "team.teamId", ignore = true)
-    @Mapping(source = "memberId", target = "member.memberId", ignore = true)
+    // ✅ DTO -> Entity: 연관관계는 서비스에서 set, Mapper에선 무시
+    @Mapping(target = "teamAlarmId", ignore = true)
+    @Mapping(target = "team",        ignore = true)
+    @Mapping(target = "member",      ignore = true)
     TeamNotification toEntity(TeamNotificationDto dto);
 }

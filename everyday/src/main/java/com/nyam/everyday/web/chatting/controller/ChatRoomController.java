@@ -22,7 +22,7 @@ public class ChatRoomController {
 
   @GetMapping("/{teamId}")
   @Operation(summary = "특정 채팅방 참여자의 목록을 불러오는 findSubscribers 함수 테스트를 위한 컨트롤")
-  public ResponseEntity<List<Long>> getChattingMembers(@PathVariable String teamId) {
+  public ResponseEntity<List<Long>> getChattingMembers(@PathVariable Long teamId) {
     List<Long> result = chatRoomRegistry.findSubscribers(teamId);
 
     return ResponseEntity.ok(result);
