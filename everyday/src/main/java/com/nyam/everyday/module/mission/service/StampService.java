@@ -1,7 +1,6 @@
 package com.nyam.everyday.module.mission.service;
 
 import com.nyam.everyday.module.mission.entity.DailyMissionStamp;
-import com.nyam.everyday.module.mission.repository.DailyMissionRepository;
 import com.nyam.everyday.module.mission.repository.DailyMissionStampRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,7 +34,6 @@ public class StampService {
             DailyMissionStamp s = opt.get();
             s.setCompletedCount(completedCount);
             s.setAchieved(achieved);
-            // issuedDate는 최초 발급 시각 유지. (원하면 업데이트로 바꿔도 됨)
         }
     }
 }

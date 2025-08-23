@@ -1,7 +1,7 @@
 package com.nyam.everyday.web.mission.mapper;
 
 import com.nyam.everyday.module.mission.entity.DailyMission;
-import com.nyam.everyday.web.mission.dto.DailyMissionResponse;
+import com.nyam.everyday.web.mission.dto.DailyMissionResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -18,7 +18,7 @@ public interface MissionWebMapper {
     @Mapping(target = "missionDate",   source = "missionDate")
     @Mapping(target = "completed",     source = "completed")      // boolean 필드 이름 주의
     @Mapping(target = "completedBy",   source = "completedBy")
-    DailyMissionResponse toDailyMissionResponse(DailyMission entity);
+    DailyMissionResponseDto toDailyMissionResponse(DailyMission entity);
 
-    List<DailyMissionResponse> toDailyMissionResponse(List<DailyMission> entities);
+    List<DailyMissionResponseDto> toDailyMissionResponse(List<DailyMission> entities);
 }

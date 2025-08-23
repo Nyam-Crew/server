@@ -4,8 +4,8 @@ import com.nyam.everyday.module.mission.entity.DailyMission;
 import com.nyam.everyday.module.mission.service.MissionAssignmentService;
 import com.nyam.everyday.module.mission.service.MissionProgressService;
 import com.nyam.everyday.security.core.CustomUserDetails;
-import com.nyam.everyday.web.mission.dto.DailyMissionResponse;
-import com.nyam.everyday.web.mission.dto.MissionCompleteRequest;
+import com.nyam.everyday.web.mission.dto.DailyMissionResponseDto;
+import com.nyam.everyday.web.mission.dto.MissionCompleteRequestDto;
 import com.nyam.everyday.web.mission.mapper.MissionWebMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,9 +39,9 @@ public class MissionController {
     )
     @ApiResponse(responseCode = "200", description = "성공",
             content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = DailyMissionResponse.class)))
+                    schema = @Schema(implementation = DailyMissionResponseDto.class)))
     @GetMapping("/today")
-    public List<DailyMissionResponse> getToday(
+    public List<DailyMissionResponseDto> getToday(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         Long memberId = userDetails.getId();
@@ -64,9 +64,9 @@ public class MissionController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "완료 여부 본문",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = MissionCompleteRequest.class))
+                    content = @Content(schema = @Schema(implementation = MissionCompleteRequestDto.class))
             )
-            @RequestBody MissionCompleteRequest request
+            @RequestBody MissionCompleteRequestDto request
     ) {
         missionProgressService.toggleManualCompletion(dailyMissionId, userDetails.getId(), request.isComplete());
         return ResponseEntity.ok().build();

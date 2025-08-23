@@ -3,6 +3,7 @@ package com.nyam.everyday.web.meal.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -23,5 +24,5 @@ public class WaterRequestDto {
     private Date date;
 
     @Schema(description = "섭취량(ml)", example = "300")
-    private Integer amount;
+    private BigDecimal amount;
 }

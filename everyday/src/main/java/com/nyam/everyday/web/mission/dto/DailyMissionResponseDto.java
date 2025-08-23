@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 @Value
 @Builder
-public class DailyMissionResponse {
+public class DailyMissionResponseDto {
     Long dailyMissionId;
     Long missionId;
     MissionCategory category;
