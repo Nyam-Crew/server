@@ -8,6 +8,13 @@ VALUES (1, '탄수화물'),
        (4, '무기질'),
        (5, '기타') ON CONFLICT (food_cate_id) DO NOTHING;
 
+-- 음식
+-- 1. 안 먹음 레코드 삽입
+INSERT INTO food (food_id, food_name, manufacturer, unit_kcal, unit_gram, food_size)
+VALUES (1, '안 먹음', NULL, 0.0, 0, NULL);
+-- 2. 시퀀스 현재 값 2부터 시작하도록 조정
+ALTER TABLE food ALTER COLUMN food_id RESTART WITH 2;
+
 insert into mission (category, title, type, is_active)
 values ('FOOD', '물 1L 마시기', 'AUTO', true),
        ('FOOD', '음식 기록하기', 'AUTO', true),

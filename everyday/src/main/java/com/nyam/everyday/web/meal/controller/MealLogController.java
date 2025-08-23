@@ -1,5 +1,7 @@
 package com.nyam.everyday.web.meal.controller;
 
+import com.nyam.everyday.module.meal.service.MealInsightsService;
+import com.nyam.everyday.module.meal.type.MealType;
 import com.nyam.everyday.module.summary.service.MemberDailySummaryService;
 import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.web.meal.dto.*;
@@ -13,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -24,13 +27,14 @@ public class MealLogController {
 
     private final MealLogService mealLogService;
     private final MemberDailySummaryService memberDailySummaryService;
+    private final MealInsightsService mealInsightsService;
 
     // feat: 날짜별 기록 조회 (/api/meal/log?mealType=LUNCH&date=2025-08-05)
     @Operation(summary = "날짜별 기록 조회", description = "회원의 특정 날짜, 식사 타입별 식사 기록 목록을 조회합니다.")
     @GetMapping("/log")
     public List<MealLogResponseDto> getMealLogs(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam String mealType,
+            @RequestParam MealType mealType,
             @RequestParam String date
     ) {
         return mealLogService.getMealLogs(userDetails.getId(), mealType, date);
@@ -120,12 +124,26 @@ public class MealLogController {
         return ResponseEntity.ok(Map.of("result", "ok"));
     }
 
-    @Operation(summary = "하루 요약 조회", description = "한 날짜의 식사별 목록(라이트) + 물/체중 + 총칼로리를 반환합니다.")
-    @GetMapping("/day")
-    public ResponseEntity<MealDayLiteResponse> getDay(
+
+    @Operation(summary = "하루 요약 조회", description = "식사별 totalKcal/takeMeal/물/체중을 반환합니다.")
+    @GetMapping("/day/log")
+    public ResponseEntity<MealDaySummaryResponseDto> getDaySummary(
             @AuthenticationPrincipal CustomUserDetails user,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date
     ) {
-        return ResponseEntity.ok(mealLogService.getDay(user.getId(), date));
+        return ResponseEntity.ok(mealLogService.getDaySummary(user.getId(), date));
+    }
+
+    // ✅ 하루 인사이트 조회
+    @Operation(summary = "하루 분석(인사이트) 조회", description = "오늘(또는 지정일)의 건강지표와 일일 섭취 요약을 통합 반환합니다.")
+    @GetMapping("/day/insights")
+    public ResponseEntity<DayInsightsResponseDto> getDayInsights(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        LocalDate target = (date != null) ? date : LocalDate.now();
+        DayInsightsResponseDto body = mealInsightsService.getDayInsights(user.getId(), target);
+        return ResponseEntity.ok(body);
     }
 }
