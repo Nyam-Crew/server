@@ -3,7 +3,6 @@ package com.nyam.everyday.module.meal.repository;
 import com.nyam.everyday.module.meal.entity.MealLog;
 import com.nyam.everyday.module.meal.type.MealType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import com.nyam.everyday.web.meal.dto.MealLogResponseDto;

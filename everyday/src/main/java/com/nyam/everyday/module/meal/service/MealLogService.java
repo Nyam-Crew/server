@@ -330,8 +330,6 @@ public class MealLogService {
 
     @Transactional(readOnly = true)
     public MealDaySummaryResponseDto getDaySummary(Long memberId, Date d) {
-        ZoneId zone = clock.getZone();
-
         // meal_log 조회
         var rows = mealLogRepository.findLiteByMemberAndDate(memberId, d);
 
@@ -379,74 +377,4 @@ public class MealLogService {
                 .weight(weight)
                 .build();
     }
-
-    @Transactional(readOnly = true)
-    public MealDayLiteResponse getDay(Long memberId, LocalDate date) {
-        // DB가 DATE 컬럼이므로 java.util.Date 로 변환
-        ZoneId zone = clock.getZone();
-        Date d = Date.from(date.atStartOfDay(zone).toInstant());
-
-        // 1) 식사 로그 라이트 조회
-        var rows = mealLogRepository.findLiteByMemberAndDate(memberId, d);
-
-        // 2) MealType별 그룹 + 합계
-        Map<MealType, List<MealDayLiteResponse.MealItemLite>> grouped =
-                rows.stream().collect(Collectors.groupingBy(
-                        MealLogRepository.LiteRow::getMealType,
-                        Collectors.mapping(r -> MealDayLiteResponse.MealItemLite.builder()
-                                        .id(r.getMealLogId())
-                                        .foodName(r.getFoodName())
-                                        .intakeKcal(r.getIntakeKcal())
-                                        .build(),
-                                Collectors.toList())
-                ));
-
-        Map<MealType, MealDayLiteResponse.MealBucket> buckets = new EnumMap<>(MealType.class);
-        for (MealType mt : MealType.values()) {
-            List<MealDayLiteResponse.MealItemLite> items = grouped.getOrDefault(mt, List.of());
-            BigDecimal total = items.stream()
-                    .map(MealDayLiteResponse.MealItemLite::getIntakeKcal)
-                    .filter(Objects::nonNull)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            buckets.put(mt, MealDayLiteResponse.MealBucket.builder()
-                    .totalKcal(total)
-                    .items(items)
-                    .build());
-        }
-
-        // 3) 요약(물, 체중, 총칼로리, 수정시각)
-        Integer water = null;
-        BigDecimal weight = null;
-        BigDecimal dayTotalKcal = null;
-        Instant updatedAt = null;
-
-        Optional<MemberDailySummary> opt = summaryRepository
-                .findByMember_MemberIdAndSummaryDate(memberId, d);
-        if (opt.isPresent()) {
-            var s = opt.get();
-            water = (s.getTotalWater() == null) ? null : s.getTotalWater().intValue();
-            weight = s.getWeight();
-            dayTotalKcal = s.getTotalKcal();
-            if (s.getModifiedDate() != null) {
-                updatedAt = s.getModifiedDate().atZone(zone).toInstant();
-            }
-        }
-
-        // 4) ETag (간단 해시)
-        String etag = String.format("W/\"meal-%d-%s-%d\"",
-                memberId, date, updatedAt == null ? 0 : updatedAt.toEpochMilli());
-
-        return MealDayLiteResponse.builder()
-                .date(date)
-                .meals(buckets)
-                .water(water)
-                .weight(weight)
-                .summaryTotalKcal(dayTotalKcal)
-                .meta(MealDayLiteResponse.Meta.builder()
-                        .updatedAt(updatedAt)
-                        .etag(etag)
-                        .build())
-                .build();
-    }
-
 }
