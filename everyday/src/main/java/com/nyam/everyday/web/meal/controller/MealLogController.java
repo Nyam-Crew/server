@@ -28,15 +28,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-/*
- * 식사 기록(MealLog) 및 하루 요약·인사이트 API
- *
- * 설계 의도
- * - Controller는 입출력 변환 + 라우팅만 담당하고, 비즈니스 로직은 Service로 위임
- * - 날짜는 문자열 대신 LocalDate로 엄격 파싱(@DateTimeFormat)
- * - 생성 시 201 Created + Location 헤더 반환, 삭제는 204 No Content
- * - 부분수정(PATCH)은 허용된 필드만 선별 변환하여 Service에 전달
- */
 
 @Tag(name = "Meal-Log-Controller", description = "식사 기록 관리")
 @RestController
@@ -78,33 +69,17 @@ public class MealLogController {
     // [CREATE] 음식 기록 추가
     // ------------------------------------------------------------------------
 
-    @Operation(
-            summary = "음식 기록 추가",
-            description = "새로운 음식 섭취 기록을 추가합니다.",
-            responses = {
-                    @ApiResponse(responseCode = "201", description = "생성 성공"),
-                    @ApiResponse(responseCode = "400", description = "유효성 오류")
-            }
-    )
-    @PostMapping("/log") // NOTE: 운영 호환 유지
+    @Operation(summary = "음식 기록 추가", description = "새로운 음식 섭취 기록을 추가합니다.")
+    @PostMapping("/log")
     public ResponseEntity<Map<String, Object>> addMealLog(
             @AuthenticationPrincipal CustomUserDetails user,
             @Valid @RequestBody MealLogRequestDto requestDto
     ) {
-        // JWT의 memberId를 요청DTO에 주입(신뢰 가능한 소스에서 온 식별자만 사용)
         requestDto.setMemberId(user.getId());
-
         Long createdId = mealLogService.addMealLog(requestDto);
 
-        // 201 Created + Location 헤더 (REST 관례)
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(createdId)
-                .toUri();
-
-        return ResponseEntity.created(location).body(
-                Map.of("result", "ok", "mealLogId", createdId));
+        // ✅ 200 OK 로 통일
+        return ResponseEntity.ok(Map.of("result", "ok", "mealLogId", createdId));
     }
 
     // ------------------------------------------------------------------------

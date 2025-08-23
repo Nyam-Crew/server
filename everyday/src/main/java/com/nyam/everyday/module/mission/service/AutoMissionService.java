@@ -3,6 +3,7 @@ package com.nyam.everyday.module.mission.service;
 import com.nyam.everyday.module.mission.entity.*;
 import com.nyam.everyday.module.mission.repository.DailyMissionRepository;
 import com.nyam.everyday.module.mission.repository.MissionRepository;
+import com.nyam.everyday.module.mission.repository.SummaryQueryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +19,7 @@ public class AutoMissionService {
 
     private final MissionRepository missionRepository;
     private final DailyMissionRepository dailyMissionRepository;
-    private final SummaryQuery summaryQuery;
+    private final SummaryQueryRepository summaryQueryRepository;
     private final StampService stampService; // 이미 사용하는 스탬프 업서트 서비스
     private final Clock clock;
 
@@ -28,9 +29,9 @@ public class AutoMissionService {
         List<Mission> autos = missionRepository.findByTypeAndIsActiveTrue(MissionType.AUTO);
         for (Mission m : autos) {
             boolean achieved = switch (m.getCategory()) {
-                case WATER_1L      -> summaryQuery.getTotalWater(memberId, date) >= 1000.0;
-                case MEAL_LOGGED   -> summaryQuery.existsMealLog(memberId, date);
-                case WEIGHT_LOGGED -> summaryQuery.hasWeight(memberId, date);
+                case WATER_1L      -> summaryQueryRepository.getTotalWater(memberId, date) >= 1000.0;
+                case MEAL_LOGGED   -> summaryQueryRepository.existsMealLog(memberId, date);
+                case WEIGHT_LOGGED -> summaryQueryRepository.hasWeight(memberId, date);
                 default -> false; // AUTO 는 위 3가지만
             };
 
