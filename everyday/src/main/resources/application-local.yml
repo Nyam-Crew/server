@@ -111,3 +111,9 @@ openapi:
     default-page-size: 100
     connect-timeout: 5s
     read-timeout: 120s
+
+
+aws:
+  ec2ip:
+    private-url: "http://localhost:5173"
+    domain: "http://localhost:5173"
