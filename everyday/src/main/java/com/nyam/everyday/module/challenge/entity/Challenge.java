@@ -50,6 +50,10 @@ public class Challenge {
   @Enumerated(EnumType.STRING)
   private ChallengeType type;
 
+  @Comment("달성을 위해 필요한 횟수")
+  @Column(nullable = false)
+  private Long targetCount;
+
   @Comment("챌린지 시작일, 지정 없으면 항상 하는 챌린지")
   @Builder.Default
   private LocalDateTime startDate = null;
