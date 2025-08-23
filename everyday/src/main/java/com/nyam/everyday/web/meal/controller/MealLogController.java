@@ -13,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -120,12 +121,14 @@ public class MealLogController {
         return ResponseEntity.ok(Map.of("result", "ok"));
     }
 
-    @Operation(summary = "하루 요약 조회", description = "한 날짜의 식사별 목록(라이트) + 물/체중 + 총칼로리를 반환합니다.")
+
+    @Operation(summary = "하루 요약 조회", description = "식사별 totalKcal/takeMeal/물/체중을 반환합니다.")
     @GetMapping("/day")
-    public ResponseEntity<MealDayLiteResponse> getDay(
+    public ResponseEntity<MealDaySummaryResponseDto> getDaySummary(
             @AuthenticationPrincipal CustomUserDetails user,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date
     ) {
-        return ResponseEntity.ok(mealLogService.getDay(user.getId(), date));
+        return ResponseEntity.ok(mealLogService.getDaySummary(user.getId(), date));
     }
+
 }

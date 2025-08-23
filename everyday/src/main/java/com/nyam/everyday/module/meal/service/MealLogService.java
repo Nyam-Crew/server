@@ -13,6 +13,7 @@ import com.nyam.everyday.module.team.service.TeamActivityFeedService;
 import com.nyam.everyday.module.team.service.TeamMemberService;
 import com.nyam.everyday.module.team.util.FeedIds;
 import com.nyam.everyday.web.meal.dto.MealDayLiteResponse;
+import com.nyam.everyday.web.meal.dto.MealDaySummaryResponseDto;
 import com.nyam.everyday.web.meal.dto.MealLogRequestDto;
 import com.nyam.everyday.web.meal.dto.MealLogResponseDto;
 import com.nyam.everyday.module.meal.entity.MealLog;
@@ -52,9 +53,9 @@ public class MealLogService {
     @Transactional(readOnly = true)
     public List<MealLogResponseDto> getMealLogs(Long memberId, String mealType, String date) {
         LocalDate localDate = LocalDate.parse(date);
-        LocalDateTime startOfDay = localDate.atStartOfDay();
-        LocalDateTime endOfDay = localDate.plusDays(1).atStartOfDay().minusNanos(1);
-        return mealLogRepository.findMealLogsWithFoodName(memberId, mealType, startOfDay, endOfDay);
+        Date sqlDate = java.sql.Date.valueOf(localDate); // JPA 파라미터 맞추기
+
+        return mealLogRepository.findMealLogsWithFoodName(memberId, mealType, sqlDate);
     }
 
     /* =========================
@@ -324,6 +325,58 @@ public class MealLogService {
                 .totalKcal(BigDecimal.ZERO)                                  // kcal (정수 누적)
                 .createdDate(now)
                 .modifiedDate(now)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public MealDaySummaryResponseDto getDaySummary(Long memberId, Date d) {
+        ZoneId zone = clock.getZone();
+
+        // meal_log 조회
+        var rows = mealLogRepository.findLiteByMemberAndDate(memberId, d);
+
+        // MealType별 그룹핑
+        Map<MealType, List<MealLogRepository.LiteRow>> grouped =
+                rows.stream().collect(Collectors.groupingBy(MealLogRepository.LiteRow::getMealType));
+
+        Map<MealType, MealDaySummaryResponseDto.MealSummary> buckets = new EnumMap<>(MealType.class);
+        for (MealType mt : MealType.values()) {
+            List<MealLogRepository.LiteRow> items = grouped.getOrDefault(mt, List.of());
+
+            BigDecimal total = items.stream()
+                    .map(MealLogRepository.LiteRow::getIntakeKcal)
+                    .filter(Objects::nonNull)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            Boolean takeMeal = null;
+            if (!items.isEmpty()) {
+                boolean allZeroOrSkipped = items.stream().allMatch(r ->
+                        (r.getIntakeKcal() == null || r.getIntakeKcal().compareTo(BigDecimal.ZERO) == 0) ||
+                                "안 먹음".equals(r.getFoodName()));
+                takeMeal = allZeroOrSkipped ? Boolean.FALSE : Boolean.TRUE;
+            }
+
+            buckets.put(mt, MealDaySummaryResponseDto.MealSummary.builder()
+                    .totalKcal(total)
+                    .takeMeal(takeMeal)
+                    .build());
+        }
+
+        // 물, 체중
+        BigDecimal water = null;
+        BigDecimal weight = null;
+        Optional<MemberDailySummary> opt = summaryRepository.findByMember_MemberIdAndSummaryDate(memberId, d);
+        if (opt.isPresent()) {
+            var s = opt.get();
+            water = s.getTotalWater();
+            weight = s.getWeight();
+        }
+
+        return MealDaySummaryResponseDto.builder()
+                .date(d)    // Date 그대로 내려줌
+                .meals(buckets)
+                .water(water)
+                .weight(weight)
                 .build();
     }
 
