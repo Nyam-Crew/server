@@ -1,7 +1,6 @@
 package com.nyam.everyday.module.mission.repository;
 
 import com.nyam.everyday.module.mission.entity.Mission;
-import com.nyam.everyday.module.mission.entity.MissionCategory;
 import com.nyam.everyday.module.mission.entity.MissionType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

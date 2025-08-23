@@ -8,12 +8,13 @@ import lombok.Setter;
 
 import java.util.Date;
 
-/**
- * WeightRequestDto
+/*
+ * 체중 기록 요청 DTO
  *
- * @author : 장소희
- * @fileName : WeightRequestDto
- * @since : 25. 8. 7.
+ * 설계 의도
+ * - 하루 단위 체중 기록 등록/수정 시 사용
+ * - date: 기록 대상 날짜
+ * - weight: 체중 값(kg)
  */
 @Getter
 @Setter

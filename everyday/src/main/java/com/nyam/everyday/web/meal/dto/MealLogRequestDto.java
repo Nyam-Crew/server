@@ -6,14 +6,14 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.util.Date;
 
-/**
- * MealLogRequestDto
+/*
+ * 음식 섭취 기록 등록/수정 요청 DTO
  *
- * @author : 장소희
- * @fileName : MealLogRequestDto
- * @since : 25. 8. 5.
+ * 설계 의도
+ * - Controller → Service 간 요청 데이터 전달에 사용
+ * - Swagger @Schema로 문서화 (각 필드 설명 포함)
+ * - memberId는 서버에서 JWT 인증정보로 세팅됨 (클라이언트에서 직접 세팅하지 않음)
  */
-
 @Getter
 @Setter
 @AllArgsConstructor

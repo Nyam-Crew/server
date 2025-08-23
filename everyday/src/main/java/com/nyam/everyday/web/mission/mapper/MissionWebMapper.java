@@ -7,6 +7,14 @@ import org.mapstruct.Mapping;
 
 import java.util.List;
 
+/*
+ * MissionWebMapper
+ *
+ * 설계 의도
+ * - DailyMission 엔티티 → DailyMissionResponseDto 변환 담당
+ * - MapStruct를 활용하여 반복적인 매핑 로직 제거
+ * - 단일 엔티티와 리스트 모두 매핑 지원
+ */
 @Mapper(componentModel = "spring")
 public interface MissionWebMapper {
 
@@ -16,7 +24,7 @@ public interface MissionWebMapper {
     @Mapping(target = "title",         source = "mission.title")
     @Mapping(target = "type",          source = "mission.type")
     @Mapping(target = "missionDate",   source = "missionDate")
-    @Mapping(target = "completed",     source = "completed")      // boolean 필드 이름 주의
+    @Mapping(target = "completed",     source = "completed")    // boolean 필드 주의
     @Mapping(target = "completedBy",   source = "completedBy")
     DailyMissionResponseDto toDailyMissionResponse(DailyMission entity);
 

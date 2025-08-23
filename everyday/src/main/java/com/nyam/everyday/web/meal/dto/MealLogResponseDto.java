@@ -6,12 +6,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.*;
 
-/**
- * @author : 장소희
- * @fileName : MealLogResponseDto
- * @since : 25. 8. 5.
+/*
+ * 음식 섭취 기록 응답 DTO
+ *
+ * 설계 의도
+ * - 클라이언트로 반환되는 음식 기록 단건 정보
+ * - 음식명, 섭취량, 칼로리, 3대 영양소 등 포함
+ * - 작성/수정 시각(LocalDateTime) 포함
  */
-
 @Getter
 @RequiredArgsConstructor
 @Builder
