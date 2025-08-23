@@ -1,6 +1,7 @@
 package com.nyam.everyday.web.meal.controller;
 
 import com.nyam.everyday.module.meal.service.MealInsightsService;
+import com.nyam.everyday.module.meal.type.MealType;
 import com.nyam.everyday.module.summary.service.MemberDailySummaryService;
 import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.web.meal.dto.*;
@@ -33,7 +34,7 @@ public class MealLogController {
     @GetMapping("/log")
     public List<MealLogResponseDto> getMealLogs(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam String mealType,
+            @RequestParam MealType mealType,
             @RequestParam String date
     ) {
         return mealLogService.getMealLogs(userDetails.getId(), mealType, date);

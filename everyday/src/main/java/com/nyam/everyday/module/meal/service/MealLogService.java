@@ -12,7 +12,6 @@ import com.nyam.everyday.module.team.enums.ActivityType;
 import com.nyam.everyday.module.team.service.TeamActivityFeedService;
 import com.nyam.everyday.module.team.service.TeamMemberService;
 import com.nyam.everyday.module.team.util.FeedIds;
-import com.nyam.everyday.web.meal.dto.MealDayLiteResponse;
 import com.nyam.everyday.web.meal.dto.MealDaySummaryResponseDto;
 import com.nyam.everyday.web.meal.dto.MealLogRequestDto;
 import com.nyam.everyday.web.meal.dto.MealLogResponseDto;
@@ -41,7 +40,6 @@ public class MealLogService {
     private final MemberRepository memberRepository;
     private final MemberDailySummaryRepository memberDailySummaryRepository;
     private final MemberDailySummaryRepository summaryRepository;
-    private final Clock clock; // Asia/Seoul
 
     private final TeamMemberService teamMemberService;
     private final TeamActivityFeedService teamActivityFeedService;
@@ -51,7 +49,7 @@ public class MealLogService {
        날짜별 기록 조회
        ========================= */
     @Transactional(readOnly = true)
-    public List<MealLogResponseDto> getMealLogs(Long memberId, String mealType, String date) {
+    public List<MealLogResponseDto> getMealLogs(Long memberId, MealType mealType, String date) {
         LocalDate localDate = LocalDate.parse(date);
         Date sqlDate = java.sql.Date.valueOf(localDate); // JPA 파라미터 맞추기
 
@@ -198,51 +196,46 @@ public class MealLogService {
        ========================= */
     @Transactional
     public void deleteMealLog(Long userId, Long mealLogId) {
+        // 1. meal_log 조회
         MealLog log = mealLogRepository.findById(mealLogId)
                 .orElseThrow(() -> new IllegalArgumentException("MealLog not found. id=" + mealLogId));
+
         if (!log.getMember().getMemberId().equals(userId)) {
             throw new AccessDeniedException("권한이 없습니다.");
         }
 
-        // ✅ 삭제 전에 피드 갱신에 필요한 정보를 변수에 저장
-        Date mealLogDate = log.getMealLogDate();
-        MealType mealType = log.getMealType();
-
-        BigDecimal oldProtein = nz(log.getProtein());
-        BigDecimal oldCarb    = nz(log.getCarbohydrate());
-        BigDecimal oldFat     = nz(log.getFat());
-        BigDecimal oldKcal    = nz(log.getIntakeKcal());
-
-        // ✅ 여기서 날짜를 로그에서 읽는다 (컨트롤러가 줄 필요 없음)
+        // 2. summary 조회 (해당 userId + mealLogDate)
         Date date = log.getMealLogDate();
-
         MemberDailySummary summary = memberDailySummaryRepository
                 .findByMember_MemberIdAndSummaryDate(userId, date)
                 .orElseThrow(() -> new IllegalStateException("MemberDailySummary not found for user/date"));
 
-        // 누적값에서 해당 로그 총량 차감
-        summary.setTotalProtein     ( clampNz(summary.getTotalProtein().subtract(oldProtein)) );
-        summary.setTotalCarbohydrate( clampNz(summary.getTotalCarbohydrate().subtract(oldCarb)) );
-        summary.setTotalFat         ( clampNz(summary.getTotalFat().subtract(oldFat)) );
+        // 3. 기존 영양소 값 차감 (0 미만 방지)
+        summary.setTotalProtein(
+                clampNz(summary.getTotalProtein().subtract(nz(log.getProtein())))
+        );
+        summary.setTotalCarbohydrate(
+                clampNz(summary.getTotalCarbohydrate().subtract(nz(log.getCarbohydrate())))
+        );
+        summary.setTotalFat(
+                clampNz(summary.getTotalFat().subtract(nz(log.getFat())))
+        );
 
+        BigDecimal oldKcal = nz(log.getIntakeKcal()).setScale(1, RoundingMode.HALF_UP);
+        BigDecimal newTotalKcal = summary.getTotalKcal().subtract(oldKcal);
+        if (newTotalKcal.compareTo(BigDecimal.ZERO) < 0) {
+            newTotalKcal = BigDecimal.ZERO;
+        }
+        summary.setTotalKcal(newTotalKcal);
 
-        BigDecimal minusKcal = oldKcal.setScale(1, RoundingMode.HALF_UP);
-        BigDecimal newTotalKcal = summary.getTotalKcal().subtract(minusKcal);
-
-        // 0 미만 방지
-        BigDecimal safeTotal = newTotalKcal.compareTo(BigDecimal.ZERO) < 0
-                ? BigDecimal.ZERO
-                : newTotalKcal;
-
-        summary.setTotalKcal(safeTotal);
         summary.setModifiedDate(LocalDateTime.now());
 
-
+        // 4. 저장 & 로그 삭제
         memberDailySummaryRepository.save(summary);
         mealLogRepository.delete(log);
 
-        // ✅ 마지막에 중앙화된 피드 발행 메서드 호출
-        publishMealFeed(userId, mealLogDate, mealType);
+        // 5. feed 발행
+        publishMealFeed(userId, date, log.getMealType());
     }
 
     // =================================================================

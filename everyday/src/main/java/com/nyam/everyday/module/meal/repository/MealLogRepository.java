@@ -25,12 +25,11 @@ public interface MealLogRepository extends JpaRepository<MealLog, Long> {
             "WHERE m.member.memberId = :memberId AND m.mealType = :mealType AND m.mealLogDate = :date")
     List<MealLogResponseDto> findMealLogsWithFoodName(
             @Param("memberId") Long memberId,
-            @Param("mealType") String mealType,
+            @Param("mealType") MealType mealType,
             @Param("date") Date date
     );
 
     interface LiteRow {
-        Long getMealLogId();
         String getFoodName();
         java.math.BigDecimal getIntakeKcal();
         MealType getMealType();
