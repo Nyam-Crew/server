@@ -4,6 +4,7 @@ import com.nyam.everyday.module.challenge.checker.ChallengeChecker;
 import com.nyam.everyday.module.challenge.checker.event.event.MCDCreateEvent;
 import com.nyam.everyday.module.challenge.checker.service.ChallengeCheckService;
 import com.nyam.everyday.module.challenge.entity.Challenge;
+import com.nyam.everyday.module.challenge.entity.ChallengeCheckType;
 import com.nyam.everyday.module.challenge.entity.ChallengeCode;
 import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.member.entity.Member;
@@ -32,6 +33,11 @@ public class LoginFirstChecker implements ChallengeChecker {
   }
 
   @Override
+  public ChallengeCheckType getChallengeCheckType() {
+    return ChallengeCheckType.BY_DAY;
+  }
+
+  @Override
   public void check(Member member, LocalDate targetDate) {
     log.info("First Login Checker 실행");
 
@@ -49,10 +55,13 @@ public class LoginFirstChecker implements ChallengeChecker {
   }
 
   @Override
+  public Long getProgress(Member member) {
+    return 0L;
+  }
+
+  @Override
   public Boolean isSatisfied(Integer progressCount) {
     // 한번이라도 로그인했으면 달성
     return progressCount > 0;
   }
-
-
 }
