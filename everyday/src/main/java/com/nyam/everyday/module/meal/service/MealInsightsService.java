@@ -81,6 +81,7 @@ public class MealInsightsService {
         // 4) 응답
         return DayInsightsResponseDto.builder()
                 .memberId(member.getMemberId())
+                .nickname(member.getNickname())
                 .age(member.getAge())
                 .bmi(bmi)
                 .bmr(bmr)

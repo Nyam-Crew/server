@@ -9,8 +9,9 @@ import java.math.BigDecimal;
 @Builder
 public class DayInsightsResponseDto {
     private Long memberId;
-    private Integer age;
+    private String nickname;
 
+    private Integer age;
     private BigDecimal bmi;   // null 허용
     private BigDecimal bmr;   // null 허용
     private BigDecimal tdee;  // null 허용
