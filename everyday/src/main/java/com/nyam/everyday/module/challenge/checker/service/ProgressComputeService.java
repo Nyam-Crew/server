@@ -5,6 +5,7 @@ import com.nyam.everyday.module.challenge.checker.registry.ChallengeCheckerRegis
 import com.nyam.everyday.module.challenge.entity.Challenge;
 import com.nyam.everyday.module.challenge.entity.MemberChallengeStatus;
 import com.nyam.everyday.module.challenge.repository.MemberChallengeDayRepository;
+import com.nyam.everyday.module.challenge.service.MemberChallengeStatusService;
 import com.nyam.everyday.module.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
