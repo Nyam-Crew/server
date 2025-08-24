@@ -2,7 +2,7 @@ package com.nyam.everyday.web.calendar.controller;
 
 import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.module.calendar.service.CalendarService;
-import com.nyam.everyday.web.calendar.dto.MonthlyCalendarResponse;
+import com.nyam.everyday.web.calendar.dto.MonthlyCalendarResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,10 +22,13 @@ public class CalendarController {
 
     private final CalendarService calendarService;
 
-    /**
+    /*
      * 월간 캘린더 조회
-     * GET /api/calendar/month?year=2025&month=8
-     * year, month가 없으면 오늘 기준 월로 반환
+     *
+     * 설계 의도
+     * - GET /api/calendar/month?year=2025&month=8
+     * - year, month가 없으면 현재 날짜 기준 월로 조회
+     * - 로그인한 회원의 ID를 기반으로 캘린더 데이터 반환
      */
     @Operation(
             summary = "월간 캘린더 조회",
@@ -35,10 +38,10 @@ public class CalendarController {
             responseCode = "200",
             description = "성공",
             content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = MonthlyCalendarResponse.class))
+                    schema = @Schema(implementation = MonthlyCalendarResponseDto.class))
     )
     @GetMapping("/api/calendar/month")
-    public MonthlyCalendarResponse getMonthlyCalendar(
+    public MonthlyCalendarResponseDto getMonthlyCalendar(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails userDetails,
 

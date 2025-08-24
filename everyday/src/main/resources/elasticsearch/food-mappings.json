@@ -4,7 +4,6 @@
       "type": "text",
       "analyzer": "korean_search",
       "search_analyzer": "korean_search",
-      "copy_to": ["all_search"],
       "fields": { "keyword": { "type": "keyword" } }
     },
     "manufacturer": {
@@ -13,8 +12,7 @@
         "search": {
           "type": "text",
           "analyzer": "korean_search",
-          "search_analyzer": "korean_search",
-          "copy_to": ["all_search"]
+          "search_analyzer": "korean_search"
         }
       }
     },

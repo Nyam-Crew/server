@@ -16,12 +16,25 @@ public interface BookmarkRepository extends JpaRepository<Bookmark,Long> {
 
   boolean existsByMemberAndBoard(Member member, Board board);
 
-
-  @Query(value = "SELECT new com.nyam.everyday.module.bookmark.dto.BookmarkAndBoardDto(b.board,b.bookmarkId, b.createdDate) " +
-      "FROM Bookmark b " +
-      "JOIN b.board.member m " +
-      "WHERE b.member = :member",
-      countQuery = "SELECT count(b) FROM Bookmark b WHERE b.member = :member")
+  @Query("""
+  select new com.nyam.everyday.module.bookmark.dto.BookmarkAndBoardDto(
+    br.boardId,
+    b.bookmarkId,
+    br.boardTitle,
+    br.boardContent,
+    m.nickname,
+    br.likeCount,
+    br.viewCount,
+    br.commentCount,
+    br.boardType,
+    b.createdDate
+  )
+  from Bookmark b
+  join b.board br
+  join br.member m
+  where b.member = :member
+  order by b.createdDate desc, b.bookmarkId desc
+""")
   Page<BookmarkAndBoardDto> findBookmarkedBoardsByMember(@Param("member") Member member, Pageable pageable);
 
   long deleteByMemberAndBoard(Member member, Board board);

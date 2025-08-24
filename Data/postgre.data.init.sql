@@ -8,9 +8,17 @@ VALUES (1, '탄수화물'),
        (4, '무기질'),
        (5, '기타') ON CONFLICT (food_cate_id) DO NOTHING;
 
+-- 음식
+-- 1. 안 먹음 레코드 삽입
+INSERT INTO food (food_id, food_name, manufacturer, unit_kcal, unit_gram, food_size)
+VALUES (1, '안 먹음', NULL, 0.0, 0, NULL);
+-- 2. 시퀀스 현재 값 2부터 시작하도록 조정
+ALTER TABLE food ALTER COLUMN food_id RESTART WITH 2;
+
 insert into mission (category, title, type, is_active)
-values ('FOOD', '물 1L 마시기', 'AUTO', true),
-       ('FOOD', '음식 기록하기', 'AUTO', true),
+values ('WATER_1L', '물 1L 마시기', 'AUTO', true),
+       ('MEAL_LOGGED', '음식 1회 이상 기록하기', 'AUTO', true),
+       ('WEIGHT_LOGGED', '체중 기록하기', 'AUTO', true),
        ('ACTIVITY', '10분 산책하기', 'MANUAL', true),
        ('ACTIVITY', '자전거 타기 20분', 'MANUAL', true),
        ('ACTIVITY', '계단 오르내리기 10분', 'MANUAL', true),
@@ -25,6 +33,7 @@ values ('FOOD', '물 1L 마시기', 'AUTO', true),
        ('MIND', '휴대폰 1시간 줄이기', 'MANUAL', true),
        ('MIND', '자기 전 스트레칭', 'MANUAL', true),
        ('MIND', '하루 마무리 감사 인사하기', 'MANUAL', true);
+
 INSERT INTO nutrition_category (food_cate_id, category)
 VALUES (1, '탄수화물'),
        (2, '단백질'),
@@ -170,48 +179,48 @@ VALUES ('첫 식단 기록', '처음으로 식단을 기록',
 
 
 -- 이벤트 챌린지 (EVENT_CHALLENGE)
-INSERT INTO everyday.challenge (badge_id, title, description, challenge_code, type, start_date, end_date)
-VALUES (1, '새해 다짐 챌린지', '1월 첫 주, 매일 운동하고 식단 기록하기 - 뱃지: 작심삼일 극복', 'RECORD_NEWYEAR_RESOLVE', 'EVENT_CHALLENGE', NULL, NULL),
-       (2, '여름맞이 오운완 챌린지', '한 달 동안 오늘 운동 완료 게시글 15회 이상 인증하기 - 뱃지: 선글라스 아보카도', 'POST_WORKOUT_DONE_15', 'EVENT_CHALLENGE',
+INSERT INTO everyday.challenge (badge_id, title, description, challenge_code, type, target_count, start_date, end_date)
+VALUES (1, '새해 다짐 챌린지', '1월 첫 주, 매일 운동하고 식단 기록하기 - 뱃지: 작심삼일 극복', 'RECORD_NEWYEAR_RESOLVE',  'EVENT_CHALLENGE', 7, NULL, NULL),
+       (2, '여름맞이 오운완 챌린지', '한 달 동안 오늘 운동 완료 게시글 15회 이상 인증하기 - 뱃지: 선글라스 아보카도', 'POST_WORKOUT_DONE_15', 'EVENT_CHALLENGE', 15,
         NULL, NULL),
-       (3, '추석 죄책감 덜기 챌린지', '추석 연휴 동안 송편 5개 칼로리(1000kcal)만큼 운동 소모 - 뱃지: 보름달 토끼', 'WORKOUT_BURN_1000KCAL', 'EVENT_CHALLENGE',
+       (3, '추석 죄책감 덜기 챌린지', '추석 연휴 동안 송편 5개 칼로리(1000kcal)만큼 운동 소모 - 뱃지: 보름달 토끼', 'WORKOUT_BURN_1000KCAL', 'EVENT_CHALLENGE', 1000,
         NULL, NULL),
-       (4, '크리스마스 스텝 챌린지', '12월 1일부터 25일까지 누적 25만 보 걷기 - 뱃지: 산타 운동화', 'STEP_TOTAL_250K_DEC25', 'EVENT_CHALLENGE', NULL,
+       (4, '크리스마스 스텝 챌린지', '12월 1일부터 25일까지 누적 25만 보 걷기 - 뱃지: 산타 운동화', 'STEP_TOTAL_250K_DEC25', 'EVENT_CHALLENGE', 250000, NULL,
         NULL),
-       (5, '수분 히어로 챌린지', '일주일 동안 매일 2L 물 마시기 성공 - 뱃지: 망토 물방울', 'WATER_2L_EVERYDAY_7D', 'EVENT_CHALLENGE', NULL, NULL),
-       (6, '단백질 파워 위크', '5일 연속 매끼 단백질 20g 이상 섭취 - 뱃지: 근육질 달걀', 'PROTEIN_20G_EACHMEAL_5D', 'EVENT_CHALLENGE', NULL, NULL),
-       (7, '클린이팅 챌린지', '주말 동안 가공식품, 배달음식 없이 직접 만든 건강식 기록 - 뱃지: 황금 사과', 'DIET_CLEAN_WEEKEND', 'EVENT_CHALLENGE', NULL,
+       (5, '수분 히어로 챌린지', '일주일 동안 매일 2L 물 마시기 성공 - 뱃지: 망토 물방울', 'WATER_2L_EVERYDAY_7D', 'EVENT_CHALLENGE', 7, NULL, NULL),
+       (6, '단백질 파워 위크', '5일 연속 매끼 단백질 20g 이상 섭취 - 뱃지: 근육질 달걀', 'PROTEIN_20G_EACHMEAL_5D', 'EVENT_CHALLENGE', 5, NULL, NULL),
+       (7, '클린이팅 챌린지', '주말 동안 가공식품, 배달음식 없이 직접 만든 건강식 기록 - 뱃지: 황금 사과', 'DIET_CLEAN_WEEKEND', 'EVENT_CHALLENGE', 2, NULL,
         NULL),
-       (8, '디지털 디톡스 챌린지', '3일 동안 식사 시간에는 스마트폰 없이 식사 집중 (인증샷 첨부) - 뱃지: 명상 브로콜리', 'MINDFUL_DIGITAL_DETOX_3D', 'EVENT_CHALLENGE',
+       (8, '디지털 디톡스 챌린지', '3일 동안 식사 시간에는 스마트폰 없이 식사 집중 (인증샷 첨부) - 뱃지: 명상 브로콜리', 'MINDFUL_DIGITAL_DETOX_3D', 'EVENT_CHALLENGE', 3,
         NULL, NULL);
 
-INSERT INTO everyday.challenge (badge_id, title, description, challenge_code, type, start_date, end_date)
-VALUES (9, '첫 식단 기록 챌린지', '처음으로 식단을 기록하자', 'MEAL_LOG_FIRST', 'REGULAR_CHALLENGE', NULL, NULL),
-       (10, '식단 기록 10회 달성 챌린지', '식단을 총 10회 기록해보자', 'MEAL_LOG_10_TIMES', 'REGULAR_CHALLENGE', NULL, NULL),
-       (11, '물 1L 마시기 30일 달성 챌린지', '누적 30일 동안 1L씩 물을 마시자', 'WATER_1L_30DAYS', 'REGULAR_CHALLENGE', NULL, NULL),
-       (12, '누적 걸음 10만 보 달성 챌린지', '누적 걸음 수 10만보를 채워보자', 'WORKOUT_STEP_TOTAL_100K', 'REGULAR_CHALLENGE', NULL, NULL),
-       (13, '데일리 미션 100% 완료 10회 챌린지', '데일리 미션 100% 완료를 10회 달성하자', 'MISSION_FULL_10_TIMES',  'REGULAR_CHALLENGE', NULL, NULL),
-       (14, '주말 식단 모두 기록 챌린지', '주말(토, 일)동안 동안 모든 식사를 기록해보자', 'MEAL_LOG_ALL_WEEKEND',  'REGULAR_CHALLENGE', NULL, NULL),
-       (15, '30일 연속 앱 접속 챌린지', '30일 연속으로 접속해보자', 'LOGIN_STREAK_30D', 'REGULAR_CHALLENGE', NULL, NULL),
-       (16, '첫 좋아요 받기 챌린지', '게시글에 첫 좋아요 받기', 'LIKE_RECEIVE_FIRST', 'REGULAR_CHALLENGE', NULL, NULL),
-       (17, '응원 댓글 50개 작성 챌린지', '다른 사람 게시글에 응원 댓글 50개 작성', 'COMMENT_50_TIMES', 'REGULAR_CHALLENGE', NULL, NULL),
-       (18, '레시피 게시글 10개 북마크 챌린지', '유용한 레시피 게시글 10개 북마크', 'BOOKMARK_RECIPE_10', 'REGULAR_CHALLENGE', NULL, NULL),
-       (19, '내 게시글 5회 북마크 챌린지', '내 게시글이 다른 사람에게 5번 북마크 받기', 'BOOKMARK_RECEIVED_5', 'REGULAR_CHALLENGE', NULL, NULL),
-       (20, '그룹 목표 달성 챌린지', '그룹 멤버들과 함께 목표 달성', 'TEAM_GOAL_ACHIEVE', 'REGULAR_CHALLENGE', NULL, NULL),
-       (21, '그룹 정원 모두 채우기 챌린지', '그룹 정원 모두 채우기 (그룹장 전용)', 'TEAM_FULL_CAPACITY', 'REGULAR_CHALLENGE', NULL, NULL),
-       (22, '비포&애프터 게시글 작성 챌린지', '비포&애프터 게시글 처음 작성하기', 'POST_BEFORE_AFTER_FIRST', 'REGULAR_CHALLENGE', NULL, NULL),
-       (23, '목표 체중 설정 챌린지', '나의 목표 체중 처음 설정하기', 'PROFILE_SET_TARGET_WEIGHT', 'REGULAR_CHALLENGE', NULL, NULL),
-       (24, '커스텀 음식 등록 챌린지', '나만의 커스텀 음식 처음 등록하기', 'POST_REPIPE_FIRST', 'REGULAR_CHALLENGE', NULL, NULL),
-       (25, '그룹 공지 작성 챌린지', '그룹 공지사항 처음 작성하기 (그룹장 전용)', 'TEAM_NOTICE_FIRST',  'REGULAR_CHALLENGE', NULL, NULL),
-       (26, '프로필 정보 입력 완료 챌린지', '프로필 정보(키, 몸무게, 활동량) 모두 입력하기', 'PROFILE_COMPLETE', 'REGULAR_CHALLENGE', NULL, NULL),
-       (27, '단백질 권장량 3일 달성 챌린지', '일일 단백질 권장량 3일 연속 달성', 'MEAL_LOG_PROTEIN_RDA_3DAYS',  'REGULAR_CHALLENGE', NULL, NULL),
-       (28, '균형 잡힌 하루 식단 챌린지', '하루 세 끼 탄수화물, 단백질, 지방 균형 맞추기', 'MEAL_LOG_BALANCED_DAY',  'REGULAR_CHALLENGE', NULL, NULL),
-       (29, '목표 체중 50% 달성 챌린지', '목표 체중까지 50% 도달', 'WEIGHT_GOAL_50P', 'REGULAR_CHALLENGE', NULL, NULL),
-       (30, '퍼펙트 데이 챌린지', '하루 물, 식단, 운동 목표 모두 달성', 'MEAL_LOG_PERFECT_ALL_GOALS',  'REGULAR_CHALLENGE', NULL, NULL),
-       (31, '첫 접속 챌린지', '처음으로 어플리케이션에 접속한다', 'LOGIN_FIRST', 'REGULAR_CHALLENGE', NULL, NULL),
-       (32, '첫 댓글 챌린지', '다른 사람의 게시물에 처음으로 댓글을 작성한다', 'COMMENT_FIRST', 'REGULAR_CHALLENGE', NULL, NULL),
-       (33, '첫 도장 챌린지', '일일미션을 2개 이상 달성해 도장을 받는다', 'STAMP_FIRST', 'REGULAR_CHALLENGE', NULL, NULL),
-       (34, '3일 연속 도장 챌린지', '도장을 3일 연속으로 받는다', 'STAMP_STREAK_3', 'REGULAR_CHALLENGE', NULL, NULL),
-       (35, '첫 물 기록 챌린지', '처음으로 물 마신 것을 기록한다', 'WATER_FIRST', 'REGULAR_CHALLENGE', NULL, NULL),
-       (36, '도장 10회 받기 챌린지', '도장을 누적 10번 이상 받는다', 'STAMP_10_TIMES', 'REGULAR_CHALLENGE', NULL, NULL),
-       (37, '첫 좋아요 누르기 챌린지', '좋아요를 처음 누른다', 'LIKE_FIRST', 'REGULAR_CHALLENGE', NULL, NULL);
+INSERT INTO everyday.challenge (badge_id, title, description, challenge_code, type, target_count, start_date, end_date)
+VALUES (9, '첫 식단 기록 챌린지', '처음으로 식단을 기록하자', 'MEAL_LOG_FIRST', 'REGULAR_CHALLENGE', 1, NULL, NULL),
+       (10, '식단 기록 10회 달성 챌린지', '식단을 총 10회 기록해보자', 'MEAL_LOG_10_TIMES', 'REGULAR_CHALLENGE', 10, NULL, NULL),
+       (11, '물 1L 마시기 30일 달성 챌린지', '누적 30일 동안 1L씩 물을 마시자', 'WATER_1L_30DAYS', 'REGULAR_CHALLENGE', 30, NULL, NULL),
+       (12, '누적 걸음 10만 보 달성 챌린지', '누적 걸음 수 10만보를 채워보자', 'WORKOUT_STEP_TOTAL_100K', 'REGULAR_CHALLENGE', 100000, NULL, NULL),
+       (13, '데일리 미션 100% 완료 10회 챌린지', '데일리 미션 100% 완료를 10회 달성하자', 'MISSION_FULL_10_TIMES',  'REGULAR_CHALLENGE', 10, NULL, NULL),
+       (14, '주말 식단 모두 기록 챌린지', '주말(토, 일)동안 동안 모든 식사를 기록해보자', 'MEAL_LOG_ALL_WEEKEND',  'REGULAR_CHALLENGE', 2, NULL, NULL),
+       (15, '30일 누적 앱 접속 챌린지', '30일동안 어플에 접속해보자', 'LOGIN_STREAK_30D', 'REGULAR_CHALLENGE', 30,  NULL,  NULL),
+       (16, '첫 좋아요 받기 챌린지', '게시글에 첫 좋아요 받기', 'LIKE_RECEIVE_FIRST', 'REGULAR_CHALLENGE', 1, NULL, NULL),
+       (17, '응원 댓글 50개 작성 챌린지', '다른 사람 게시글에 응원 댓글 50개 작성', 'COMMENT_50_TIMES', 'REGULAR_CHALLENGE', 50, NULL, NULL),
+       (18, '레시피 게시글 10개 북마크 챌린지', '유용한 레시피 게시글 10개 북마크', 'BOOKMARK_RECIPE_10', 'REGULAR_CHALLENGE', 10, NULL, NULL),
+       (19, '내 게시글 5회 북마크 챌린지', '내 게시글이 다른 사람에게 5번 북마크 받기', 'BOOKMARK_RECEIVED_5', 'REGULAR_CHALLENGE', 5, NULL, NULL),
+       (20, '그룹 목표 달성 챌린지', '그룹 멤버들과 함께 목표 달성', 'TEAM_GOAL_ACHIEVE', 'REGULAR_CHALLENGE', 1, NULL, NULL),
+       (21, '그룹 정원 모두 채우기 챌린지', '그룹 정원 모두 채우기 (그룹장 전용)', 'TEAM_FULL_CAPACITY', 'REGULAR_CHALLENGE', 1, NULL, NULL),
+       (22, '비포&애프터 게시글 작성 챌린지', '비포&애프터 게시글 처음 작성하기', 'POST_BEFORE_AFTER_FIRST', 'REGULAR_CHALLENGE', 1, NULL, NULL),
+       (23, '목표 체중 설정 챌린지', '나의 목표 체중 처음 설정하기', 'PROFILE_SET_TARGET_WEIGHT', 'REGULAR_CHALLENGE', 1, NULL, NULL),
+       (24, '커스텀 음식 등록 챌린지', '나만의 커스텀 음식 처음 등록하기', 'POST_REPIPE_FIRST', 'REGULAR_CHALLENGE', 1, NULL, NULL),
+       (25, '그룹 공지 작성 챌린지', '그룹 공지사항 처음 작성하기 (그룹장 전용)', 'TEAM_NOTICE_FIRST',  'REGULAR_CHALLENGE', 1, NULL, NULL),
+       (26, '프로필 정보 입력 완료 챌린지', '프로필 정보(키, 몸무게, 활동량) 모두 입력하기', 'PROFILE_COMPLETE', 'REGULAR_CHALLENGE', 1, NULL, NULL),
+       (27, '단백질 권장량 3일 달성 챌린지', '일일 단백질 권장량 3일 연속 달성', 'MEAL_LOG_PROTEIN_RDA_3DAYS',  'REGULAR_CHALLENGE', 3, NULL, NULL),
+       (28, '균형 잡힌 하루 식단 챌린지', '하루 세 끼 탄수화물, 단백질, 지방 균형 맞추기', 'MEAL_LOG_BALANCED_DAY',  'REGULAR_CHALLENGE', 1,  NULL, NULL),
+       (29, '목표 체중 50% 달성 챌린지', '목표 체중까지 50% 도달', 'WEIGHT_GOAL_50P', 'REGULAR_CHALLENGE', 1, NULL, NULL),
+       (30, '퍼펙트 데이 챌린지', '하루 물, 식단, 운동 목표 모두 달성', 'MEAL_LOG_PERFECT_ALL_GOALS',  'REGULAR_CHALLENGE', 1, NULL, NULL),
+       (31, '첫 접속 챌린지', '처음으로 어플리케이션에 접속한다', 'LOGIN_FIRST', 'REGULAR_CHALLENGE', 1, NULL, NULL),
+       (32, '첫 댓글 챌린지', '다른 사람의 게시물에 처음으로 댓글을 작성한다', 'COMMENT_FIRST', 'REGULAR_CHALLENGE', 1, NULL, NULL),
+       (33, '첫 도장 챌린지', '일일미션을 2개 이상 달성해 도장을 받는다', 'STAMP_FIRST', 'REGULAR_CHALLENGE', 1,  NULL, NULL),
+       (34, '3일 연속 도장 챌린지', '도장을 3일 연속으로 받는다', 'STAMP_STREAK_3', 'REGULAR_CHALLENGE', 3, NULL, NULL),
+       (35, '첫 물 기록 챌린지', '처음으로 물 마신 것을 기록한다', 'WATER_FIRST', 'REGULAR_CHALLENGE', 1, NULL, NULL),
+       (36, '도장 10회 받기 챌린지', '도장을 누적 10번 이상 받는다', 'STAMP_10_TIMES', 'REGULAR_CHALLENGE', 10,  NULL, NULL),
+       (37, '첫 좋아요 누르기 챌린지', '좋아요를 처음 누른다', 'LIKE_FIRST', 'REGULAR_CHALLENGE', 1, NULL, NULL);

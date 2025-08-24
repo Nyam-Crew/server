@@ -6,8 +6,9 @@ import com.nyam.everyday.module.challenge.checker.ChallengeChecker;
 import com.nyam.everyday.module.challenge.checker.event.event.ChallengeClearedEvent;
 import com.nyam.everyday.module.challenge.checker.event.event.ProgressRecomputeEvent;
 import com.nyam.everyday.module.challenge.checker.registry.ChallengeCheckerRegistry;
-import com.nyam.everyday.module.challenge.checker.service.ChallengeCheckService;
+import com.nyam.everyday.module.challenge.checker.service.ProgressComputeService;
 import com.nyam.everyday.module.challenge.entity.Challenge;
+import com.nyam.everyday.module.challenge.entity.ChallengeCheckType;
 import com.nyam.everyday.module.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +27,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @RequiredArgsConstructor
 public class ProgressRecomputeListener {
 
-  private final ChallengeCheckService challengeCheckService;
+  private final ProgressComputeService progressComputeService;
   private final ChallengeCheckerRegistry challengeCheckerRegistry;
   private final ApplicationEventPublisher publisher;
 
@@ -37,17 +38,31 @@ public class ProgressRecomputeListener {
     Member member = progressRecomputeEvent.getMember();
     Challenge challenge = progressRecomputeEvent.getChallenge();
 
-    // 특정 챌린지, 유저 기반으로 해당 유저가 며칠이나 해당 챌린지를 달성했는지 다시 계산하고, 그 값을 업데이트한다.
-    Integer progressCount = challengeCheckService.reComputeProgressCount(member, challenge);
-
     // 챌린지 체커를 가져온다
     ChallengeChecker checker = challengeCheckerRegistry.getChecker(challenge);
 
-    // 체커가 조건을 달성했는지 확인함
-    if (checker.isSatisfied(progressCount)) {
-      // 챌린지 달성 이벤트 발행
-      publisher.publishEvent(new ChallengeClearedEvent(member, challenge));
+    // 챌린지에는 두 종류가 있음. 먼저 일수 기반 챌린지의 경우, 몇일이나 달성했는지 세면 된다
+    if (checker.getChallengeCheckType() == ChallengeCheckType.BY_DAY) {
+      // 특정 챌린지, 유저 기반으로 해당 유저가 며칠이나 해당 챌린지를 달성했는지 다시 계산하고, 그 값을 업데이트한다.
+      Integer progressCount = progressComputeService.computeProgressCountByDay(member, challenge);
+
+      // 체커가 조건을 달성했는지 확인함
+      if (checker.isSatisfied(progressCount)) {
+        // 챌린지 달성 이벤트 발행
+        publisher.publishEvent(new ChallengeClearedEvent(member, challenge));
+      }
+    }
+
+    // 횟수 기반 챌린지의 경우, 체커 내부에 Progress 체킹 로직이 있다. 이를 기반으로 체크한다
+    else {
+      // 유저가 특정 행동을 얼마나 했는지를 내부에서 계산한다. (글 작성, 좋아요 누르기 등)
+      Integer progressCount = progressComputeService.computeProgressCountByCount(member, challenge);
+
+      // 체커 기반으로 조건을 달성했는지 확인한다
+      if (checker.isSatisfied(progressCount)) {
+        // 챌린지 달성 이벤트 발행
+        publisher.publishEvent(new ChallengeClearedEvent(member, challenge));
+      }
     }
   }
-
 }

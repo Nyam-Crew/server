@@ -60,11 +60,11 @@ public class BadgeService {
         }
 
         if (badgeImageFile!= null
-            && !badgeImageFile.getOriginalFilename().isBlank()
+            && badgeImageFile.getOriginalFilename()!=null
             && badgeImageFile.getOriginalFilename().contains(".")) {
             AwsS3Response newS3Url = awsS3Service.uploadFile(badgeImageFile);
             badge.setBadgeImage(newS3Url.getUrl());
-            log.info("badgeImageFile.getOriginalFilename() : {ß}" , badgeImageFile.getOriginalFilename());
+            log.info("badgeImageFile.getOriginalFilename() : {}" , badgeImageFile.getOriginalFilename());
             log.info("badgeImageFile is MultipartFile : {}" , newS3Url.getUrl());
         } else {
             badge.setBadgeImage(DEFAULT_BADGE_IMAGE.getValue());
@@ -105,6 +105,7 @@ public class BadgeService {
 
 
     /** 현재 로그인한 사용자가 보유한 뱃지 여부 isOwned 가 표시된 badge 페이징 호출 */
+    @Transactional(readOnly = true)
     public Page<BadgeOwnershipDto> getBadgeListWithOwnership(Pageable pageable, Long currentUserId) {
         // 1. badge 모든 목록 호출
         Page<Badge> badgePage = badgeRepository.findAll(pageable);
@@ -121,6 +122,14 @@ public class BadgeService {
                 ownedMap.get(b.getId())));
     }
 
+    /**
+     *  로그인한 사용자가 보유하고 있는 뱃지 총 count
+     * */
+    @Transactional(readOnly = true)
+    public long getBadgesCnt(Long memberId) {
+        if (memberId == null) return 0L;
+        return memberBadgeStatusRepository.countByMember_MemberId(memberId);
+    }
 
     /**
      * 뱃지를 삭제합니다.

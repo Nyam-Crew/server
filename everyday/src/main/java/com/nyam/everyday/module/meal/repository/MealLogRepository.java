@@ -3,7 +3,6 @@ package com.nyam.everyday.module.meal.repository;
 import com.nyam.everyday.module.meal.entity.MealLog;
 import com.nyam.everyday.module.meal.type.MealType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import com.nyam.everyday.web.meal.dto.MealLogResponseDto;
@@ -20,18 +19,20 @@ import org.springframework.data.repository.query.Param;
 
 public interface MealLogRepository extends JpaRepository<MealLog, Long> {
     @Query("SELECT new com.nyam.everyday.web.meal.dto.MealLogResponseDto(" +
-            "m.mealLogId, m.member.memberId, m.food.foodId, f.foodName, m.intakeAmount, m.intakeKcal, m.mealType, m.createdDate, m.modifiedDate) " +
+            "m.mealLogId, m.member.memberId, m.food.foodId, f.foodName, " +
+            "m.intakeAmount, m.intakeKcal, m.mealType, m.createdDate, m.modifiedDate) " +
             "FROM MealLog m JOIN m.food f " +
-            "WHERE m.member.memberId = :memberId AND m.mealType = :mealType AND m.createdDate BETWEEN :start AND :end")
+            "WHERE m.member.memberId = :memberId " +
+            "AND m.mealType = :mealType " +
+            "AND m.mealLogDate = :date " +
+            "AND f.foodId <> 1")
     List<MealLogResponseDto> findMealLogsWithFoodName(
             @Param("memberId") Long memberId,
-            @Param("mealType") String mealType,
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end
+            @Param("mealType") MealType mealType,
+            @Param("date") Date date
     );
 
     interface LiteRow {
-        Long getMealLogId();
         String getFoodName();
         java.math.BigDecimal getIntakeKcal();
         MealType getMealType();

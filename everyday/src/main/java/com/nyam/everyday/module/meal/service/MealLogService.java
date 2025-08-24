@@ -5,6 +5,7 @@ import com.nyam.everyday.module.food.repository.FoodRepository;
 import com.nyam.everyday.module.meal.type.MealType;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
+import com.nyam.everyday.module.mission.service.AutoMissionService;
 import com.nyam.everyday.module.scorelog.service.ScoreAwardService;
 import com.nyam.everyday.module.summary.entity.MemberDailySummary;
 import com.nyam.everyday.module.summary.repository.MemberDailySummaryRepository;
@@ -12,7 +13,7 @@ import com.nyam.everyday.module.team.enums.ActivityType;
 import com.nyam.everyday.module.team.service.TeamActivityFeedService;
 import com.nyam.everyday.module.team.service.TeamMemberService;
 import com.nyam.everyday.module.team.util.FeedIds;
-import com.nyam.everyday.web.meal.dto.MealDayLiteResponse;
+import com.nyam.everyday.web.meal.dto.MealDaySummaryResponseDto;
 import com.nyam.everyday.web.meal.dto.MealLogRequestDto;
 import com.nyam.everyday.web.meal.dto.MealLogResponseDto;
 import com.nyam.everyday.module.meal.entity.MealLog;
@@ -42,21 +43,21 @@ public class MealLogService {
     private final MemberRepository memberRepository;
     private final MemberDailySummaryRepository memberDailySummaryRepository;
     private final MemberDailySummaryRepository summaryRepository;
-    private final Clock clock; // Asia/Seoul
 
     private final TeamMemberService teamMemberService;
     private final TeamActivityFeedService teamActivityFeedService;
     private final ScoreAwardService scoreAwardService;
+    private final AutoMissionService autoMissionService;
 
     /* =========================
        날짜별 기록 조회
        ========================= */
     @Transactional(readOnly = true)
-    public List<MealLogResponseDto> getMealLogs(Long memberId, String mealType, String date) {
+    public List<MealLogResponseDto> getMealLogs(Long memberId, MealType mealType, String date) {
         LocalDate localDate = LocalDate.parse(date);
-        LocalDateTime startOfDay = localDate.atStartOfDay();
-        LocalDateTime endOfDay = localDate.plusDays(1).atStartOfDay().minusNanos(1);
-        return mealLogRepository.findMealLogsWithFoodName(memberId, mealType, startOfDay, endOfDay);
+        Date sqlDate = java.sql.Date.valueOf(localDate); // JPA 파라미터 맞추기
+
+        return mealLogRepository.findMealLogsWithFoodName(memberId, mealType, sqlDate);
     }
 
     /* =========================
@@ -123,6 +124,8 @@ public class MealLogService {
         // ✅ [신규] 식단 기록 점수 부여 로직 호출
         // member 객체와 저장된 mealType을 전달합니다.
         scoreAwardService.awardMealSlotOnce(member, saved.getMealType());
+
+        autoMissionService.evaluateForMember(member.getMemberId(), LocalDate.now());
 
         return saved.getMealLogId();
     }
@@ -196,6 +199,8 @@ public class MealLogService {
         mealLogRepository.save(log);
         memberDailySummaryRepository.save(summary);
 
+        autoMissionService.evaluateForMember(userId, LocalDate.now());
+
         // ✅ 마지막에 중앙화된 피드 발행 메서드 호출
         publishMealFeed(userId, log.getMealLogDate(), log.getMealType());
     }
@@ -205,51 +210,48 @@ public class MealLogService {
        ========================= */
     @Transactional
     public void deleteMealLog(Long userId, Long mealLogId) {
+        // 1. meal_log 조회
         MealLog log = mealLogRepository.findById(mealLogId)
                 .orElseThrow(() -> new IllegalArgumentException("MealLog not found. id=" + mealLogId));
+
         if (!log.getMember().getMemberId().equals(userId)) {
             throw new AccessDeniedException("권한이 없습니다.");
         }
 
-        // ✅ 삭제 전에 피드 갱신에 필요한 정보를 변수에 저장
-        Date mealLogDate = log.getMealLogDate();
-        MealType mealType = log.getMealType();
-
-        BigDecimal oldProtein = nz(log.getProtein());
-        BigDecimal oldCarb    = nz(log.getCarbohydrate());
-        BigDecimal oldFat     = nz(log.getFat());
-        BigDecimal oldKcal    = nz(log.getIntakeKcal());
-
-        // ✅ 여기서 날짜를 로그에서 읽는다 (컨트롤러가 줄 필요 없음)
+        // 2. summary 조회 (해당 userId + mealLogDate)
         Date date = log.getMealLogDate();
-
         MemberDailySummary summary = memberDailySummaryRepository
                 .findByMember_MemberIdAndSummaryDate(userId, date)
                 .orElseThrow(() -> new IllegalStateException("MemberDailySummary not found for user/date"));
 
-        // 누적값에서 해당 로그 총량 차감
-        summary.setTotalProtein     ( clampNz(summary.getTotalProtein().subtract(oldProtein)) );
-        summary.setTotalCarbohydrate( clampNz(summary.getTotalCarbohydrate().subtract(oldCarb)) );
-        summary.setTotalFat         ( clampNz(summary.getTotalFat().subtract(oldFat)) );
+        // 3. 기존 영양소 값 차감 (0 미만 방지)
+        summary.setTotalProtein(
+                clampNz(summary.getTotalProtein().subtract(nz(log.getProtein())))
+        );
+        summary.setTotalCarbohydrate(
+                clampNz(summary.getTotalCarbohydrate().subtract(nz(log.getCarbohydrate())))
+        );
+        summary.setTotalFat(
+                clampNz(summary.getTotalFat().subtract(nz(log.getFat())))
+        );
 
+        BigDecimal oldKcal = nz(log.getIntakeKcal()).setScale(1, RoundingMode.HALF_UP);
+        BigDecimal newTotalKcal = summary.getTotalKcal().subtract(oldKcal);
+        if (newTotalKcal.compareTo(BigDecimal.ZERO) < 0) {
+            newTotalKcal = BigDecimal.ZERO;
+        }
+        summary.setTotalKcal(newTotalKcal);
 
-        BigDecimal minusKcal = oldKcal.setScale(1, RoundingMode.HALF_UP);
-        BigDecimal newTotalKcal = summary.getTotalKcal().subtract(minusKcal);
-
-        // 0 미만 방지
-        BigDecimal safeTotal = newTotalKcal.compareTo(BigDecimal.ZERO) < 0
-                ? BigDecimal.ZERO
-                : newTotalKcal;
-
-        summary.setTotalKcal(safeTotal);
         summary.setModifiedDate(LocalDateTime.now());
 
-
+        // 4. 저장 & 로그 삭제
         memberDailySummaryRepository.save(summary);
         mealLogRepository.delete(log);
 
-        // ✅ 마지막에 중앙화된 피드 발행 메서드 호출
-        publishMealFeed(userId, mealLogDate, mealType);
+        autoMissionService.evaluateForMember(userId, LocalDate.now());
+
+        // 5. feed 발행
+        publishMealFeed(userId, date, log.getMealType());
     }
 
     // =================================================================
@@ -336,72 +338,52 @@ public class MealLogService {
     }
 
     @Transactional(readOnly = true)
-    public MealDayLiteResponse getDay(Long memberId, LocalDate date) {
-        // DB가 DATE 컬럼이므로 java.util.Date 로 변환
-        ZoneId zone = clock.getZone();
-        Date d = Date.from(date.atStartOfDay(zone).toInstant());
-
-        // 1) 식사 로그 라이트 조회
+    public MealDaySummaryResponseDto getDaySummary(Long memberId, Date d) {
+        // meal_log 조회
         var rows = mealLogRepository.findLiteByMemberAndDate(memberId, d);
 
-        // 2) MealType별 그룹 + 합계
-        Map<MealType, List<MealDayLiteResponse.MealItemLite>> grouped =
-                rows.stream().collect(Collectors.groupingBy(
-                        MealLogRepository.LiteRow::getMealType,
-                        Collectors.mapping(r -> MealDayLiteResponse.MealItemLite.builder()
-                                        .id(r.getMealLogId())
-                                        .foodName(r.getFoodName())
-                                        .intakeKcal(r.getIntakeKcal())
-                                        .build(),
-                                Collectors.toList())
-                ));
+        // MealType별 그룹핑
+        Map<MealType, List<MealLogRepository.LiteRow>> grouped =
+                rows.stream().collect(Collectors.groupingBy(MealLogRepository.LiteRow::getMealType));
 
-        Map<MealType, MealDayLiteResponse.MealBucket> buckets = new EnumMap<>(MealType.class);
+        Map<MealType, MealDaySummaryResponseDto.MealSummary> buckets = new EnumMap<>(MealType.class);
         for (MealType mt : MealType.values()) {
-            List<MealDayLiteResponse.MealItemLite> items = grouped.getOrDefault(mt, List.of());
+            List<MealLogRepository.LiteRow> items = grouped.getOrDefault(mt, List.of());
+
             BigDecimal total = items.stream()
-                    .map(MealDayLiteResponse.MealItemLite::getIntakeKcal)
+                    .map(MealLogRepository.LiteRow::getIntakeKcal)
                     .filter(Objects::nonNull)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            buckets.put(mt, MealDayLiteResponse.MealBucket.builder()
+
+            Boolean takeMeal = null;
+            if (!items.isEmpty()) {
+                boolean allZeroOrSkipped = items.stream().allMatch(r ->
+                        (r.getIntakeKcal() == null || r.getIntakeKcal().compareTo(BigDecimal.ZERO) == 0) ||
+                                "안 먹음".equals(r.getFoodName()));
+                takeMeal = allZeroOrSkipped ? Boolean.FALSE : Boolean.TRUE;
+            }
+
+            buckets.put(mt, MealDaySummaryResponseDto.MealSummary.builder()
                     .totalKcal(total)
-                    .items(items)
+                    .takeMeal(takeMeal)
                     .build());
         }
 
-        // 3) 요약(물, 체중, 총칼로리, 수정시각)
-        Integer water = null;
+        // 물, 체중
+        BigDecimal water = null;
         BigDecimal weight = null;
-        BigDecimal dayTotalKcal = null;
-        Instant updatedAt = null;
-
-        Optional<MemberDailySummary> opt = summaryRepository
-                .findByMember_MemberIdAndSummaryDate(memberId, d);
+        Optional<MemberDailySummary> opt = summaryRepository.findByMember_MemberIdAndSummaryDate(memberId, d);
         if (opt.isPresent()) {
             var s = opt.get();
-            water = (s.getTotalWater() == null) ? null : s.getTotalWater().intValue();
+            water = s.getTotalWater();
             weight = s.getWeight();
-            dayTotalKcal = s.getTotalKcal();
-            if (s.getModifiedDate() != null) {
-                updatedAt = s.getModifiedDate().atZone(zone).toInstant();
-            }
         }
 
-        // 4) ETag (간단 해시)
-        String etag = String.format("W/\"meal-%d-%s-%d\"",
-                memberId, date, updatedAt == null ? 0 : updatedAt.toEpochMilli());
-
-        return MealDayLiteResponse.builder()
-                .date(date)
+        return MealDaySummaryResponseDto.builder()
+                .date(d)    // Date 그대로 내려줌
                 .meals(buckets)
                 .water(water)
                 .weight(weight)
-                .summaryTotalKcal(dayTotalKcal)
-                .meta(MealDayLiteResponse.Meta.builder()
-                        .updatedAt(updatedAt)
-                        .etag(etag)
-                        .build())
                 .build();
     }
-
 }
