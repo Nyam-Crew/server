@@ -76,7 +76,7 @@ public class TeamMemberController {
   }
 
   @Operation(summary = "방장 권한 위임", description = "리더가 특정 멤버에게 방장 권한을 위임합니다.")
-  @PatchMapping("/teams/{teamId}/leader")
+  @PatchMapping("/{teamId}/leader")
   public ResponseEntity<String> transferLeader(
       @PathVariable Long teamId,
       @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -87,7 +87,7 @@ public class TeamMemberController {
   }
 
   @Operation(summary = "부방장 권한 부여/회수", description = "리더가 멤버의 역할을 SUBLEADER 또는 MEMBER로 변경합니다.")
-  @PatchMapping("/teams/{teamId}/role")
+  @PatchMapping("/{teamId}/role")
   public ResponseEntity<String> changeRole(
       @PathVariable Long teamId,
       @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -97,7 +97,7 @@ public class TeamMemberController {
     return ResponseEntity.ok("역할을 변경했습니다.");
   }
 
-  @GetMapping("/getlist")
+  @GetMapping("/my/team-list")
   @Operation(summary = "소속된 팀 모두 가져오기", description = "자신이 소속된 모든 팀의 정보를 가져옵니다.")
   public ResponseEntity<MemberTeamListDto> getTeamList(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
     Long memberId = customUserDetails.getId();

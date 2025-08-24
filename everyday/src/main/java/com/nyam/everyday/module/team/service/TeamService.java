@@ -16,13 +16,18 @@ import com.nyam.everyday.web.team.mapper.TeamMapper;
 import com.nyam.everyday.web.team.mapper.TeamMemberStatusMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.Predicate;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -89,14 +94,47 @@ public class TeamService {
     }
 
     @Transactional
-    public Page<TeamDto> getTeamList(String keyword, Pageable pageable) {
-        Page<Team> teams;
+    public Page<TeamDto> getTeamList(String keyword, String sortBy, boolean availableOnly, Pageable pageable) {
 
-        if (keyword != null && !keyword.isBlank()) {
-            teams = teamRepository.findByTeamTitleContainingIgnoreCase(keyword, pageable);
-        } else {
-            teams = teamRepository.findAll(pageable);
+        // 1. 정렬(Sort) 조건 동적으로 생성하기
+        Sort sort;
+        switch (sortBy.toLowerCase()) {
+            case "members":
+                sort = Sort.by(Sort.Direction.DESC, "teamCurrentMembers"); // Team 엔티티에 memberCount 필드가 있다고 가정
+                break;
+            case "name":
+                sort = Sort.by(Sort.Direction.ASC, "teamTitle");
+                break;
+            case "latest":
+            default:
+                sort = Sort.by(Sort.Direction.DESC, "createdDate");
+                break;
         }
+
+        // 2. 기존 Pageable 객체에 새로운 정렬 조건을 적용하여 새로운 Pageable 객체 생성
+        Pageable newPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+
+        // 3. Specification을 사용하여 동적 검색 조건 생성
+        Specification<Team> spec = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // 조건 1: keyword가 있으면 teamTitle로 검색 (like 검색)
+            if (keyword != null && !keyword.isBlank()) {
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("teamTitle")), "%" + keyword.toLowerCase() + "%"));
+            }
+
+            // 조건 2: availableOnly가 true이면 '참가 가능' 그룹만 필터링
+            // (현재 인원 < 최대 인원)
+            if (availableOnly) {
+                predicates.add(criteriaBuilder.lessThan(root.get("teamCurrentMembers"), root.get("maxMembers")));
+            }
+
+            // 모든 조건을 AND로 연결하여 반환
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+
+        // 4. Specification과 새로운 Pageable 객체로 데이터 조회
+        Page<Team> teams = teamRepository.findAll(spec, newPageable);
 
         return teams.map(teamMapper::toDto);
     }

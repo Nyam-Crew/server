@@ -59,12 +59,16 @@ public class TeamController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "그룹 조회", description = "그룹 리스트를 조회합니다.")
+    @Operation(summary = "그룹 조회", description = "그룹 리스트를 조회합니다. 검색, 정렬, 필터링을 지원합니다.")
     @GetMapping
     public Page<TeamDto> getTeamList(
             @RequestParam(required = false) String keyword,
-            @ParameterObject @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable){
-        return teamService.getTeamList(keyword, pageable);
+            @RequestParam(required = false, defaultValue = "latest") String sort, // 정렬 파라미터 추가 (기본값 '최신순')
+            @RequestParam(required = false, defaultValue = "false") boolean availableOnly, // 참가 가능 그룹만 볼지 여부 파라미터 추가
+            @ParameterObject Pageable pageable){
+
+        // 서비스 계층으로 모든 파라미터를 넘겨줍니다.
+        return teamService.getTeamList(keyword, sort, availableOnly, pageable);
     }
 
     // TODO: 추후 ElasticSearch 확장 대비하여 검색 조건 분리 설계
