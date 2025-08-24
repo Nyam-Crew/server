@@ -7,11 +7,15 @@ import com.nyam.everyday.module.board.entity.Board;
 import com.nyam.everyday.module.board.repository.BoardRepository;
 import com.nyam.everyday.module.boardLike.entity.BoardLike;
 import com.nyam.everyday.module.boardLike.repository.BoardLikeRepository;
+import com.nyam.everyday.module.challenge.checker.event.event.ChallengeCheckEvent;
+import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.web.boardlike.dto.BoardLikeResponseDto;
 import com.nyam.everyday.web.boardlike.mapper.BoardLikeMapper;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +28,7 @@ public class BoardLikeService {
   private final BoardRepository boardRepository;
   private final MemberRepository memberRepository;
   private final BoardLikeMapper boardLikeMapper;
+  private final ApplicationEventPublisher publisher;
 
 
   //토글 메서드로 진행한 좋아요
@@ -50,6 +55,9 @@ public class BoardLikeService {
 
     long likeCount = boardLikeRepository.countByBoard(board);
     board.updateLikeCount(likeCount); // or setLikeCount
+
+    // 좋아요 눌렀으니, 이벤트 발행
+    publisher.publishEvent(new ChallengeCheckEvent(memberId, ChallengeTag.LIKE, LocalDate.now()));
 
     return BoardLikeResponseDto.builder()
         .likeId(likeId)          // ← 생성된 경우만 값이 들어감, 취소면 null

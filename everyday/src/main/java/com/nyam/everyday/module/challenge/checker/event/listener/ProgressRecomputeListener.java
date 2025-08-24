@@ -32,7 +32,7 @@ public class ProgressRecomputeListener {
   private final ApplicationEventPublisher publisher;
 
   @Transactional(propagation = REQUIRES_NEW)
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
   public void progressRecompute(ProgressRecomputeEvent progressRecomputeEvent) {
     log.info("ProgressRecompute 동작");
     Member member = progressRecomputeEvent.getMember();
