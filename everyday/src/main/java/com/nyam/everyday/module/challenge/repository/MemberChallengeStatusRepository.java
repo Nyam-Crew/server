@@ -19,4 +19,9 @@ public interface MemberChallengeStatusRepository extends JpaRepository<MemberCha
       + "FROM MemberChallengeStatus mcs "
       + "WHERE mcs.member.memberId = :memberId AND mcs.challenge.id = :challengeId")
   Optional<Boolean> getIsCleared(Long memberId, Long challengeId);
+
+  @Query("SELECT mcs.progressCount "
+      + "FROM MemberChallengeStatus mcs "
+      + "WHERE mcs.member.memberId = :memberId AND mcs.challenge.id = :challengeId")
+  Optional<Long> getProgressCount(Long memberId, Long challengeId);
 }
