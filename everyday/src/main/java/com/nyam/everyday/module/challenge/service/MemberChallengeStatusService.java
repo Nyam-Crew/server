@@ -1,4 +1,4 @@
-package com.nyam.everyday.module.challenge.checker.service;
+package com.nyam.everyday.module.challenge.service;
 
 import com.nyam.everyday.module.challenge.entity.Challenge;
 import com.nyam.everyday.module.challenge.entity.MemberChallengeStatus;
@@ -34,5 +34,15 @@ public class MemberChallengeStatusService {
     }
 
     return memberChallengeStatus;
+  }
+
+  // 어떤 유저가 특정 챌린지를 완료했는지 체크한다.
+  public boolean getIsCleared(Long memberId, Long challengeId) {
+    return memberChallengeStatusRepository.getIsCleared(memberId, challengeId).orElse(false);
+  }
+
+  // 어떤 유저의 챌린지 진행도를 체크한다
+  public Long getProgressCount(Long memberId, Long challengeId) {
+    return memberChallengeStatusRepository.getProgressCount(memberId, challengeId).orElse(0L);
   }
 }
