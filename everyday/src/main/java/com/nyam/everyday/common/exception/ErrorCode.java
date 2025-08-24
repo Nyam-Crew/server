@@ -50,7 +50,7 @@ public enum ErrorCode {
   BOOKMARK_NOT_FOUND(HttpStatus.NOT_FOUND,"BOOKMARK_NOT_FOUND","북마크를 찾을 수 없습니다"),
   LAST_TEAM_NOTY_NOT_FOUND(HttpStatus.NOT_FOUND,"LAST_TEAM_NOTY_NOT_FOUND","마지막으로 읽은 팀 알림을 찾을 수 없습니다."),
   MEMBER_DAILY_SUMMARY_NOT_FOUND(HttpStatus.NOT_FOUND,"MEMBER_DAILY_SUMMARY_NOT_FOUND","유저의 기록을 찾을 수 없습니다."),
-
+  JOIN_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND,"JOIN_REQUEST_NOT_FOUND","그룹 신청 사항을 찾을 수 없습니다."),
   COMMENT_ALREADY_DELETED(HttpStatus.NOT_FOUND,"COMMENT_ALREADY_DELETED","이미 삭제 된 댓글입니다"),
 
   /* 409 - Conflict */

@@ -19,7 +19,10 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TeamMapper {
 
-    @Mappings({@Mapping(source = "owner.memberId", target = "ownerId")})
+    @Mappings({
+            @Mapping(source = "owner.memberId", target = "ownerId"),
+            @Mapping(source = "owner.nickname", target = "ownerNickname") // <-- 이 라인을 추가!
+    })
     TeamDto toDto(Team team);// Entity → DTO
 
     @Mapping(target = "owner", source = "owner")

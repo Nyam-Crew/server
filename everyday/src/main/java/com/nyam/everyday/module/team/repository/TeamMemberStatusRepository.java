@@ -1,5 +1,6 @@
 package com.nyam.everyday.module.team.repository;
 
+import com.nyam.everyday.module.team.entity.Team;
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import com.nyam.everyday.module.team.enums.ParticipationStatus;
 import com.nyam.everyday.module.team.enums.TeamRole;
@@ -71,4 +72,7 @@ public interface TeamMemberStatusRepository extends JpaRepository<TeamMemberStat
           and tms.status = com.nyam.everyday.module.team.enums.ParticipationStatus.APPROVED
     """)
     List<Long> findApprovedMemberIdsByTeamId(Long teamId);
+
+    // 여러 팀(teams) 목록과 한 명의 멤버 ID를 받아, 해당하는 모든 참가 정보를 리스트로 반환합니다.
+    List<TeamMemberStatus> findByMember_MemberIdAndTeamIn(Long memberId, List<Team> teams);
 }

@@ -112,6 +112,16 @@ public class TeamController {
         return ResponseEntity.ok("참가 신청이 완료되었습니다.");
     }
 
+    @Operation(summary = "그룹 참가 신청 취소", description = "보냈던 참가 신청을 취소합니다.")
+    @DeleteMapping("/{teamId}/join")
+    public ResponseEntity<String> cancelJoinRequest(
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        teamService.cancelJoinRequest(teamId, userDetails.getId());
+        return ResponseEntity.ok("참가 신청이 취소되었습니다.");
+    }
+
     @Operation(summary = "그룹 참가 신청 중인 유저 목록", description = "그룹에 참가 신청 중인 유저 목록을 조회")
     @GetMapping("/{teamId}/join-requests")
     public ResponseEntity<List<TeamMemberStatusDto>> getJoinRequests(

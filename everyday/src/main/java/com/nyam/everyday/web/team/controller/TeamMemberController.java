@@ -97,7 +97,7 @@ public class TeamMemberController {
     return ResponseEntity.ok("역할을 변경했습니다.");
   }
 
-  @GetMapping("/my/team-list")
+  @GetMapping("/getlist")
   @Operation(summary = "소속된 팀 모두 가져오기", description = "자신이 소속된 모든 팀의 정보를 가져옵니다.")
   public ResponseEntity<MemberTeamListDto> getTeamList(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
     Long memberId = customUserDetails.getId();

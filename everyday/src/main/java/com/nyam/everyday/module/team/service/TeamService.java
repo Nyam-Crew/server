@@ -12,6 +12,7 @@ import com.nyam.everyday.module.team.entity.Team;
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import com.nyam.everyday.module.team.enums.TeamRole;
 import com.nyam.everyday.module.team.repository.*;
+import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.web.team.dto.*;
 import com.nyam.everyday.web.team.mapper.TeamMapper;
 import com.nyam.everyday.web.team.mapper.TeamMemberStatusMapper;
@@ -22,6 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -31,7 +34,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author : 이지은
@@ -137,8 +142,33 @@ public class TeamService {
 
         // 4. Specification과 새로운 Pageable 객체로 데이터 조회
         Page<Team> teams = teamRepository.findAll(spec, newPageable);
+        List<Team> teamsOnPage = teams.getContent();
 
-        return teams.map(teamMapper::toDto);
+        // 현재 로그인한 사용자의 ID를 가져옵니다.
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // 비로그인 사용자의 경우를 대비하여 기본값(예: -1L)을 설정합니다.
+        Long currentUserId = -1L;
+        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
+            currentUserId = ((CustomUserDetails) authentication.getPrincipal()).getId();
+        }
+
+        // 2. 현재 페이지의 팀들에 대한 사용자의 참여 상태를 '한 번의 쿼리'로 모두 가져옵니다.
+        Map<Long, ParticipationStatus> userStatusMap = teamMemberStatusRepository
+                .findByMember_MemberIdAndTeamIn(currentUserId, teamsOnPage)
+                .stream()
+                .collect(Collectors.toMap(
+                        status -> status.getTeam().getTeamId(), // Key: 팀 ID
+                        TeamMemberStatus::getStatus            // Value: 참여 상태
+                ));
+
+        // 3. Page<Team>을 Page<TeamDto>로 변환하면서, 각 DTO에 참여 상태를 설정합니다.
+        return teams.map(team -> {
+            TeamDto dto = teamMapper.toDto(team);
+            // 맵에서 현재 팀 ID에 해당하는 참여 상태를 찾아서 DTO에 설정합니다.
+            // 만약 맵에 없다면, 사용자는 이 그룹과 아무 관계가 없다는 의미입니다 (null).
+            dto.setUserParticipationStatus(userStatusMap.get(team.getTeamId()));
+            return dto;
+        });
     }
 
     @Transactional
@@ -209,6 +239,22 @@ public class TeamService {
                 .build();
 
         teamMemberStatusRepository.save(request);
+    }
+
+    @Transactional
+    public void cancelJoinRequest(Long teamId, Long memberId) {
+        // 1. 취소할 참가 신청 정보를 DB에서 찾습니다.
+        TeamMemberStatus joinRequest = teamMemberStatusRepository
+                .findByTeam_TeamIdAndMember_MemberId(teamId, memberId)
+                .orElseThrow(() -> new BaseException(ErrorCode.JOIN_REQUEST_NOT_FOUND));
+
+        // 2. 상태가 'PENDING'(신청 중)이 맞는지 확인합니다. (이미 승인된 것을 취소할 수는 없으므로)
+        if (joinRequest.getStatus() != ParticipationStatus.PENDING) {
+            throw new IllegalStateException("신청 중인 상태만 취소할 수 있습니다.");
+        }
+
+        // 3. 해당 참가 신청 레코드를 DB에서 삭제합니다.
+        teamMemberStatusRepository.delete(joinRequest);
     }
 
     @Transactional(readOnly = true)

@@ -1,5 +1,6 @@
 package com.nyam.everyday.web.team.dto;
 
+import com.nyam.everyday.module.team.enums.ParticipationStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -31,9 +32,9 @@ public class TeamDto {
     @Schema(description = "대표 이미지 URL (이미지 업로드 안 할 경우)", example = "https://example.com/image.jpg")
     private String teamImg;
 
-//    @Schema(description = "현재 인원 수", example = "1")
-//    @Builder.Default
-//    private int teamCurrentMembers = 1;
+    @Schema(description = "현재 인원 수", example = "1")
+    @Builder.Default
+    private int teamCurrentMembers = 1;
 
     @Schema(description = "최대 인원 수", example = "10")
     private int teamMaxMembers;
@@ -46,4 +47,10 @@ public class TeamDto {
 
     @Schema(description = "그룹 생성자(방장) ID", example = "1")
     private Long ownerId;
+
+    @Schema(description = "그룹 생성자(방장) 닉네임", example = "운동왕김사자") // <-- 이 필드를 추가
+    private String ownerNickname;
+
+    @Schema(description = "현재 로그인한 사용자의 이 그룹에 대한 참여 상태", example = "PENDING")
+    private ParticipationStatus userParticipationStatus;
 }
