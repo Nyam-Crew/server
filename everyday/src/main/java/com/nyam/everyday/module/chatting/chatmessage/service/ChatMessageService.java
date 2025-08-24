@@ -110,6 +110,8 @@ public class ChatMessageService {
     q.limit(20).with(Sort.by(Sort.Direction.DESC, "timestamp"));
     // ChatMessage 클래스를 지정해줌으로써 어떤 컬렉션에서 가져올 지 정해준다.
     List<ChatMessage> result_mongo = mongoTemplate.find(q, ChatMessage.class);
+    // TimeStamp의 DESC로 가져왔으니 역순이다. 뒤집어준다.
+    Collections.reverse(result_mongo);
 
     // 저장할 배열 생성
     List<ChatMessageBroadcastDto> result = new ArrayList<>();
@@ -125,8 +127,7 @@ public class ChatMessageService {
 
     log.info("Redis에 캐싱되어있지 않아 저장하고 결과 반환");
 
-    // 결과 반환
-    Collections.reverse(result);
+    // 결과 반환x
     return result;
   }
 

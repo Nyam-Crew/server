@@ -4,7 +4,7 @@ import static org.springframework.transaction.annotation.Propagation.REQUIRES_NE
 
 import com.nyam.everyday.module.badge.service.BadgeService;
 import com.nyam.everyday.module.challenge.checker.event.event.ChallengeClearedEvent;
-import com.nyam.everyday.module.challenge.checker.service.MemberChallengeStatusService;
+import com.nyam.everyday.module.challenge.service.MemberChallengeStatusService;
 import com.nyam.everyday.module.challenge.entity.Challenge;
 import com.nyam.everyday.module.challenge.entity.MemberChallengeStatus;
 import com.nyam.everyday.module.member.entity.Member;
@@ -60,7 +60,7 @@ public class ChallengeClearedListener {
     badgeService.assignBadgeToMember(member.getMemberId(), badgeDto);
 
     // 사용자에게 알림 전송
-    notificationService.addPrivateNotification(challenge.getTitle() + " 챌린지를 달성해 뱃지를 획득헀습니다.",
+    notificationService.addPrivateNotification(challenge.getTitle() + "를 달성해 뱃지를 획득헀습니다.",
         member.getMemberId(), NotificationType.CHALLENGE_CLEAR);
 
     // 1. 멤버가 '활동 중'인 모든 팀의 ID를 TeamMemberService를 통해 조회
