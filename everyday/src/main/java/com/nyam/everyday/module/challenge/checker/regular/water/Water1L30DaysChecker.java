@@ -6,6 +6,7 @@ import com.nyam.everyday.module.challenge.checker.event.event.MCDCreateEvent;
 import com.nyam.everyday.module.challenge.checker.event.event.MCDDeleteEvent;
 import com.nyam.everyday.module.challenge.checker.service.ChallengeCheckService;
 import com.nyam.everyday.module.challenge.entity.Challenge;
+import com.nyam.everyday.module.challenge.entity.ChallengeCheckType;
 import com.nyam.everyday.module.challenge.entity.ChallengeCode;
 import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.member.entity.Member;
@@ -37,6 +38,11 @@ public class Water1L30DaysChecker implements ChallengeChecker {
   }
 
   @Override
+  public ChallengeCheckType getChallengeCheckType() {
+    return ChallengeCheckType.BY_DAY;
+  }
+
+  @Override
   public void check(Member member, LocalDate targetDate) {
     // 챌린지 정보 가져오기
     Challenge challenge = challengeCheckService.getChallengeByChallengeCode(
@@ -64,6 +70,11 @@ public class Water1L30DaysChecker implements ChallengeChecker {
       // 삭제 이벤트 발행
       publisher.publishEvent(new MCDDeleteEvent(member, challenge, targetDate));
     }
+  }
+
+  @Override
+  public Long getProgress(Member member) {
+    return 0L;
   }
 
   @Override

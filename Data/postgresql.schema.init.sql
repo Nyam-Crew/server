@@ -185,6 +185,7 @@ CREATE TABLE challenge (
                            description VARCHAR(255) NOT NULL,
                            challenge_code VARCHAR(50) NOT NULL,
                            type VARCHAR(30) NOT NULL,
+                           target_count BIGINT NOT NULL,
                            start_date TIMESTAMP,
                            end_date TIMESTAMP,
                            PRIMARY KEY (challenge_id)
