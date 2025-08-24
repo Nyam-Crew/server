@@ -21,6 +21,7 @@ import com.nyam.everyday.web.meal.mapper.MealLogMapStruct;
 import com.nyam.everyday.module.meal.repository.MealLogRepository;
 import com.nyam.everyday.web.team.dto.TeamActivityFeedItem;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MealLogService {
@@ -110,8 +112,14 @@ public class MealLogService {
         summary.setModifiedDate(now);
         memberDailySummaryRepository.save(summary);
 
-        // ✅ 중앙화된 피드 발행 메서드 호출
-        publishMealFeed(saved.getMember().getMemberId(), saved.getMealLogDate(), saved.getMealType());
+        try {
+            // ✅ 중앙화된 피드 발행 메서드 호출
+            publishMealFeed(saved.getMember().getMemberId(), saved.getMealLogDate(), saved.getMealType());
+        } catch (Exception e) {
+            // 부가 기능(피드/알림)의 실패가 핵심 기능(식단 기록 저장)에 영향을 주지 않도록 격리
+            log.error("[식단 피드/알림 발행 실패] 식단 기록은 정상 저장되었으나, 피드/알림 생성 중 예외가 발생했습니다. memberId: {}, mealLogId: {}. Error: {}",
+                    saved.getMember().getMemberId(), saved.getMealLogId(), e.getMessage(), e);
+        }
 
         // ✅ [신규] 식단 기록 점수 부여 로직 호출
         // member 객체와 저장된 mealType을 전달합니다.
