@@ -126,7 +126,7 @@ public class TeamService {
             // 조건 2: availableOnly가 true이면 '참가 가능' 그룹만 필터링
             // (현재 인원 < 최대 인원)
             if (availableOnly) {
-                predicates.add(criteriaBuilder.lessThan(root.get("teamCurrentMembers"), root.get("maxMembers")));
+                predicates.add(criteriaBuilder.lessThan(root.get("teamCurrentMembers"), root.get("teamMaxMembers")));
             }
 
             // 모든 조건을 AND로 연결하여 반환
