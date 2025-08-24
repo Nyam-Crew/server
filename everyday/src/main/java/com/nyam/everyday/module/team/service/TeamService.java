@@ -141,9 +141,11 @@ public class TeamService {
 
     @Transactional
     public TeamDetailDto getTeam(Long teamId, Long memberId) {
+        // 1. 그룹 기본 정보 조회 (기존과 동일)
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new BaseException(ErrorCode.GROUP_NOT_FOUND));
 
+        // 2. 현재 로그인한 사용자의 상태 및 역할 조회 (기존과 동일)
         Optional<TeamMemberStatus> memberStatusOpt =
                 teamMemberStatusRepository.findByTeam_TeamIdAndMember_MemberId(teamId, memberId);
 
@@ -155,7 +157,24 @@ public class TeamService {
                 .map(TeamMemberStatus::getTeamRole)
                 .orElse(null);
 
-        return teamMapper.toDetailDto(team, participationStatus, teamRole);
+        // 3. [추가] 그룹의 리더 닉네임 조회
+        // findAllBy... 메소드는 List를 반환하므로, stream().findFirst()로 첫 번째 멤버를 찾습니다.
+        String leaderNickname = teamMemberStatusRepository.findAllByTeam_TeamIdAndTeamRole(teamId, TeamRole.LEADER) // 실제 TeamRole Enum 값 사용
+                .stream()
+                .findFirst() // 리더는 1명이므로 첫 번째 멤버를 가져옴
+                .map(status -> status.getMember().getNickname()) // TeamMemberStatus -> Member -> Nickname 순으로 가져옴
+                .orElse("리더 정보 없음"); // 리더가 없는 예외적인 경우를 대비한 기본값
+
+        // 4. [추가] 그룹의 부리더 닉네임 조회
+        String subLeaderNickname = teamMemberStatusRepository.findAllByTeam_TeamIdAndTeamRole(teamId, TeamRole.SUBLEADER) // 실제 부리더 Enum 값 사용
+                .stream()
+                .findFirst() // 화면에 부리더를 1명만 표시하므로 첫 번째 멤버를 가져옴
+                .map(status -> status.getMember().getNickname())
+                .orElse(null); // 부리더는 없을 수 있으므로 null로 처리
+
+        // 5. [수정] 모든 정보를 Mapper로 전달하여 DTO 생성
+        // teamMapper의 toDetailDto 메소드도 이 파라미터들을 모두 받도록 수정해야 합니다.
+        return teamMapper.toDetailDto(team, participationStatus, teamRole, leaderNickname, subLeaderNickname);
     }
 
     @Transactional

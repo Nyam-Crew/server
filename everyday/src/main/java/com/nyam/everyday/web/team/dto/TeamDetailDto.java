@@ -45,4 +45,8 @@ public class TeamDetailDto {
 
     @Schema(name = "", example = "")
     private TeamRole teamRole;
+
+    private String leaderNickname;
+
+    private String subLeaderNickname;
 }
