@@ -71,7 +71,7 @@ public interface BoardRepository extends JpaRepository<Board,Long> {
     from Board b
     join b.member m
     where m.memberId = :memberId
-    order by b.createdDate desc
+    order by b.createdDate desc , b.boardId desc
     """,
       countQuery = """
     select count(b.boardId)

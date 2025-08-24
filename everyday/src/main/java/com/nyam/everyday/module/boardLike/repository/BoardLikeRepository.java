@@ -15,4 +15,6 @@ public interface BoardLikeRepository extends JpaRepository<BoardLike, Long> {
 
   long countByBoard(Board board);
 
+  long countByMember_MemberId(Long memberId);
+
 }

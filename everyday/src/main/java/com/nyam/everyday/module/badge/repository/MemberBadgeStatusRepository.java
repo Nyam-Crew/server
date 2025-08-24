@@ -28,4 +28,6 @@ public interface MemberBadgeStatusRepository extends JpaRepository<MemberBadgeSt
         @Param("memberId") Long memberId,
         @Param("badgeIds") Collection<Long> badgeIds
     );
+
+    long countByMember_MemberId(Long memberId);
 }

@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -25,6 +26,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
   private final MemberService memberService;
   private final ScoreAwardService scoreAwardService;
   private final MemberRepository memberRepository;
+
+  @Value("${aws.ec2ip.domain}")
+  private String awsEc2IP;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request,
@@ -43,7 +47,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     log.info("[OAuth2_LOG][Success]" + " 소셜 로그인 시도한 name ={}, nickname ={} ", name, nickname);
 
-    Long memberId = null;
+    Long memberId;
     Object idObj = attributes.get("memberId");
     if (idObj != null) {
       memberId = Long.valueOf(idObj.toString());
@@ -74,6 +78,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     response.addCookie(refreshTokenCookie);
 
 
-    response.sendRedirect("/main.html?" + "&memberId=" + memberId);
+
+    log.info("login redirect url : {}",  awsEc2IP + "/");
+    String redirectUrl = String.format(awsEc2IP + "/");
+    response.sendRedirect(redirectUrl);
   }
 }

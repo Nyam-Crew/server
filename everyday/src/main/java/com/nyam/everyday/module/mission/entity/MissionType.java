@@ -7,4 +7,7 @@ package com.nyam.everyday.module.mission.entity;
  * @fileName : MissionType
  * @since : 25. 8. 17.
  */
-public enum MissionType { AUTO, MANUAL }
+public enum MissionType {
+    AUTO,
+    MANUAL
+}

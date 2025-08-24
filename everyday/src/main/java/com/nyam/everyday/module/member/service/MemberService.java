@@ -11,6 +11,7 @@ import com.nyam.everyday.module.awsS3.dto.AwsS3Response;
 import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.challenge.checker.event.event.ChallengeCheckEvent;
 import com.nyam.everyday.module.member.entity.Member;
+import com.nyam.everyday.module.member.entity.Status;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.web.member.dto.MemberRequestDto;
 import com.nyam.everyday.web.member.dto.MemberResponseDto;
@@ -106,14 +107,31 @@ public class MemberService {
 
   @Transactional
   public MemberResponseDto update(Long memberId, MemberRequestDto dto, MultipartFile file) {
+    log.info("memberId : {}, dto : {}, file : {}", memberId, dto, file);
     Member member = memberRepository.findById(memberId)
         .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "id " +memberId+ "에 해당하는 사용자가 없습니다."));
 
     if(file != null){
-      AwsS3Response newS3Url = awsS3Service.replaceFile(member.getMemberImg(), file);
+      // 사진 파일있는겨우 교체
+      AwsS3Response newS3Url;
+      if(dto.getMemberImg() != null){
+        // 기존 이미지 있는 경우 교체
+        newS3Url = awsS3Service.replaceFile(member.getMemberImg(), file);
+        log.info("프로필 사진 교체 : {}" , newS3Url.getUrl());
+      } else {
+        // 기존 이미지 없는경우 신규 업로드
+        newS3Url = awsS3Service.uploadFile(file);
+        log.info("프로필 사진 신규 업로드 : {}" , newS3Url.getUrl());
+      }
       dto.setMemberImg(newS3Url.getUrl());
+    } else if(dto.getMemberImg() != null && !dto.getMemberImg().isBlank() && dto.getMemberImg().contains(".")){
+      // 파일 없으니 기존 이미지 있는 경우 유지
+      dto.setMemberImg(dto.getMemberImg());
+      log.info("프로뢸 사진 유지 : {}" , dto.getMemberImg());
     } else {
+      // 파일 없고 기존 이미지도 없으면 기본 이미지.
       dto.setMemberImg(S3DefaultValue.DEFAULT_PROFILE_IMAGE.getValue());
+      log.info("프로필 사진 없음 - 기본 프로필 설정");
     }
     memberMapper.modify(dto, member);
 
@@ -163,5 +181,12 @@ public class MemberService {
     // 챌린지 달성 여부 확인을 위한 이벤트 발행
     publisher.publishEvent(new ChallengeCheckEvent(memberId, ChallengeTag.LOGIN, LocalDate.now()));
     log.info("로그인 기반 챌린지 체크 이벤트 발행 성공");
+  }
+
+  @Transactional
+  public void deleteMember(Long memberId) {
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "id " + memberId + "에 해당하는 사용자가 없습니다."));
+    member.setMemberStatus(Status.DEACTIVATED);
   }
 }

@@ -1,7 +1,8 @@
-package com.nyam.everyday.module.challenge.checker.regular.login;
+package com.nyam.everyday.module.challenge.checker.regular.like;
 
+import com.nyam.everyday.module.boardLike.repository.BoardLikeRepository;
 import com.nyam.everyday.module.challenge.checker.ChallengeChecker;
-import com.nyam.everyday.module.challenge.checker.event.event.MCDCreateEvent;
+import com.nyam.everyday.module.challenge.checker.event.event.ProgressRecomputeEvent;
 import com.nyam.everyday.module.challenge.checker.service.ChallengeCheckService;
 import com.nyam.everyday.module.challenge.entity.Challenge;
 import com.nyam.everyday.module.challenge.entity.ChallengeCheckType;
@@ -10,58 +11,55 @@ import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.member.entity.Member;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
-public class LoginFirstChecker implements ChallengeChecker {
+public class LikeFirstChecker implements ChallengeChecker {
 
   private final ChallengeCheckService challengeCheckService;
+  private final BoardLikeRepository boardLikeRepository;
   private final ApplicationEventPublisher publisher;
+
 
   @Override
   public ChallengeCode getChallengeCode() {
-    return ChallengeCode.LOGIN_FIRST;
+    return ChallengeCode.LIKE_FIRST;
   }
 
   @Override
   public ChallengeTag getChallengeTag() {
-    return ChallengeTag.LOGIN;
+    return ChallengeTag.LIKE;
   }
 
   @Override
   public ChallengeCheckType getChallengeCheckType() {
-    return ChallengeCheckType.BY_DAY;
+    return ChallengeCheckType.BY_COUNT;
   }
 
   @Override
   public void check(Member member, LocalDate targetDate) {
-    log.info("First Login Checker 실행");
 
     // 챌린지 정보 불러오기
     Challenge challenge = challengeCheckService.getChallengeByChallengeCode(this.getChallengeCode());
 
-    // 이미 달성했으면 체크 안 함
+    // 챌린지 체크해야 하나?
     if (!challengeCheckService.needToCheckChallenge(member, challenge)) return;
 
-    // 이 사람이 오늘 잘 로그인했는가?
-    if (member.getLastLoginDate().toLocalDate().equals(LocalDate.now())) {
-      // MCD 생성 이벤트 발행
-      publisher.publishEvent(new MCDCreateEvent(member, challenge, targetDate));
-    }
+    // 체크해야 하면, 바로 ProgressCount 이벤트 발행(By Count 이벤트)
+    publisher.publishEvent(new ProgressRecomputeEvent(member, challenge));
   }
 
   @Override
   public Long getProgress(Member member) {
-    return 0L;
+    // 내가 처음으로 좋아요를 눌러야 하는 것이므로, 내가 누른 좋아요 갯수를 세서 반환한다
+    return boardLikeRepository.countByMember_MemberId(member.getMemberId());
   }
 
   @Override
   public Boolean isSatisfied(Integer progressCount) {
-    // 한번이라도 로그인했으면 달성
-    return progressCount > 0;
+    // 좋아요를 한번만 누르면 클리어다! 1 이상이면 true 반환
+    return progressCount >= 1;
   }
 }
