@@ -47,15 +47,16 @@ public class TeamController {
 
 
     @Operation(summary = "그룹 생성", description = "그룹을 생성합니다. swagger에서는 이미지랑 테스트하기가 빡세서 주석처리해두었습니다. 이미지 제외하고 테스트 완료")
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<TeamDto> createTeam(
-            @RequestBody TeamDto teamDTO,
-            //@RequestPart(required = false) MultipartFile imageFile,
+            @RequestPart("dto") @Valid TeamDto teamDTO,
+            // 3. 이미지 파일 부분을 주석 해제합니다. "imageFile"은 이미지 파일을 부를 이름(key)입니다.
+            @RequestPart(value = "imageFile", required = false) MultipartFile imageFile,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         //파라미터 그룹 이름, 그룹 설명, 그룹 이미지, 최대인원수(최소인원수==2), memberId 받아서 해당 ID를 owner(방장)으로
         Long memberId = userDetails.getId(); // 인증된 사용자로부터 방장 ID 추출
 
-        TeamDto response = teamService.createTeam(teamDTO, /*imageFile,*/ memberId);
+        TeamDto response = teamService.createTeam(teamDTO, imageFile, memberId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

@@ -3,6 +3,7 @@ package com.nyam.everyday.module.team.service;
 import com.nyam.everyday.common.aws.s3.service.AwsS3Service;
 import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.common.exception.ErrorCode;
+import com.nyam.everyday.module.awsS3.dto.AwsS3Response;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.module.ranking.repository.TeamGlobalRankingRepository;
@@ -26,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,17 +62,17 @@ public class TeamService {
     // private final ChatService chatService;
 
     @Transactional
-    public TeamDto createTeam(TeamDto dto,/* MultipartFile imageFile,*/ Long memberId) {
+    public TeamDto createTeam(TeamDto dto, MultipartFile imageFile, Long memberId) {
         //memberId에 대한 유효성 검사
         Member owner = memberRepository.findById(memberId).orElseThrow(()
                 -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
 
-//        String imageUrl = null;
-//        if (imageFile != null && !imageFile.isEmpty()) {
-//            AwsS3Response response = awsS3Service.uploadFile(imageFile);
-//            imageUrl = response.getUrl();
-//            dto.setTeamImg(imageUrl); // 업로드된 이미지 URL DTO에 주입
-//        }
+        String imageUrl = null;
+        if (imageFile != null && !imageFile.isEmpty()) {
+            AwsS3Response response = awsS3Service.uploadFile(imageFile);
+            imageUrl = response.getUrl();
+            dto.setTeamImg(imageUrl); // 업로드된 이미지 URL DTO에 주입
+        }
 
         //Mapstruct builder
         Team team = teamMapper.toEntity(dto, owner); // DTO → Entity 변환
