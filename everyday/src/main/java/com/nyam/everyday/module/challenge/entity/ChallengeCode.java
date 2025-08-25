@@ -15,14 +15,13 @@ public enum ChallengeCode {
   MEAL_LOG_FIRST,                 // 첫 식단 기록
   MEAL_LOG_10_TIMES,              // 식단 기록 10회
   MEAL_LOG_ALL_WEEKEND,           // 주말 모든 식사 기록
-  MEAL_LOG_PROTEIN_RDA_3DAYS,            // 권장량 3일 연속 달성
+  MEAL_LOG_PROTEIN_RDA_3DAYS,            // 단백질 권장량 3일 이상 달성
   MEAL_LOG_PERFECT_ALL_GOALS,        // 퍼펙트 데이
   MEAL_LOG_BALANCED_DAY,            // 균형 잡힌 하루 식단
 
   // ============ LOGIN ==============
   LOGIN_FIRST,                  // 첫 접속
-  LOGIN_STREAK_30D,             // 30일 연속 접속
-
+  LOGIN_30DAYS,             // 30일 이상 접속
 
   // ============ COMMENT ============
   COMMENT_FIRST,                // 댓글 첫 작성
@@ -59,7 +58,6 @@ public enum ChallengeCode {
 
   // ============ WEIGHT ===============
   WEIGHT_GOAL_50P,              // 목표 체중 50% 달성
-
 
   /// EVENT CHALLENGE ///
   RECORD_NEWYEAR_RESOLVE,       // 새해 다짐 기록
