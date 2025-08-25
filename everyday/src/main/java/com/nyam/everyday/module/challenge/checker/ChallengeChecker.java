@@ -17,18 +17,15 @@ public interface ChallengeChecker {
   ChallengeCode getChallengeCode();
 
   // 타입 반환 함수 (어떤 태그의 챌린지인지 확인하기 위함)
+  // ChallengeRegistry 에서 체커의 Map을 구현할 때 사용된다.
   ChallengeTag getChallengeTag();
 
-  // 날짜 기반 챌린지인지, 횟수 기반 챌린지인지 구분
-  ChallengeCheckType getChallengeCheckType();
+  // 임계치 이상이면 True 반환할 것
+  boolean isSatisfied(long progressCount);
 
-  // 이미 달성한 챌린지인지, 날짜 기반 챌린지라면 그 날짜에 조건을 달성했는지까지 체크
+  // ChallengeCheckListener가 공통적으로 호출하는 Entry Point
   void check(Member member, LocalDate targetDate);
 
-  // 횟수 기반 챌린지라면, 횟수 계산 로직을 넣는다.
-  // 날짝 기반 챌린지라면, 더미함수이기에 아무 값이나 반환하도록 하면 됨(사용되지 않음)
-  Long getProgress(Member member);
-
-  // progressCount번 조건을 달성했을 때 챌린지 달성 조건에 해당하면 true, 아니면 false 반환
-  Boolean isSatisfied(Integer progressCount);
+  // 각 챌린지의 진행도를 체크
+  long getProgress(Member member, Challenge challenge);
 }
