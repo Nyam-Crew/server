@@ -13,6 +13,7 @@ import com.nyam.everyday.module.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
@@ -31,6 +32,7 @@ public class ProgressRecomputeListener {
   private final ChallengeCheckerRegistry challengeCheckerRegistry;
   private final ApplicationEventPublisher publisher;
 
+  @Async("challengeExecutor")
   @Transactional(propagation = REQUIRES_NEW)
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
   public void progressRecompute(ProgressRecomputeEvent progressRecomputeEvent) {
