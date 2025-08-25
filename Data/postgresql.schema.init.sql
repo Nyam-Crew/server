@@ -445,11 +445,17 @@ ALTER TABLE member_challenge_status ADD CONSTRAINT FK_member_TO_mcstatus FOREIGN
 
 ALTER TABLE member_challenge_status ADD CONSTRAINT FK_challenge_TO_mcstatus FOREIGN KEY (challenge_id) REFERENCES challenge (challenge_id);
 
+ALTER TABLE member_challenge_day ADD CONSTRAINT FK_member_TO_mcd FOREIGN KEY (member_id) REFERENCES member (member_id);
+
+ALTER TABLE member_challenge_day ADD CONSTRAINT FK_challenge_TO_mcd FOREIGN KEY (challenge_id) REFERENCES challenge (challenge_id);
+
 ALTER TABLE member_badge_status ADD CONSTRAINT FK_member_TO_mbstatus FOREIGN KEY (member_id) REFERENCES member (member_id);
 
 ALTER TABLE member_badge_status ADD CONSTRAINT FK_badge_TO_mbstqatus FOREIGN KEY (badge_id) REFERENCES badge (badge_id);
 
 ALTER TABLE notification ADD CONSTRAINT FK_member_TO_notification FOREIGN KEY (member_id) REFERENCES member (member_id);
+
+ALTER TABLE member_notification_status ADD CONSTRAINT FK_member_TO_mns FOREIGN KEY (member_id) REFERENCES member (member_id);
 
 ALTER TABLE member_global_ranking ADD CONSTRAINT FK_member_TO_member_global_ranking FOREIGN KEY (member_id) REFERENCES member (member_id);
 
