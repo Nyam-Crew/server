@@ -1,5 +1,6 @@
 package com.nyam.everyday.web.team.dto;
 
+import com.nyam.everyday.module.team.enums.TeamNoticeType;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -22,4 +23,6 @@ public class TeamNoticeCreatedDto {
     private String title;
     @NotBlank
     private String content;
+    @NotBlank
+    private TeamNoticeType teamNoticeType;
 }

@@ -173,6 +173,7 @@ CREATE TABLE team_notice (
                              team_id BIGINT NOT NULL,
                              title VARCHAR(255) NOT NULL,
                              content VARCHAR(255),
+                             team_notice_type VARCHAR(20) NOT NULL,
                              created_date TIMESTAMP NOT NULL,
                              modified_date TIMESTAMP NOT NULL,
                              PRIMARY KEY (team_notice_id)

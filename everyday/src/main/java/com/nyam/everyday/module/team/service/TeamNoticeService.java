@@ -7,10 +7,7 @@ import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.module.team.entity.Team;
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import com.nyam.everyday.module.team.entity.TeamNotice;
-import com.nyam.everyday.module.team.enums.ActivityType;
-import com.nyam.everyday.module.team.enums.ParticipationStatus;
-import com.nyam.everyday.module.team.enums.TeamNotificationType;
-import com.nyam.everyday.module.team.enums.TeamRole;
+import com.nyam.everyday.module.team.enums.*;
 import com.nyam.everyday.module.team.repository.TeamMemberStatusRepository;
 import com.nyam.everyday.module.team.repository.TeamNoticeRepository;
 import com.nyam.everyday.module.team.repository.TeamRepository;
@@ -26,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -55,10 +53,15 @@ public class TeamNoticeService {
         Team team = requireTeam(teamId);
         verifyEditor(teamId, actorMemberId);
 
-        // 팀당 1건 제한 (MVP: DB 제약 없음, 서비스 레벨만)
-        if (teamNoticeRepository.existsByTeam_TeamId(teamId)) {
+        TeamNoticeType noticeType = req.getTeamNoticeType();
+        if (noticeType == null) {
+            throw new BaseException(ErrorCode.INVALID_REQUEST, "공지 타입을 지정해야 합니다.");
+        }
+
+        // "타입별 1건 제한" 로직
+        if (teamNoticeRepository.existsByTeam_TeamIdAndTeamNoticeType(teamId, noticeType)) {
             throw new BaseException(ErrorCode.NOTICE_ALREADY_EXISTS,
-                    "이미 등록된 공지가 있습니다. 기존 공지를 삭제한 뒤 다시 시도해주세요.");
+                    "이미 해당 타입의 공지가 등록되어 있습니다. 기존 공지를 수정하거나 삭제한 뒤 다시 시도해주세요.");
         }
 
         Member writer = memberRepository.findById(actorMemberId)
@@ -70,6 +73,7 @@ public class TeamNoticeService {
                         .member(writer)
                         .title(req.getTitle())
                         .content(req.getContent())
+                        .teamNoticeType(noticeType)
                         .build()
         );
 
@@ -115,11 +119,15 @@ public class TeamNoticeService {
     }
 
     @Transactional(readOnly = true)
-    public TeamNoticeDto getNoticeByTeam(Long teamId, Long actorMemberId) {
+    public List<TeamNoticeDto> getNoticesByTeam(Long teamId, Long actorMemberId) {
+        // 1. 공지를 볼 수 있는 권한이 있는지 확인하는 것은 동일합니다.
         verifyApproved(teamId, actorMemberId);
-        TeamNotice notice = teamNoticeRepository.findByTeam_TeamId(teamId)
-                .orElseThrow(() -> new BaseException(ErrorCode.NOTICE_NOT_FOUND));
-        return teamNoticeMapper.toNoticeDTO(notice);
+
+        // 2. 해당 팀의 '모든' 공지를 리스트로 가져옵니다. (Repository에 findAllByTeam_TeamId 추가 필요)
+        List<TeamNotice> notices = teamNoticeRepository.findAllByTeam_TeamId(teamId);
+
+        // 3. Mapper를 사용하여 List<TeamNotice>를 List<TeamNoticeDto>로 변환하여 반환합니다.
+        return teamNoticeMapper.toNoticeDtoList(notices);
     }
 
     @Transactional
