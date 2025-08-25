@@ -5,6 +5,7 @@ import com.nyam.everyday.module.challenge.entity.MemberChallengeDay;
 import com.nyam.everyday.module.member.entity.Member;
 import java.time.LocalDate;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -29,6 +30,7 @@ public interface MemberChallengeDayRepository extends JpaRepository<MemberChalle
   Integer countMemberChallengeDay(@Param("memberId") Long memberId, @Param("challengeId") Long challengeId);
 
   // 특정 유저의 특정 챌린지 관련 특정 날짜의 데이터 삭제하기
+  @Modifying
   @Query("DELETE FROM MemberChallengeDay mcd "
       + "WHERE mcd.member.memberId = :memberId "
       + "AND mcd.challenge.id = :challengeId "
