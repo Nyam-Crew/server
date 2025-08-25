@@ -5,6 +5,8 @@ import com.nyam.everyday.common.exception.ErrorCode;
 import com.nyam.everyday.module.board.dto.BoardWithNicknameDto;
 import com.nyam.everyday.module.board.entity.Board;
 import com.nyam.everyday.module.board.repository.BoardRepository;
+import com.nyam.everyday.module.challenge.checker.event.event.ChallengeCheckEvent;
+import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.entity.Status;
 import com.nyam.everyday.module.member.repository.MemberRepository;
@@ -14,7 +16,9 @@ import com.nyam.everyday.web.board.dto.BoardResponseDto;
 import com.nyam.everyday.web.board.dto.CreateBoardRequestDto;
 import com.nyam.everyday.web.board.dto.EditBoardRequestDto;
 import com.nyam.everyday.web.board.mapper.BoardMapper;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,6 +32,7 @@ public class BoardService {
   private final BoardRepository boardRepository;
   private final MemberRepository memberRepository;
   private final BoardMapper boardMapper;
+  private final ApplicationEventPublisher publisher;
 
   private String normalizeNonBlank(String raw){
     String trimmed = (raw == null) ? "" : raw.trim();
@@ -60,10 +65,13 @@ public class BoardService {
     Board board = boardMapper.toEntity(dto, member);
     Board saved =  boardRepository.save(board);
 
+    // 이벤트 Publish
+    publisher.publishEvent(new ChallengeCheckEvent(memberId, ChallengeTag.POST, LocalDate.now()));
+
     return boardMapper.toDto(saved);
-
-
   }
+
+
   @Transactional
   public void deleteBoard(Long boardId, Long memberId) {
     // 1.게시글 조회 시
@@ -76,6 +84,9 @@ public class BoardService {
 
     //3 삭제
     boardRepository.delete(board);
+
+    // 이벤트 Publish
+    publisher.publishEvent(new ChallengeCheckEvent(memberId, ChallengeTag.POST, LocalDate.now()));
 
   }
 
@@ -121,11 +132,9 @@ public class BoardService {
     boolean isAdmin = requester.getRole() == Role.ROLE_ADMIN;
     if (!isAuthor && !isAdmin){
       throw new BaseException(ErrorCode.ACCESS_DENIED);
-
-
     }
-    // 4.변경 감지 플래그(동일값이면 업데이트 스킵용) - 선택
 
+    // 4.변경 감지 플래그(동일값이면 업데이트 스킵용) - 선택
     if (dto.getTitle() != null){
       String title = normalizeNonBlank(dto.getTitle());
       String safeTitle = HtmlUtils.htmlEscape(title);
