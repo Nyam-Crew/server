@@ -6,6 +6,8 @@ import com.nyam.everyday.module.board.entity.Board;
 import com.nyam.everyday.module.board.repository.BoardRepository;
 import com.nyam.everyday.module.boardComment.entity.BoardComment;
 import com.nyam.everyday.module.boardComment.repository.BoardCommentRepository;
+import com.nyam.everyday.module.challenge.checker.event.event.ChallengeCheckEvent;
+import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.entity.Status;
 import com.nyam.everyday.module.member.repository.MemberRepository;
@@ -14,12 +16,14 @@ import com.nyam.everyday.web.boardComment.dto.CommentResponseDto;
 import com.nyam.everyday.web.boardComment.dto.CreateCommentRequestDto;
 import com.nyam.everyday.web.boardComment.mapper.BoardCommentMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.HtmlUtils;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +37,7 @@ public class BoardCommentService {
   private final MemberRepository memberRepository;
   private final BoardCommentRepository boardCommentRepository;
   private final BoardCommentMapper boardCommentMapper;
+  private final ApplicationEventPublisher publisher;
 
   private static final int MAX_CONTENT_LENGTH = 2_000;
   private static final String SOFT_DELETED_MESSAGE = "삭제된 댓글입니다";
@@ -95,6 +100,9 @@ public class BoardCommentService {
 
     BoardComment saved = boardCommentRepository.save(comment);
     board.increaseCommentCount();
+
+    // 이벤트 발급
+    publisher.publishEvent(new ChallengeCheckEvent(memberId, ChallengeTag.COMMENT, LocalDate.now()));
 
     return boardCommentMapper.toResponseDto(saved);
   }
@@ -160,6 +168,9 @@ public class BoardCommentService {
       boardCommentRepository.delete(comment); // 하드 삭제
       board.decreaseCommentCount();
     }
+
+    // 이벤트 발급
+    publisher.publishEvent(new ChallengeCheckEvent(comment.getMember().getMemberId(), ChallengeTag.COMMENT, LocalDate.now()));
   }
 
   // =========================

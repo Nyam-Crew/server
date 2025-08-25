@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +24,9 @@ public class MCDDeleteListener {
   private final MemberChallengeDayService memberChallengeDayService;
   private final ApplicationEventPublisher publisher;
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
   @EventListener
+  @Async("challengeExecutor")
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void onMCDDeleteEvent(MCDDeleteEvent event) {
     Member member = event.getMember();
     Challenge challenge = event.getChallenge();

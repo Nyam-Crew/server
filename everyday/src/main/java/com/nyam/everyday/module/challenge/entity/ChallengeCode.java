@@ -15,7 +15,7 @@ public enum ChallengeCode {
   MEAL_LOG_FIRST,                 // 첫 식단 기록
   MEAL_LOG_10_TIMES,              // 식단 기록 10회
   MEAL_LOG_ALL_WEEKEND,           // 주말 모든 식사 기록
-  MEAL_LOG_PROTEIN_RDA_3DAYS,            // 단백질 권장량 3일 이상 달성
+  MEAL_LOG_PROTEIN_RDA_3DAYS,        // 단백질 권장량 3일 이상 달성
   MEAL_LOG_PERFECT_ALL_GOALS,        // 퍼펙트 데이
   MEAL_LOG_BALANCED_DAY,            // 균형 잡힌 하루 식단
 
