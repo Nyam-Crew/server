@@ -2,6 +2,7 @@ package com.nyam.everyday.module.team.entity;
 
 import com.nyam.everyday.common.entity.BaseEntity;
 import com.nyam.everyday.module.member.entity.Member;
+import com.nyam.everyday.module.team.enums.TeamNoticeType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -47,6 +48,10 @@ public class TeamNotice extends BaseEntity {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TeamNoticeType teamNoticeType;
 
     /** 부분 수정(PATCH) */
     public void editPartial(String title, String content) {

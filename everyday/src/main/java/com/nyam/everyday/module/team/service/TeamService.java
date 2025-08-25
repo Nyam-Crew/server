@@ -3,6 +3,7 @@ package com.nyam.everyday.module.team.service;
 import com.nyam.everyday.common.aws.s3.service.AwsS3Service;
 import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.common.exception.ErrorCode;
+import com.nyam.everyday.module.awsS3.dto.AwsS3Response;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.module.ranking.repository.TeamGlobalRankingRepository;
@@ -11,20 +12,31 @@ import com.nyam.everyday.module.team.entity.Team;
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import com.nyam.everyday.module.team.enums.TeamRole;
 import com.nyam.everyday.module.team.repository.*;
+import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.web.team.dto.*;
 import com.nyam.everyday.web.team.mapper.TeamMapper;
 import com.nyam.everyday.web.team.mapper.TeamMemberStatusMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.Predicate;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author : 이지은
@@ -55,17 +67,17 @@ public class TeamService {
     // private final ChatService chatService;
 
     @Transactional
-    public TeamDto createTeam(TeamDto dto,/* MultipartFile imageFile,*/ Long memberId) {
+    public TeamDto createTeam(TeamDto dto, MultipartFile imageFile, Long memberId) {
         //memberId에 대한 유효성 검사
         Member owner = memberRepository.findById(memberId).orElseThrow(()
                 -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
 
-//        String imageUrl = null;
-//        if (imageFile != null && !imageFile.isEmpty()) {
-//            AwsS3Response response = awsS3Service.uploadFile(imageFile);
-//            imageUrl = response.getUrl();
-//            dto.setTeamImg(imageUrl); // 업로드된 이미지 URL DTO에 주입
-//        }
+        String imageUrl = null;
+        if (imageFile != null && !imageFile.isEmpty()) {
+            AwsS3Response response = awsS3Service.uploadFile(imageFile);
+            imageUrl = response.getUrl();
+            dto.setTeamImg(imageUrl); // 업로드된 이미지 URL DTO에 주입
+        }
 
         //Mapstruct builder
         Team team = teamMapper.toEntity(dto, owner); // DTO → Entity 변환
@@ -89,23 +101,83 @@ public class TeamService {
     }
 
     @Transactional
-    public Page<TeamDto> getTeamList(String keyword, Pageable pageable) {
-        Page<Team> teams;
+    public Page<TeamDto> getTeamList(String keyword, String sortBy, boolean availableOnly, Pageable pageable) {
 
-        if (keyword != null && !keyword.isBlank()) {
-            teams = teamRepository.findByTeamTitleContainingIgnoreCase(keyword, pageable);
-        } else {
-            teams = teamRepository.findAll(pageable);
+        // 1. 정렬(Sort) 조건 동적으로 생성하기
+        Sort sort;
+        switch (sortBy.toLowerCase()) {
+            case "members":
+                sort = Sort.by(Sort.Direction.DESC, "teamCurrentMembers"); // Team 엔티티에 memberCount 필드가 있다고 가정
+                break;
+            case "name":
+                sort = Sort.by(Sort.Direction.ASC, "teamTitle");
+                break;
+            case "latest":
+            default:
+                sort = Sort.by(Sort.Direction.DESC, "createdDate");
+                break;
         }
 
-        return teams.map(teamMapper::toDto);
+        // 2. 기존 Pageable 객체에 새로운 정렬 조건을 적용하여 새로운 Pageable 객체 생성
+        Pageable newPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+
+        // 3. Specification을 사용하여 동적 검색 조건 생성
+        Specification<Team> spec = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // 조건 1: keyword가 있으면 teamTitle로 검색 (like 검색)
+            if (keyword != null && !keyword.isBlank()) {
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("teamTitle")), "%" + keyword.toLowerCase() + "%"));
+            }
+
+            // 조건 2: availableOnly가 true이면 '참가 가능' 그룹만 필터링
+            // (현재 인원 < 최대 인원)
+            if (availableOnly) {
+                predicates.add(criteriaBuilder.lessThan(root.get("teamCurrentMembers"), root.get("teamMaxMembers")));
+            }
+
+            // 모든 조건을 AND로 연결하여 반환
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+
+        // 4. Specification과 새로운 Pageable 객체로 데이터 조회
+        Page<Team> teams = teamRepository.findAll(spec, newPageable);
+        List<Team> teamsOnPage = teams.getContent();
+
+        // 현재 로그인한 사용자의 ID를 가져옵니다.
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // 비로그인 사용자의 경우를 대비하여 기본값(예: -1L)을 설정합니다.
+        Long currentUserId = -1L;
+        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
+            currentUserId = ((CustomUserDetails) authentication.getPrincipal()).getId();
+        }
+
+        // 2. 현재 페이지의 팀들에 대한 사용자의 참여 상태를 '한 번의 쿼리'로 모두 가져옵니다.
+        Map<Long, ParticipationStatus> userStatusMap = teamMemberStatusRepository
+                .findByMember_MemberIdAndTeamIn(currentUserId, teamsOnPage)
+                .stream()
+                .collect(Collectors.toMap(
+                        status -> status.getTeam().getTeamId(), // Key: 팀 ID
+                        TeamMemberStatus::getStatus            // Value: 참여 상태
+                ));
+
+        // 3. Page<Team>을 Page<TeamDto>로 변환하면서, 각 DTO에 참여 상태를 설정합니다.
+        return teams.map(team -> {
+            TeamDto dto = teamMapper.toDto(team);
+            // 맵에서 현재 팀 ID에 해당하는 참여 상태를 찾아서 DTO에 설정합니다.
+            // 만약 맵에 없다면, 사용자는 이 그룹과 아무 관계가 없다는 의미입니다 (null).
+            dto.setUserParticipationStatus(userStatusMap.get(team.getTeamId()));
+            return dto;
+        });
     }
 
     @Transactional
     public TeamDetailDto getTeam(Long teamId, Long memberId) {
+        // 1. 그룹 기본 정보 조회 (기존과 동일)
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new BaseException(ErrorCode.GROUP_NOT_FOUND));
 
+        // 2. 현재 로그인한 사용자의 상태 및 역할 조회 (기존과 동일)
         Optional<TeamMemberStatus> memberStatusOpt =
                 teamMemberStatusRepository.findByTeam_TeamIdAndMember_MemberId(teamId, memberId);
 
@@ -117,7 +189,24 @@ public class TeamService {
                 .map(TeamMemberStatus::getTeamRole)
                 .orElse(null);
 
-        return teamMapper.toDetailDto(team, participationStatus, teamRole);
+        // 3. [추가] 그룹의 리더 닉네임 조회
+        // findAllBy... 메소드는 List를 반환하므로, stream().findFirst()로 첫 번째 멤버를 찾습니다.
+        String leaderNickname = teamMemberStatusRepository.findAllByTeam_TeamIdAndTeamRole(teamId, TeamRole.LEADER) // 실제 TeamRole Enum 값 사용
+                .stream()
+                .findFirst() // 리더는 1명이므로 첫 번째 멤버를 가져옴
+                .map(status -> status.getMember().getNickname()) // TeamMemberStatus -> Member -> Nickname 순으로 가져옴
+                .orElse("리더 정보 없음"); // 리더가 없는 예외적인 경우를 대비한 기본값
+
+        // 4. [추가] 그룹의 부리더 닉네임 조회
+        String subLeaderNickname = teamMemberStatusRepository.findAllByTeam_TeamIdAndTeamRole(teamId, TeamRole.SUBLEADER) // 실제 부리더 Enum 값 사용
+                .stream()
+                .findFirst() // 화면에 부리더를 1명만 표시하므로 첫 번째 멤버를 가져옴
+                .map(status -> status.getMember().getNickname())
+                .orElse(null); // 부리더는 없을 수 있으므로 null로 처리
+
+        // 5. [수정] 모든 정보를 Mapper로 전달하여 DTO 생성
+        // teamMapper의 toDetailDto 메소드도 이 파라미터들을 모두 받도록 수정해야 합니다.
+        return teamMapper.toDetailDto(team, participationStatus, teamRole, leaderNickname, subLeaderNickname);
     }
 
     @Transactional
@@ -150,6 +239,22 @@ public class TeamService {
                 .build();
 
         teamMemberStatusRepository.save(request);
+    }
+
+    @Transactional
+    public void cancelJoinRequest(Long teamId, Long memberId) {
+        // 1. 취소할 참가 신청 정보를 DB에서 찾습니다.
+        TeamMemberStatus joinRequest = teamMemberStatusRepository
+                .findByTeam_TeamIdAndMember_MemberId(teamId, memberId)
+                .orElseThrow(() -> new BaseException(ErrorCode.JOIN_REQUEST_NOT_FOUND));
+
+        // 2. 상태가 'PENDING'(신청 중)이 맞는지 확인합니다. (이미 승인된 것을 취소할 수는 없으므로)
+        if (joinRequest.getStatus() != ParticipationStatus.PENDING) {
+            throw new IllegalStateException("신청 중인 상태만 취소할 수 있습니다.");
+        }
+
+        // 3. 해당 참가 신청 레코드를 DB에서 삭제합니다.
+        teamMemberStatusRepository.delete(joinRequest);
     }
 
     @Transactional(readOnly = true)

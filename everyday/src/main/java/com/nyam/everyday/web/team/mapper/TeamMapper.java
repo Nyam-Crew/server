@@ -19,7 +19,10 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TeamMapper {
 
-    @Mappings({@Mapping(source = "owner.memberId", target = "ownerId")})
+    @Mappings({
+            @Mapping(source = "owner.memberId", target = "ownerId"),
+            @Mapping(source = "owner.nickname", target = "ownerNickname") // <-- 이 라인을 추가!
+    })
     TeamDto toDto(Team team);// Entity → DTO
 
     @Mapping(target = "owner", source = "owner")
@@ -46,4 +49,22 @@ public interface TeamMapper {
             @Mapping(source = "teamRole", target = "teamRole")
     })
     TeamDetailDto toDetailDto(Team team, ParticipationStatus status, TeamRole teamRole);
+
+    @Mappings({
+            // 1. Team 엔티티의 필드를 TeamDetailDto에 매핑
+            @Mapping(source = "team.teamId", target = "teamId"),
+            @Mapping(source = "team.teamTitle", target = "teamTitle"),
+            @Mapping(source = "team.teamDescription", target = "teamDescription"),
+            @Mapping(source = "team.teamImg", target = "teamImage"), // 필드명이 다르므로 source, target 지정
+            @Mapping(source = "team.teamMaxMembers", target = "maxMembers"), // 필드명이 다르므로 source, target 지정
+            @Mapping(source = "team.teamCurrentMembers", target = "currentMemberCount"), // 필드명이 다르므로 source, target 지정
+            @Mapping(source = "team.createdDate", target = "createdDate", dateFormat = "yyyy-MM-dd HH:mm:ss"), // 날짜 포맷 지정이 필요하다면
+
+            // 2. 서비스에서 직접 전달받은 파라미터들을 DTO에 매핑
+            @Mapping(source = "participationStatus", target = "status"),
+            @Mapping(source = "teamRole", target = "teamRole"),
+            @Mapping(source = "leaderNickname", target = "leaderNickname"),
+            @Mapping(source = "subLeaderNickname", target = "subLeaderNickname")
+    })
+    TeamDetailDto toDetailDto(Team team, ParticipationStatus participationStatus, TeamRole teamRole, String leaderNickname, String subLeaderNickname);
 }

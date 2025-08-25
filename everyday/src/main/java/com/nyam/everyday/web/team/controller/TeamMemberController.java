@@ -4,10 +4,7 @@ import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.common.exception.ErrorCode;
 import com.nyam.everyday.module.team.service.TeamMemberService;
 import com.nyam.everyday.security.core.CustomUserDetails;
-import com.nyam.everyday.web.team.dto.MemberTeamListDto;
-import com.nyam.everyday.web.team.dto.TeamBanDto;
-import com.nyam.everyday.web.team.dto.TeamRoleChangeDto;
-import com.nyam.everyday.web.team.dto.TeamTransLeaderDto;
+import com.nyam.everyday.web.team.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +18,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 그룹 멤버 관리에 대한 컨트롤러
@@ -76,7 +75,7 @@ public class TeamMemberController {
   }
 
   @Operation(summary = "방장 권한 위임", description = "리더가 특정 멤버에게 방장 권한을 위임합니다.")
-  @PatchMapping("/teams/{teamId}/leader")
+  @PatchMapping("/{teamId}/leader")
   public ResponseEntity<String> transferLeader(
       @PathVariable Long teamId,
       @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -87,7 +86,7 @@ public class TeamMemberController {
   }
 
   @Operation(summary = "부방장 권한 부여/회수", description = "리더가 멤버의 역할을 SUBLEADER 또는 MEMBER로 변경합니다.")
-  @PatchMapping("/teams/{teamId}/role")
+  @PatchMapping("/{teamId}/role")
   public ResponseEntity<String> changeRole(
       @PathVariable Long teamId,
       @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -105,4 +104,11 @@ public class TeamMemberController {
     return ResponseEntity.ok(teamList);
   }
 
+    @GetMapping("/me/my-list")
+    @Operation(summary = "내 그룹 페이지 정보 조회", description = "자신이 가입했거나 신청한 모든 그룹의 상세 정보를 가져옵니다.")
+    public ResponseEntity<List<TeamDetailDto>> getMyPageGroupList(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long memberId = userDetails.getId();
+        List<TeamDetailDto> myGroupsInfo = teamMemberService.getMyPageGroups(memberId);
+        return ResponseEntity.ok(myGroupsInfo);
+    }
 }

@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  *
  * 그룹 공지 컨트롤러
@@ -57,13 +59,14 @@ public class TeamNoticeController {
         return ResponseEntity.ok(dto);
     }
 
-    @Operation(summary = "그룹 공지 단건 조회")
+    @Operation(summary = "그룹 공지 목록 조회")
     @GetMapping("/{teamId}")
-    public ResponseEntity<TeamNoticeDto> getNotice(
-            @PathVariable Long teamId,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long memberId = userDetails.getId(); // 프로젝트에 맞춰 통일
-        return ResponseEntity.ok(teamNoticeService.getNoticeByTeam(teamId, memberId));
+    public ResponseEntity<List<TeamNoticeDto>> getNotices( // 반환 타입을 List로 변경
+                                                           @PathVariable Long teamId,
+                                                           @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long memberId = userDetails.getId();
+        // 서비스의 새로운 목록 조회 메소드를 호출
+        return ResponseEntity.ok(teamNoticeService.getNoticesByTeam(teamId, memberId));
     }
 
     @Operation(summary = "그룹 공지 삭제(Hard)", description = "그룹 공지 삭제는 리더/부리더만 가능")

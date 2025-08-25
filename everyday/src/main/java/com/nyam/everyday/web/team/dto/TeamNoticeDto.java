@@ -1,5 +1,6 @@
 package com.nyam.everyday.web.team.dto;
 
+import com.nyam.everyday.module.team.enums.TeamNoticeType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -33,6 +34,9 @@ public class TeamNoticeDto {
 
     @Schema(name = "공지 콘텐츠", example = "내일이면 8월 그룹 챌린지가 시작됩니다! 화이팅")
     private String content;
+
+    @Schema(name = "공지 타입", example = "FIXED / NORMAL")
+    private TeamNoticeType teamNoticeType;
 
     @Schema(name = "그룹공지 생성 시간")
     private LocalDateTime createdDate;

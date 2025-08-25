@@ -12,7 +12,10 @@ import com.nyam.everyday.web.team.dto.MemberTeamListDto;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.nyam.everyday.web.team.dto.TeamDetailDto;
+import com.nyam.everyday.web.team.mapper.TeamMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +33,7 @@ public class TeamMemberService {
 
   private final TeamRepository teamRepository;
   private final TeamMemberStatusRepository teamMemberStatusRepository;
+  private final TeamMapper teamMapper;
 
   @Transactional
   public void updateMemberStatus(Long teamId, Long targetMemberId, ParticipationStatus newStatus,
@@ -243,5 +247,28 @@ public class TeamMemberService {
   @Transactional(readOnly = true)
   public Set<Long> findTeamIdsByMember(Long memberId) {
       return teamMemberStatusRepository.findActiveTeamIdsByMemberId(memberId);
+  }
+
+  @Transactional
+  public List<TeamDetailDto> getMyPageGroups(Long memberId) {
+    // 1. 현재 사용자와 관련된 모든 참여 상태 정보를 가져옵니다.
+    List<TeamMemberStatus> allMyStatuses = teamMemberStatusRepository.getAllByMember_MemberId(memberId);
+
+    // 2. 각 참여 상태(TeamMemberStatus)를 TeamDetailDto로 변환합니다.
+    return allMyStatuses.stream()
+            .map(status -> {
+              Team team = status.getTeam();
+              // TeamMapper의 기존 toDetailDto 메소드를 재활용합니다.
+              // 이 메소드가 필요로 하는 추가 파라미터들을 status와 team 객체에서 가져와 전달합니다.
+              // subLeaderNickname은 별도 조회가 필요하므로 일단 null로 전달합니다.
+              return teamMapper.toDetailDto(
+                      team,
+                      status.getStatus(),
+                      status.getTeamRole(),
+                      team.getOwner().getNickname(),
+                      null // subLeaderNickname
+              );
+            })
+            .collect(Collectors.toList());
   }
 }

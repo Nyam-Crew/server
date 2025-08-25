@@ -47,24 +47,29 @@ public class TeamController {
 
 
     @Operation(summary = "그룹 생성", description = "그룹을 생성합니다. swagger에서는 이미지랑 테스트하기가 빡세서 주석처리해두었습니다. 이미지 제외하고 테스트 완료")
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<TeamDto> createTeam(
-            @RequestBody TeamDto teamDTO,
-            //@RequestPart(required = false) MultipartFile imageFile,
+            @RequestPart("dto") @Valid TeamDto teamDTO,
+            // 3. 이미지 파일 부분을 주석 해제합니다. "imageFile"은 이미지 파일을 부를 이름(key)입니다.
+            @RequestPart(value = "imageFile", required = false) MultipartFile imageFile,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         //파라미터 그룹 이름, 그룹 설명, 그룹 이미지, 최대인원수(최소인원수==2), memberId 받아서 해당 ID를 owner(방장)으로
         Long memberId = userDetails.getId(); // 인증된 사용자로부터 방장 ID 추출
 
-        TeamDto response = teamService.createTeam(teamDTO, /*imageFile,*/ memberId);
+        TeamDto response = teamService.createTeam(teamDTO, imageFile, memberId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "그룹 조회", description = "그룹 리스트를 조회합니다.")
+    @Operation(summary = "그룹 조회", description = "그룹 리스트를 조회합니다. 검색, 정렬, 필터링을 지원합니다.")
     @GetMapping
     public Page<TeamDto> getTeamList(
             @RequestParam(required = false) String keyword,
-            @ParameterObject @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable){
-        return teamService.getTeamList(keyword, pageable);
+            @RequestParam(required = false, defaultValue = "latest") String sort, // 정렬 파라미터 추가 (기본값 '최신순')
+            @RequestParam(required = false, defaultValue = "false") boolean availableOnly, // 참가 가능 그룹만 볼지 여부 파라미터 추가
+            @ParameterObject Pageable pageable){
+
+        // 서비스 계층으로 모든 파라미터를 넘겨줍니다.
+        return teamService.getTeamList(keyword, sort, availableOnly, pageable);
     }
 
     // TODO: 추후 ElasticSearch 확장 대비하여 검색 조건 분리 설계
@@ -105,6 +110,16 @@ public class TeamController {
                                                     @AuthenticationPrincipal CustomUserDetails userDetails) {
         teamService.requestToJoin(teamId, userDetails.getId());
         return ResponseEntity.ok("참가 신청이 완료되었습니다.");
+    }
+
+    @Operation(summary = "그룹 참가 신청 취소", description = "보냈던 참가 신청을 취소합니다.")
+    @DeleteMapping("/{teamId}/join")
+    public ResponseEntity<String> cancelJoinRequest(
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        teamService.cancelJoinRequest(teamId, userDetails.getId());
+        return ResponseEntity.ok("참가 신청이 취소되었습니다.");
     }
 
     @Operation(summary = "그룹 참가 신청 중인 유저 목록", description = "그룹에 참가 신청 중인 유저 목록을 조회")

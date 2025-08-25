@@ -1,7 +1,9 @@
 package com.nyam.everyday.module.team.repository;
 
+import com.nyam.everyday.module.team.entity.Team;
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
 import com.nyam.everyday.module.team.enums.ParticipationStatus;
+import com.nyam.everyday.module.team.enums.TeamRole;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -27,6 +29,9 @@ public interface TeamMemberStatusRepository extends JpaRepository<TeamMemberStat
     void deleteByTeamId(@Param("teamId") Long teamId);
 
     Optional<TeamMemberStatus> findByTeam_TeamIdAndMember_MemberId(Long teamId, Long memberId);
+
+    // [추가] 팀 ID와 역할(Role)로 멤버 상태 정보를 찾는 메소드
+    List<TeamMemberStatus> findAllByTeam_TeamIdAndTeamRole(Long teamId, TeamRole teamRole);
 
     List<TeamMemberStatus> findAllByTeam_TeamIdAndStatus(Long teamId, ParticipationStatus participationStatus);
 
@@ -67,4 +72,7 @@ public interface TeamMemberStatusRepository extends JpaRepository<TeamMemberStat
           and tms.status = com.nyam.everyday.module.team.enums.ParticipationStatus.APPROVED
     """)
     List<Long> findApprovedMemberIdsByTeamId(Long teamId);
+
+    // 여러 팀(teams) 목록과 한 명의 멤버 ID를 받아, 해당하는 모든 참가 정보를 리스트로 반환합니다.
+    List<TeamMemberStatus> findByMember_MemberIdAndTeamIn(Long memberId, List<Team> teams);
 }
