@@ -228,7 +228,7 @@ public class TeamActivityFeedRedisService implements TeamActivityFeedService {
     }
 
     @Override
-    public FeedSlice listFeedBefore(Long teamId, Long cursorEpochMs, int size) {
+    public FeedSlice listFeedBefore(Long teamId, Long cursorEpochMs, int size, Long currentMemberId) {
         String idxKey = indexKey(teamId);
 
         double max = (cursorEpochMs == null) ? Double.POSITIVE_INFINITY : (double) (cursorEpochMs - 1L);
@@ -259,6 +259,10 @@ public class TeamActivityFeedRedisService implements TeamActivityFeedService {
                 missing.add(fid);
             } else {
                 TeamActivityFeedItem item = fromJson(json);
+                if (currentMemberId != null && currentMemberId.equals(item.getMemberId())) {
+                    item.setNickname(null); // 내 피드일 경우 닉네임을 지운다
+                }
+
                 if (item.getActivityMessage() == null || item.getActivityMessage().isBlank()) {
                     item.setActivityMessage(TeamFeedMessageFormatter.formatLine(item));
                 }

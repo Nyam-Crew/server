@@ -1,5 +1,6 @@
 package com.nyam.everyday.web.meal.dto;
 
+import com.nyam.everyday.module.meal.type.MealType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -37,7 +38,7 @@ public class MealLogRequestDto {
     private BigDecimal intakeKcal;
 
     @Schema(description = "식사 타입 (BREAKFAST:아침, LUNCH:점심, DINNER:저녁, SNACK:간식)")
-    private String mealType;
+    private MealType mealType;
 
     @Schema(description = "단백질")
     private BigDecimal protein;

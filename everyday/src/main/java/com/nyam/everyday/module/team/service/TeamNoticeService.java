@@ -166,7 +166,7 @@ public class TeamNoticeService {
                 .build();
 
         // 공지 피드는 다른 피드보다 길게 유지 (예: 7일)
-        feedService.addFeedItemToTeams(teamIds, feedId, createdAtMs, feedItem, Duration.ofDays(7));
+        feedService.addFeedItemToTeams(teamIds, feedId, createdAtMs, feedItem, Duration.ofDays(1));
     }
 
     // =================================================================
