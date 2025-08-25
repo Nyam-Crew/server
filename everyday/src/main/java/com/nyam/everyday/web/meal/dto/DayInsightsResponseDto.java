@@ -54,4 +54,10 @@ public class DayInsightsResponseDto {
 
     @Schema(description = "하루 섭취 칼로리 합계 (없으면 0)")
     private BigDecimal totalKcal;
+
+    @Schema(description = "프로필 체중: member.weight (가입 시/프로필에 저장된 기준 체중)")
+    private BigDecimal profileWeight;
+
+    @Schema(description = "오늘의 체중: member_daily_summary.weight (요약 테이블의 해당 날짜 체중)")
+    private BigDecimal todayWeight;
 }
