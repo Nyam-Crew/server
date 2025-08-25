@@ -1,6 +1,7 @@
-package com.nyam.everyday.module.challenge.checker.regular.post;
+package com.nyam.everyday.module.challenge.checker.regular_checker.post;
 
 import com.nyam.everyday.module.board.repository.BoardRepository;
+import com.nyam.everyday.module.challenge.checker.AbstractCountBasedChecker;
 import com.nyam.everyday.module.challenge.checker.ChallengeChecker;
 import com.nyam.everyday.module.challenge.checker.event.event.ProgressRecomputeEvent;
 import com.nyam.everyday.module.challenge.checker.service.ChallengeCheckService;
@@ -16,13 +17,19 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
-public class PostRecipeFirstChecker implements ChallengeChecker {
+public class PostRecipeFirstChecker extends AbstractCountBasedChecker {
 
-  private final ChallengeRepository challengeRepository;
-  private final ChallengeCheckService challengeCheckService;
-  private final ApplicationEventPublisher publisher;
   private final BoardRepository boardRepository;
+
+  protected PostRecipeFirstChecker(
+          ChallengeRepository challengeRepository,
+          ChallengeCheckService challengeCheckService,
+          ApplicationEventPublisher publisher,
+          BoardRepository boardRepository
+  ) {
+    super(1, challengeRepository, challengeCheckService, publisher);
+    this.boardRepository = boardRepository;
+  }
 
   @Override
   public ChallengeCode getChallengeCode() {
@@ -35,28 +42,8 @@ public class PostRecipeFirstChecker implements ChallengeChecker {
   }
 
   @Override
-  public ChallengeCheckType getChallengeCheckType() {
-    return ChallengeCheckType.BY_COUNT;
-  }
-
-  @Override
-  public void check(Member member, LocalDate targetDate) {
-    Challenge challenge = challengeRepository.getByChallengeCode(this.getChallengeCode());
-
-    // 횟수 기반 챌린지는 횟수 체크 필요한지만 확인하고 바로 이벤트 발행
-    if (challengeCheckService.needToCheckChallenge(member, challenge)) return;
-
-    publisher.publishEvent(new ProgressRecomputeEvent(member, challenge));
-  }
-
-  @Override
-  public Long getProgress(Member member) {
+  public long getProgress(Member member, Challenge challenge) {
     // 작성한 포스트 중, RECIPE갯수를 세서 반환한다.
     return boardRepository.getCountByMemberIdAndBoardType(member.getMemberId(), "recipe");
-  }
-
-  @Override
-  public Boolean isSatisfied(Integer progressCount) {
-    return progressCount > 0;
   }
 }

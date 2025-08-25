@@ -1,5 +1,6 @@
-package com.nyam.everyday.module.challenge.checker.regular.profile;
+package com.nyam.everyday.module.challenge.checker.regular_checker.profile;
 
+import com.nyam.everyday.module.challenge.checker.AbstractCountBasedChecker;
 import com.nyam.everyday.module.challenge.checker.ChallengeChecker;
 import com.nyam.everyday.module.challenge.checker.event.event.ProgressRecomputeEvent;
 import com.nyam.everyday.module.challenge.checker.service.ChallengeCheckService;
@@ -18,12 +19,14 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-@RequiredArgsConstructor
-public class ProfileCompleteChecker implements ChallengeChecker {
+public class ProfileCompleteChecker extends AbstractCountBasedChecker {
 
-  private final ChallengeCheckService challengeCheckService;
-  private final ChallengeRepository challengeRepository;
-  private final ApplicationEventPublisher publisher;
+  protected ProfileCompleteChecker(
+          ChallengeRepository challengeRepository,
+          ChallengeCheckService challengeCheckService,
+          ApplicationEventPublisher publisher) {
+    super(1, challengeRepository, challengeCheckService, publisher);
+  }
 
   @Override
   public ChallengeCode getChallengeCode() {
@@ -35,24 +38,9 @@ public class ProfileCompleteChecker implements ChallengeChecker {
     return ChallengeTag.PROFILE;
   }
 
-  @Override
-  public ChallengeCheckType getChallengeCheckType() {
-    return ChallengeCheckType.BY_COUNT;
-  }
 
   @Override
-  public void check(Member member, LocalDate targetDate) {
-    Challenge challenge = challengeRepository.getByChallengeCode(getChallengeCode());
-
-    if (!challengeCheckService.needToCheckChallenge(member, challenge)) {
-      return;
-    }
-
-    publisher.publishEvent(new ProgressRecomputeEvent(member, challenge));
-  }
-
-  @Override
-  public Long getProgress(Member member) {
+  public long getProgress(Member member, Challenge challenge) {
     // 멤버가 모든 정보를 다 채웠어야 OK가 된다.
     if (member.getGender() == Gender.U) return 0L;
     if (member.getWeight().equals(BigDecimal.valueOf(0L))) return 0L;
@@ -60,10 +48,5 @@ public class ProfileCompleteChecker implements ChallengeChecker {
     if (member.getTargetWeight().equals(BigDecimal.valueOf(0L))) return 0L;
 
     return 1L;
-  }
-
-  @Override
-  public Boolean isSatisfied(Integer progressCount) {
-    return progressCount > 0;
   }
 }
