@@ -25,8 +25,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @AllArgsConstructor
 @Builder
 @Document(indexName = "food")
-@Setting(settingPath = "/elasticsearch/food-settings.json")
-@Mapping(mappingPath = "/elasticsearch/food-mappings.json")
+@Setting(settingPath = "/elasticsearch/food/food-settings.json")
+@Mapping(mappingPath = "/elasticsearch/food/food-mappings.json")
 public class FoodDocument {
 
     @Id

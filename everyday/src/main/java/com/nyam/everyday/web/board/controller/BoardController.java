@@ -2,6 +2,7 @@ package com.nyam.everyday.web.board.controller;
 
 import com.nyam.everyday.module.board.service.BoardService;
 import com.nyam.everyday.security.core.CustomUserDetails;
+import com.nyam.everyday.web.board.dto.BoardDetailDto;
 import com.nyam.everyday.web.board.dto.BoardPageDto;
 import com.nyam.everyday.web.board.dto.BoardResponseDto;
 import com.nyam.everyday.web.board.dto.CreateBoardRequestDto;
@@ -71,9 +72,9 @@ public class BoardController {
       @ApiResponse(responseCode = "500",description = "서버 에러")
   })
   @GetMapping("/get-detail/{boardId}")
-  public ResponseEntity<BoardResponseDto> getBoard(@PathVariable Long boardId) {
+  public ResponseEntity<BoardDetailDto> getBoard(@PathVariable Long boardId) {
     // 1.서비스에서 게시글 조회 및 조회수 증가 처리
-   BoardResponseDto res =  boardService.getBoard(boardId);
+   BoardDetailDto res =  boardService.getBoard(boardId);
 
     return ResponseEntity.status(HttpStatus.OK).body(res);
   }

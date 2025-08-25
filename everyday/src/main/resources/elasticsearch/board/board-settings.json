@@ -1,0 +1,33 @@
+{
+  "analysis": {
+    "tokenizer": {
+      "board_nori_tokenizer": {
+        "type": "nori_tokenizer",
+        "decompound_mode": "mixed"
+      }
+    },
+    "filter": {
+      "board_pos_filter": {
+        "type": "nori_part_of_speech",
+        "stoptags": ["E","IC","J","MAG","MM","SP","SSC","SSO","SC","SE","SF","SY","UNA","NA","VCP","XPN","XSA","XSN","XSV"]
+      },
+      "board_edge_ngram" : {
+        "type" : "edge_ngram",
+        "min_gram" : 2,
+        "max_gram" : 15
+      }
+    },
+    "analyzer": {
+      "board_ko_search": {
+        "type": "custom",
+        "tokenizer": "board_nori_tokenizer",
+        "filter": ["lowercase", "board_pos_filter"]
+      },
+      "board_ko_ngram" : {
+        "type" : "custom",
+        "tokenizer" : "board_nori_tokenizer",
+        "filter" : ["lowercase","board_pos_filter","board_edge_ngram"]
+      }
+    }
+  }
+}
