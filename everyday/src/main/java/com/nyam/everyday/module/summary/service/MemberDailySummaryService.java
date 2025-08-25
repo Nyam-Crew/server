@@ -49,7 +49,6 @@ public class MemberDailySummaryService {
         Member member = findMemberOrThrow(memberId);
         MemberDailySummary summary = getOrCreateSummary(member, date, now);
 
-        // Integer -> BigDecimal로 세팅 (null이면 0)
         summary.setTotalWater(amount == null ? ZERO : amount);
         summary.setModifiedDate(now);
 
@@ -136,8 +135,9 @@ public class MemberDailySummaryService {
      * 저장 후 자동 미션 평가까지 묶어서 수행.
      */
     private MemberDailySummary saveAndEvaluateMissions(MemberDailySummary summary, Long memberId) {
-        MemberDailySummary saved = summaryRepository.save(summary);
-        autoMissionService.evaluateForMember(memberId, LocalDate.now());
+        MemberDailySummary saved = summaryRepository.saveAndFlush(summary);
+        LocalDate summaryDate = new java.sql.Date(summary.getSummaryDate().getTime()).toLocalDate();
+        autoMissionService.evaluateForMember(memberId, summaryDate);
         return saved;
     }
 

@@ -110,7 +110,7 @@ public class MealLogService {
         summary.setTotalKcal(summary.getTotalKcal().add(addKcal));
 
         summary.setModifiedDate(now);
-        memberDailySummaryRepository.save(summary);
+        memberDailySummaryRepository.saveAndFlush(summary);
 
         try {
             // ✅ 중앙화된 피드 발행 메서드 호출
@@ -125,7 +125,7 @@ public class MealLogService {
         // member 객체와 저장된 mealType을 전달합니다.
         scoreAwardService.awardMealSlotOnce(member, saved.getMealType());
 
-        autoMissionService.evaluateForMember(member.getMemberId(), LocalDate.now());
+        autoMissionService.evaluateForMember(member.getMemberId(), new java.sql.Date(saved.getMealLogDate().getTime()).toLocalDate());
 
         return saved.getMealLogId();
     }
@@ -197,9 +197,9 @@ public class MealLogService {
         log.setModifiedDate(LocalDateTime.now());
 
         mealLogRepository.save(log);
-        memberDailySummaryRepository.save(summary);
+        memberDailySummaryRepository.saveAndFlush(summary);
 
-        autoMissionService.evaluateForMember(userId, LocalDate.now());
+        autoMissionService.evaluateForMember(userId, new java.sql.Date(log.getMealLogDate().getTime()).toLocalDate());
 
         // ✅ 마지막에 중앙화된 피드 발행 메서드 호출
         publishMealFeed(userId, log.getMealLogDate(), log.getMealType());
@@ -245,10 +245,10 @@ public class MealLogService {
         summary.setModifiedDate(LocalDateTime.now());
 
         // 4. 저장 & 로그 삭제
-        memberDailySummaryRepository.save(summary);
+        memberDailySummaryRepository.saveAndFlush(summary);
         mealLogRepository.delete(log);
 
-        autoMissionService.evaluateForMember(userId, LocalDate.now());
+        autoMissionService.evaluateForMember(userId, new java.sql.Date(log.getMealLogDate().getTime()).toLocalDate());
 
         // 5. feed 발행
         publishMealFeed(userId, date, log.getMealType());
