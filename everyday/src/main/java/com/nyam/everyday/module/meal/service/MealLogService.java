@@ -1,5 +1,7 @@
 package com.nyam.everyday.module.meal.service;
 
+import com.nyam.everyday.module.challenge.checker.event.event.ChallengeCheckEvent;
+import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.food.entity.Food;
 import com.nyam.everyday.module.food.repository.FoodRepository;
 import com.nyam.everyday.module.meal.type.MealType;
@@ -22,6 +24,7 @@ import com.nyam.everyday.module.meal.repository.MealLogRepository;
 import com.nyam.everyday.web.team.dto.TeamActivityFeedItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +51,8 @@ public class MealLogService {
     private final TeamActivityFeedService teamActivityFeedService;
     private final ScoreAwardService scoreAwardService;
     private final AutoMissionService autoMissionService;
+
+    private final ApplicationEventPublisher publisher;
 
     /* =========================
        날짜별 기록 조회
@@ -87,6 +92,14 @@ public class MealLogService {
 
         // 3) 로그 저장
         MealLog saved = mealLogRepository.save(mealLog);
+
+        // 3-1) 저장 후에 챌린지 계산 이벤트 발행
+        publisher.publishEvent(new ChallengeCheckEvent(member.getMemberId(), ChallengeTag.MEAL_LOG,
+            selectedDate
+                .toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate())
+        );
 
         // 4) 요약 로우 upsert(요약일자는 "오늘")
 
@@ -248,7 +261,17 @@ public class MealLogService {
         memberDailySummaryRepository.saveAndFlush(summary);
         mealLogRepository.delete(log);
 
+        // 4-1. 이벤트 발행
+        publisher.publishEvent(new ChallengeCheckEvent(userId, ChallengeTag.MEAL_LOG,
+            date
+                .toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate())
+        );
+
         autoMissionService.evaluateForMember(userId, new java.sql.Date(log.getMealLogDate().getTime()).toLocalDate());
+
+        autoMissionService.evaluateForMember(userId, LocalDate.now());
 
         // 5. feed 발행
         publishMealFeed(userId, date, log.getMealType());
