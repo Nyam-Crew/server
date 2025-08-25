@@ -78,6 +78,9 @@ public class MealInsightsService {
         BigDecimal totalWater        = (summary != null && summary.getTotalWater() != null) ? summary.getTotalWater() : zero;
         BigDecimal totalKcal         = (summary != null && summary.getTotalKcal() != null) ? summary.getTotalKcal() : zero;
 
+        BigDecimal profileWeight = member.getWeight();                          // 프로필(기준) 체중
+        BigDecimal todayWeight   = (summary != null ? summary.getWeight() : null); // 해당 날짜 체중(없으면 null)
+
         // 4) 응답
         return DayInsightsResponseDto.builder()
                 .memberId(member.getMemberId())
@@ -92,6 +95,8 @@ public class MealInsightsService {
                 .totalFat(totalFat)
                 .totalWater(totalWater)
                 .totalKcal(totalKcal)
+                .profileWeight(profileWeight)
+                .todayWeight(todayWeight)
                 .build();
     }
 }
