@@ -112,7 +112,7 @@ public class MemberService {
         .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "id " +memberId+ "에 해당하는 사용자가 없습니다."));
 
     if(file != null){
-      // 사진 파일있는겨우 교체
+      // 사진 파일 있는 경우 교체
       AwsS3Response newS3Url;
       if(dto.getMemberImg() != null){
         // 기존 이미지 있는 경우 교체
@@ -134,6 +134,8 @@ public class MemberService {
       log.info("프로필 사진 없음 - 기본 프로필 설정");
     }
     memberMapper.modify(dto, member);
+
+    publisher.publishEvent(new ChallengeCheckEvent(memberId, ChallengeTag.PROFILE, LocalDate.now()));
 
     return getMemberResponseDto(member);
   }

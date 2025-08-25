@@ -2,6 +2,8 @@ package com.nyam.everyday.module.summary.service;
 
 import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.common.exception.ErrorCode;
+import com.nyam.everyday.module.challenge.checker.event.event.ChallengeCheckEvent;
+import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.module.mission.service.AutoMissionService;
@@ -15,6 +17,7 @@ import com.nyam.everyday.module.team.util.FeedIds;
 import com.nyam.everyday.web.team.dto.TeamActivityFeedItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +44,8 @@ public class MemberDailySummaryService {
     private final ScoreAwardService scoreAwardService;
     private final AutoMissionService autoMissionService;
 
+    private final ApplicationEventPublisher publisher;
+
     /** 물 섭취량 추가/수정 (summaryDate 기준) */
     @Transactional
     public void addOrUpdateWater(Long memberId, BigDecimal amount, Date date) {
@@ -53,6 +58,14 @@ public class MemberDailySummaryService {
         summary.setModifiedDate(now);
 
         MemberDailySummary saved = saveAndEvaluateMissions(summary, memberId);
+
+        // 챌린지 달성 여부 확인을 위한 이벤트 발행
+        publisher.publishEvent(new ChallengeCheckEvent(memberId, ChallengeTag.WATER,
+            date
+                .toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate())
+        );
 
         // ✅ 물 섭취 피드 발행 메서드 호출
         try {
@@ -84,6 +97,14 @@ public class MemberDailySummaryService {
         summary.setModifiedDate(now);
 
         MemberDailySummary saved = saveAndEvaluateMissions(summary, memberId);
+
+        // 챌린지 달성 여부 확인을 위한 이벤트 발행
+        publisher.publishEvent(new ChallengeCheckEvent(memberId, ChallengeTag.WEIGHT,
+            date
+                .toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate())
+        );
 
         // ✅ 체중 변화 피드 발행 메서드 호출
         try {
