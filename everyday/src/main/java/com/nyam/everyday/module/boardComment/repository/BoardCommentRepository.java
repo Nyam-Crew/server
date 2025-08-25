@@ -81,10 +81,10 @@ public interface BoardCommentRepository extends JpaRepository<BoardComment, Long
   List<ParentCount> countChildrenByParentIds(@Param("parentIds") Collection<Long> parentIds);
 
   /**
-   * 특정 유저가 작성한 댓글 갯수 가져오기
+   * 특정 유저가 작성한 댓글 갯수 중 삭제되지 않은 댓글 갯수 가져오기
    * */
   @Query("SELECT count(c) " +
           "FROM BoardComment c " +
-          "WHERE c.member.memberId = :memberId")
+          "WHERE c.member.memberId = :memberId AND c.content != '삭제된 댓글입니다'")
   Long getCountByMemberId(Long memberId);
 }
