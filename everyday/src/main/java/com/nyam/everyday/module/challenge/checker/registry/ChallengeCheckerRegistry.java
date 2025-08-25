@@ -1,3 +1,4 @@
+// file: com/nyam/everyday/module/challenge/checker/registry/ChallengeCheckerRegistry.java
 package com.nyam.everyday.module.challenge.checker.registry;
 
 import com.nyam.everyday.module.challenge.checker.ChallengeChecker;
@@ -5,12 +6,13 @@ import com.nyam.everyday.module.challenge.entity.Challenge;
 import com.nyam.everyday.module.challenge.entity.ChallengeCode;
 import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -23,6 +25,7 @@ public class ChallengeCheckerRegistry {
 
   // ChallengeType 별로 어떤 Checker들이 있는지 분류해 저장하는 Map
   private Map<ChallengeTag, List<ChallengeChecker>> checkerMap;
+  // Checker를 Code 기반으로 매핑
   private Map<ChallengeCode, ChallengeChecker> checkerCodeMap;
 
   /**
@@ -56,5 +59,4 @@ public class ChallengeCheckerRegistry {
   public ChallengeChecker getChecker(Challenge challenge) {
     return checkerCodeMap.get(challenge.getChallengeCode());
   }
-
 }
