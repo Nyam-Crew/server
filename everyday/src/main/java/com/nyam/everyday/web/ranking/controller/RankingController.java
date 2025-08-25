@@ -1,6 +1,7 @@
 package com.nyam.everyday.web.ranking.controller;
 
 import com.nyam.everyday.module.ranking.service.RankingService;
+import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.web.ranking.dto.RankingDto;
 import com.nyam.everyday.web.ranking.dto.TeamRankingDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Ranking-Controller", description = "실시간 랭킹 API")
@@ -34,6 +36,17 @@ public class RankingController {
       @Parameter(description = "멤버 ID", example = "310") @PathVariable Long memberId,
       @Parameter(description = "조회할 연도 (예: 2025)", example = "2025") @RequestParam(required = false) Integer year,
       @Parameter(description = "조회할 월 (1-12)", example = "8") @RequestParam(required = false) Integer month) {
+    return ResponseEntity.ok(rankingService.getMemberRank(memberId, year, month));
+  }
+
+  @Operation(summary = "내 랭킹 조회 (월간)", description = "요청을 보낸 유저의 월간 개인 랭킹과 점수를 조회합니다.")
+  @GetMapping("/members/me")
+  public ResponseEntity<RankingDto> getMyRank(
+          @AuthenticationPrincipal CustomUserDetails customUserDetails,
+          @Parameter(description = "조회할 연도 (예: 2025)", example = "2025") @RequestParam(required = false) Integer year,
+          @Parameter(description = "조회할 월 (1-12)", example = "8") @RequestParam(required = false) Integer month) {
+    Long memberId = customUserDetails.getId();
+
     return ResponseEntity.ok(rankingService.getMemberRank(memberId, year, month));
   }
 
