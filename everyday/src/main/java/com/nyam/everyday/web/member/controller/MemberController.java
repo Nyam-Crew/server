@@ -12,11 +12,7 @@ import com.nyam.everyday.module.member.service.MemberService;
 import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.web.badge.dto.AssignBadgeRequestDto;
 import com.nyam.everyday.web.badge.dto.BadgeOwnershipDto;
-import com.nyam.everyday.web.member.dto.BadgeCountResponse;
-import com.nyam.everyday.web.member.dto.MemberRequestDto;
-import com.nyam.everyday.web.member.dto.MemberResponseDto;
-import com.nyam.everyday.web.member.dto.MyBoardsResponseDto;
-import com.nyam.everyday.web.member.dto.NicknameDuplicationResponse;
+import com.nyam.everyday.web.member.dto.*;
 import com.nyam.everyday.web.member.mapper.MemberMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -182,6 +178,16 @@ public class MemberController {
     memberService.deleteMember(id);
     return ResponseEntity.noContent().build();
   }
+
+    @GetMapping("/me/id") // <-- 새로운 엔드포인트
+    @Operation(summary = "로그인한 회원 ID 조회", description = "로그인한 회원의 memberId만 간단히 조회합니다.")
+    public ResponseEntity<MemberIdResponseDto> getMemberId(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            // userDetails가 null일 경우 401 Unauthorized 반환
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(new MemberIdResponseDto(userDetails.getId()));
+    }
 
 }
 

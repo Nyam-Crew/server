@@ -49,4 +49,7 @@ public class TeamDetailDto {
     private String leaderNickname;
 
     private String subLeaderNickname;
+
+    @Schema(name = "현재 로그인한 사용자의 멤버 ID", example = "101")
+    private Long currentMemberId;
 }
