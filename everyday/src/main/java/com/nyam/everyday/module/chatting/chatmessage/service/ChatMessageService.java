@@ -92,7 +92,7 @@ public class ChatMessageService {
   @Transactional(readOnly = true)
   public List<ChatMessageBroadcastDto> getMessageHistory(Long memberId, Long teamId) {
     // 여기서 이 유저가 채팅방에 접근할 권한 있는지 체크
-//    this.authCheck(memberId,  roomId);
+    this.authCheck(memberId, teamId);
 
     // Redis에 저장된 값 있는지 체크
     List<ChatMessageBroadcastDto> messages = chatHistoryCacheService.getMessages(teamId);
@@ -134,7 +134,7 @@ public class ChatMessageService {
   @Transactional(readOnly = true)
   public List<ChatMessageBroadcastDto> getAllMessageHistory(Long memberId, Long teamId) {
     // 여기서 이 유저가 채팅방에 접근할 권한 있는지 체크
-//    this.authCheck(memberId,  roomId);
+    this.authCheck(memberId, teamId);
 
     // 저장할 배열 생성
     List<ChatMessageBroadcastDto> result = new ArrayList<>();
@@ -159,10 +159,10 @@ public class ChatMessageService {
   }
 
   // 특정 채팅방에 유저가 접근할 권한이 있는지 확인한다.
-  private void authCheck(Long memberId, Long roomId) {
-    if (!teamMemberStatusRepository.existsByTeam_TeamIdAndMember_MemberIdAndStatus(roomId, memberId,
+  private void authCheck(Long memberId, Long teamId) {
+    if (!teamMemberStatusRepository.existsByTeam_TeamIdAndMember_MemberIdAndStatus(teamId, memberId,
         ParticipationStatus.APPROVED)) {
-      log.info("{} 멤버는 {}번 채팅방의 내용에 접근할 수 없습니다", memberId, roomId);
+      log.info("{} 멤버는 {}번 그룹의 멤버가 아닙니다.", memberId, teamId);
       throw BaseException.ACCESS_DENIED;
     }
   }
