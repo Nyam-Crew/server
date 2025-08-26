@@ -51,11 +51,10 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final MemberRepository memberRepository;
     private final TeamMemberStatusRepository teamMemberStatusRepository;
-    private final TeamActivityFeedRepository teamActivityFeedRepository;
+    //private final TeamActivityFeedRepository teamActivityFeedRepository;
     private final TeamGlobalRankingRepository teamGlobalRankingRepository;
     private final TeamNoticeRepository teamNoticeRepository;
     private final TeamNotificationRepository teamNotificationRepository;
-    private final TeamRankingHistoryRepository teamRankingHistoryRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -63,6 +62,7 @@ public class TeamService {
     private final TeamMapper teamMapper;
     private final TeamMemberStatusMapper teamMemberStatusMapper;
     private final AwsS3Service awsS3Service;
+    private final TeamActivityFeedRedisService teamActivityFeedRedisService;
     // private final RedisRankingService redisRankingService;
     // private final ChatService chatService;
 
@@ -347,13 +347,13 @@ public class TeamService {
 //        if (team.getTeamImg() != null) awsS3Service.deleteFileByUrl(team.getTeamImg());
 //         redisRankingService.evictTeamKeys(teamId);
 //         chatService.deleteAllByTeamId(teamId);
+        teamActivityFeedRedisService.purgeTeamFeed(teamId);
 
         entityManager.flush();
         entityManager.clear();
 
-        teamActivityFeedRepository.deleteByTeamId(teamId);
+        //teamActivityFeedRepository.deleteByTeamId(teamId);
         teamGlobalRankingRepository.deleteByTeamId(teamId);
-        teamRankingHistoryRepository.deleteByTeamId(teamId);
         teamNotificationRepository.deleteByTeamId(teamId);
         teamNoticeRepository.deleteByTeamId(teamId);
         teamMemberStatusRepository.deleteByTeamId(teamId);
