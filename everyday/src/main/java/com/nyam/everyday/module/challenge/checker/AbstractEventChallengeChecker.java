@@ -32,7 +32,9 @@ public abstract class AbstractEventChallengeChecker extends AbstractDateBasedChe
   public boolean dateCheck(Challenge challenge, LocalDate targetDate) {
     // 이벤트 챌린지는 챌린지 수행 가능 기간에 해당하는지 체크 필요
     LocalDate now = LocalDate.now();
-    return !(now.isBefore(targetDate)) && !(now.isAfter(targetDate));
+    LocalDate startDate = LocalDate.from(challenge.getStartDate());
+    LocalDate endDate = LocalDate.from(challenge.getEndDate());
+    return !(now.isBefore(startDate)) && !(now.isAfter(endDate));
   }
 
   @Override
