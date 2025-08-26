@@ -24,6 +24,7 @@ public enum ErrorCode {
   INVALID_BOARD_TYPE(HttpStatus.BAD_REQUEST,"INVALID_BOARD_TYPE","올바르지 않은 게시글 타입 입니다."),
   INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST,"INVALID_FILE_TYPE", "올바르지 않은 파일 타입 입니다."),
   FILE_TOO_LARGE(HttpStatus.BAD_REQUEST,"FILE_TOO_LARGE", "파일 크기가 너무 큽니다."),
+  MCS_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "MCS_ALREADY_EXISTS", "이미 존재하는 MemberChallengeStatus 입니다."),
 
   /* 401 - Unauthorized */
   AUTHENTICATION_FAILED(HttpStatus.BAD_REQUEST, "AUTHENTICATION_FAILED", "인증에 실패했습니다."),
@@ -52,6 +53,7 @@ public enum ErrorCode {
   MEMBER_DAILY_SUMMARY_NOT_FOUND(HttpStatus.NOT_FOUND,"MEMBER_DAILY_SUMMARY_NOT_FOUND","유저의 기록을 찾을 수 없습니다."),
   JOIN_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND,"JOIN_REQUEST_NOT_FOUND","그룹 신청 사항을 찾을 수 없습니다."),
   COMMENT_ALREADY_DELETED(HttpStatus.NOT_FOUND,"COMMENT_ALREADY_DELETED","이미 삭제 된 댓글입니다"),
+  CHALLENGE_NOT_FOUND(HttpStatus.NOT_FOUND, "CHALLENGE_NOT_FOUND", "챌린지 정보를 찾을 수 없습니다"),
 
   /* 409 - Conflict */
   NOTICE_ALREADY_EXISTS(HttpStatus.CONFLICT,"NOTICE_ALREADY_EXISTS", "이미 활성 공지가 존재합니다."),
