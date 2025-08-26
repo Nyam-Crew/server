@@ -147,6 +147,7 @@ public class TeamMemberService {
 
   }
 
+  //방장 위임
   @Transactional
   public void transferLeader(Long teamId, Long actorMemberId, Long targetMemberId) {
 

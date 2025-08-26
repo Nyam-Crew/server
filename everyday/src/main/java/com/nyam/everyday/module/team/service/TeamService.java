@@ -268,7 +268,7 @@ public class TeamService {
         }
 
         List<TeamMemberStatus> pendingMembers = teamMemberStatusRepository
-                .findAllByTeam_TeamIdAndStatus(teamId, ParticipationStatus.PENDING);
+                .findAllByTeam_TeamIdAndStatusWithMember(teamId, ParticipationStatus.PENDING);
 
         return teamMemberStatusMapper.toStatusDtoList(pendingMembers);
     }
@@ -343,10 +343,10 @@ public class TeamService {
             throw new BaseException(ErrorCode.INVALID_REQUEST, "확인용 팀명이 일치하지 않습니다.");
         }
 
-        // todo.외부 리소스 정리
-        //if (team.getTeamImg() != null) awsS3Service.deleteFileByUrl(team.getTeamImg());
-        // redisRankingService.evictTeamKeys(teamId);
-        // chatService.deleteAllByTeamId(teamId);
+        // todo.외부 리소스 정리 -> 팀채팅과 특정 팀의 랭킹 삭제 API 개발되는대로 추가 아래는 임시코드
+//        if (team.getTeamImg() != null) awsS3Service.deleteFileByUrl(team.getTeamImg());
+//         redisRankingService.evictTeamKeys(teamId);
+//         chatService.deleteAllByTeamId(teamId);
 
         entityManager.flush();
         entityManager.clear();
@@ -364,6 +364,8 @@ public class TeamService {
         // 2) 부모 삭제
         teamRepository.deleteById(teamId);
     }
+
+
     private void assertManagedTeam(Team team) {
         if (team != null && !entityManager.contains(team)) {
             log.warn("Non-managed Team injected! Team#{}", team.getTeamId());
