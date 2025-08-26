@@ -33,7 +33,7 @@ public class ChallengeService {
   // 상시 챌린지 리스트에 표시될 리스트를 전달한다.
   public List<RegularChallengeDto> getProgressingChallenge(Long memberId) {
     // 유저가 진행중이면서, 아직 완료하지 못한 챌린지를 n개 제공한다.
-    List<Challenge> challenges = challengeRepository.findAll();
+    List<Challenge> challenges = challengeRepository.getAllByType(ChallengeType.REGULAR_CHALLENGE);
     List<RegularChallengeDto> dtos = this.makeChallengeToRegularDto(memberId, challenges);
 
     List<RegularChallengeDto> result = new ArrayList<>();
