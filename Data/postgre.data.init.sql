@@ -246,4 +246,4 @@ VALUES (9, '첫 식단 기록 챌린지', '처음으로 식단을 기록하자',
        (36, '도장 10회 받기 챌린지', '도장을 누적 10번 이상 받는다', 'STAMP_10_TIMES', 'REGULAR_CHALLENGE', 10, NULL,
         NULL),
        (37, '첫 좋아요 누르기 챌린지', '좋아요를 처음 누른다', 'LIKE_FIRST', 'REGULAR_CHALLENGE', 1, NULL, NULL),
-       (38, '3일 연속 로그인', '3일 연속 접속한다', 'LOGIN_STREAK_3DAYS,', 'REGULAR_CHALLENGE', 3, NULL, NULL);
+       (38, '3일 연속 로그인', '3일 연속 접속한다', 'LOGIN_STREAK_3DAYS', 'REGULAR_CHALLENGE', 3, NULL, NULL);
