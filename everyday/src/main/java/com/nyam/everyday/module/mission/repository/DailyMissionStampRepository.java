@@ -18,6 +18,6 @@ public interface DailyMissionStampRepository extends JpaRepository<DailyMissionS
     // 한 유저가 받은 스탭프 갯수 세기
     @Query("SELECT count(s) "
         + "FROM DailyMissionStamp s "
-        + "WHERE s.memberId = :memberId")
+        + "WHERE s.memberId = :memberId AND s.achieved = true")
     Long getCountByMemberId(@Param("memberId") Long memberId);
 }
