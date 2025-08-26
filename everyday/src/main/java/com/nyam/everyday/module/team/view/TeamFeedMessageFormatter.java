@@ -69,7 +69,7 @@ public class TeamFeedMessageFormatter {
     /** 챌린지: "닉네임 챌린지달성 xx 챌린지를 완료했어요 등록시간" */
     private static String formatChallenge(String nickname, String challengeName, String time) {
         String name = nullToEmpty(challengeName);
-        return "챌린지달성 %s 챌린지를 완료했어요".formatted(name).trim();
+        return "챌린지달성 %s를 완료했어요".formatted(name).trim();
     }
 
     private static String timeText(LocalDateTime dt) {
