@@ -72,6 +72,7 @@ public class TeamService {
         Member owner = memberRepository.findById(memberId).orElseThrow(()
                 -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
 
+        //Todo. [Refactor] 추후 사용자가 이미지를 넣어주지 않으면 S3 기본이미지를 넣어보자.
         String imageUrl = null;
         if (imageFile != null && !imageFile.isEmpty()) {
             AwsS3Response response = awsS3Service.uploadFile(imageFile);
@@ -214,22 +215,30 @@ public class TeamService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new BaseException(ErrorCode.GROUP_NOT_FOUND));
 
-        Optional<TeamMemberStatus> existing = teamMemberStatusRepository
-                .findByTeam_TeamIdAndMember_MemberId(teamId, memberId);
-
-        if (existing.isPresent()) {
-            TeamMemberStatus status = existing.get();
-            if (status.getStatus() == ParticipationStatus.APPROVED) {
-                throw new BaseException(ErrorCode.ALREADY_JOINED_GROUP);
-            } else if (status.getStatus() == ParticipationStatus.PENDING) {
-                throw new BaseException(ErrorCode.ALREADY_EXIST_JOIN);
-            }
-        }
-
         if (team.getTeamCurrentMembers() >= team.getTeamMaxMembers()) {
             throw new BaseException(ErrorCode.TEAM_CAPACITY_FULL);
         }
 
+        Optional<TeamMemberStatus> existing =
+                teamMemberStatusRepository.findByTeam_TeamIdAndMember_MemberId(teamId, memberId);
+
+        if (existing.isPresent()) {
+            TeamMemberStatus status = existing.get();
+
+            if (status.getStatus() == ParticipationStatus.APPROVED) {
+                throw new BaseException(ErrorCode.ALREADY_JOINED_GROUP);
+            } else if (status.getStatus() == ParticipationStatus.PENDING) {
+                throw new BaseException(ErrorCode.ALREADY_EXIST_JOIN);
+            } else if (status.getStatus() == ParticipationStatus.LEFT
+                    || status.getStatus() == ParticipationStatus.REJECTED) {
+                status.reapplyFromLeftOrRejectedToPending(); // ← 새 도메인 메서드 호출
+                return;
+            } else {
+                throw new BaseException(ErrorCode.INVALID_REQUEST);
+            }
+        }
+
+        // 전혀 기록이 없는 첫 신청이면 새로 insert
         TeamMemberStatus request = TeamMemberStatus.builder()
                 .team(team)
                 .member(memberRepository.findById(memberId)

@@ -29,6 +29,7 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "team_member_status")
+//Todo. team_member_status에 유니크 제약조건 추가해서 막기 -> 왜?동시 클릭 같은 레이스에서 중복 INSERT를 물리적으로 차단하기 위하여
 public class TeamMemberStatus extends BaseEntity {
 
     @Id
@@ -94,4 +95,17 @@ public class TeamMemberStatus extends BaseEntity {
         this.teamRole = newRole;
     }
 
+    public void reapplyFromLeftOrRejectedToPending() {
+        switch (this.status) {
+            case LEFT, REJECTED -> {
+                this.status = ParticipationStatus.PENDING;
+                this.teamRole = TeamRole.MEMBER; // 기본 롤로 초기화(필요 정책)
+                // 이력 필드(leftDate/bannedDate 등)는 유지. 필요하면 여기서 초기화 가능
+            }
+            case PENDING -> throw new IllegalStateException("이미 가입 대기 중입니다.");
+            case APPROVED -> throw new IllegalStateException("이미 가입된 사용자입니다.");
+            case BANNED -> throw new IllegalStateException("차단된 사용자입니다.");
+            default -> throw new IllegalStateException("허용되지 않은 상태 전이입니다: " + this.status);
+        }
+    }
 }
