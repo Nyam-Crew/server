@@ -1,5 +1,6 @@
 package com.nyam.everyday.web.test;
 
+import com.nyam.everyday.module.chatting.chatmessage.service.ChatMessageService;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.service.MemberService;
 import com.nyam.everyday.module.scorelog.entity.SourceType;
@@ -11,14 +12,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 부하 테스트 전용 컨트롤러.
- * local, dev 프로필에서만 활성화됩니다. (운영 환경에서는 비활성화)
+ * 부하 테스트 전용 컨트롤러. local, dev 프로필에서만 활성화됩니다. (운영 환경에서는 비활성화)
  */
 @Slf4j
 @RestController
@@ -29,6 +31,7 @@ public class TestController {
 
   private final ScoreLogService scoreLogService;
   private final MemberService memberService;
+  private final ChatMessageService chatMessageService;
 
   @PostMapping("/scores")
   public ResponseEntity<Void> addScoreForLoadTest(
@@ -49,7 +52,15 @@ public class TestController {
 
   @Data
   public static class ScoreRequestDto {
+
     private Long score;
     private String reason;
+  }
+
+  @DeleteMapping("/chat/{teamId}")
+  public ResponseEntity<Void> removeTeamChatting(@PathVariable(name = "teamId") Long teamId) {
+    chatMessageService.deleteMessagesByTeamId(teamId);
+
+    return ResponseEntity.noContent().build();
   }
 }
