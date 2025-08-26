@@ -154,7 +154,7 @@ public class MemberService {
     LocalDateTime now = LocalDateTime.now();
     LocalDateTime lastLogin = member.getLastLoginDate();
 
-    if (lastLogin == null) {
+    if (lastLogin == null || member.getConsecutiveLoginDays() == 0) {
       // 1. 첫 로그인이거나, 기능 추가 후 첫 로그인인 경우
       member.setConsecutiveLoginDays(1);
       log.info("첫 로그인 memberId : {}", memberId);
