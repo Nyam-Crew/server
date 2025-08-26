@@ -52,7 +52,7 @@ public class ProgressRecomputeListener {
     mcs.setProgressCount(progressCount);
 
     // 4) 조건 달성 시에, 달성 이벤트 발행
-    if (checker.isSatisfied(progressCount)) {
+    if (progressCount >= challenge.getTargetCount()) {
       publisher.publishEvent(new ChallengeClearedEvent(member, challenge));
     }
   }
