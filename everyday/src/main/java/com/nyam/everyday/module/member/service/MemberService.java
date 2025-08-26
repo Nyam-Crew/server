@@ -169,7 +169,6 @@ public class MemberService {
           // 1. 마지막 로그인이 어제인 경우 (연속 로그인)
           member.setConsecutiveLoginDays(member.getConsecutiveLoginDays() + 1);
           log.info("연속 로그인 memberId : {}, 연속 날짜 : {}", memberId, member.getConsecutiveLoginDays());
-          // TODO 연속 날짜 뱃지 대상인지 체크 로직 추가해야함 (ex. 7일 이상 연속출석)
         } else {
           // 2. 연속 로그인이 끊긴 경우
           member.setConsecutiveLoginDays(1);
