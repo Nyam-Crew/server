@@ -21,7 +21,7 @@ public abstract class AbstractChallengeChecker implements ChallengeChecker {
     }
 
     @Override
-    public final void check(Member member, LocalDate targetDate) {
+    public void check(Member member, LocalDate targetDate) {
         // 공통: 코드 → 챌린지 로딩
         Challenge challenge = challengeRepository.getByChallengeCode(getChallengeCode());
 
