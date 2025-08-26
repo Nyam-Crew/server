@@ -41,7 +41,6 @@ public class MemberService {
   public MemberResponseDto getMemberById(Long id) {
     Member member = memberRepository.findById(id)
         .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "id " + id + "에 해당하는 사용자가 없습니다."));
-
     return getMemberResponseDto(member);
   }
 
@@ -191,4 +190,12 @@ public class MemberService {
         .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "id " + memberId + "에 해당하는 사용자가 없습니다."));
     member.setMemberStatus(Status.DEACTIVATED);
   }
+
+  public Member getMemberByMemberId(Long memberId) {
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "memberId " + memberId + "에 해당하는 사용자가 없습니다."));
+    return member;
+  }
+
 }
+
