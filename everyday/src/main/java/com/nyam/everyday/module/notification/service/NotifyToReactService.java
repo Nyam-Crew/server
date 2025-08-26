@@ -83,5 +83,24 @@ public class NotifyToReactService {
     simpMessagingTemplate.convertAndSend("/topic/team/" + teamId, teamNotifyDto);
     log.info("{}팀에 알림 전송 완료", teamId);
   }
+
+  /**
+   * [신규] 특정 사용자(개인)에게 '팀 알림'을 전송합니다. (메소드 오버로딩)
+   * TeamNotifyDto를 받아서 공용 Dto로 변환 후 전송합니다.
+   *
+   * @param teamNotifyDto    전송할 팀 알림 DTO
+   * @param memberId         대상 사용자 ID
+   */
+  public void NotifyToMember(TeamNotifyDto teamNotifyDto, Long memberId) {
+    // 1. 내부에서 공용 DTO인 NotifyToReactDto로 변환합니다.
+    NotifyToReactDto generalDto = NotifyToReactDto.builder()
+            .content(teamNotifyDto.getContent())
+            .createdAt(teamNotifyDto.getCreatedAt())
+            .build();
+
+    // 2. 기존 NotifyToMember 메소드를 호출합니다.
+    this.NotifyToMember(generalDto, memberId);
+  }
+
 }
 
