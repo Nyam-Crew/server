@@ -44,7 +44,7 @@ public class Water2LEveryday7daysChecker extends AbstractEventChallengeChecker {
             Date.valueOf(targetDate))
         .orElseThrow(() -> BaseException.MEMBER_DAILY_SUMMARY_NOT_FOUND);
 
-    // 조건 달성했는지 확인 (그날 물 1L 이상 마심)
+    // 조건 달성했는지 확인 (그날 물 2L 이상 마심)
     if (mds.getTotalWater().compareTo(BigDecimal.valueOf(2000)) >= 0) {
       // 생성 이벤트 발행
       publishMCDCreateEvent(member, challenge,  targetDate);
