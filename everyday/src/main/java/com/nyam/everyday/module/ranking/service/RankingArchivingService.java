@@ -35,6 +35,7 @@ import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.scheduling.annotation.Scheduled;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -108,6 +109,7 @@ public class RankingArchivingService {
      * [매월 1일 00:00 (기본)] 팀 평균 공정성 유지를 위해 월초의 팀 멤버 수를 Hash로 스냅샷 저장.
      */
     @Scheduled(cron = "${ranking.cron.snapshot.monthly:0 0 0 1 * *}", zone = "${ranking.cron.zone:Asia/Seoul}")
+    @SchedulerLock(name = "snapshotTeamMemberCounts", lockAtMostFor = "50m", lockAtLeastFor = "10m")
     @Transactional(readOnly = true)
     public void snapshotMonthlyTeamMemberCounts() {
         log.info("[snapshot] snapshotMonthlyTeamMemberCounts start");
@@ -139,6 +141,7 @@ public class RankingArchivingService {
      * [매월 1일 00:05 (기본)] 지난달의 개인/팀간 월간 랭킹 아카이빙.
      */
     @Scheduled(cron = "${ranking.cron.archive.monthly:0 5 0 1 * *}", zone = "${ranking.cron.zone:Asia/Seoul}")
+    @SchedulerLock(name = "archiveMonthlyRankings", lockAtMostFor = "50m", lockAtLeastFor = "10m")
     @Transactional
     public void archiveMonthlyRankings() {
         log.info("[archive-monthly] start");
@@ -297,6 +300,7 @@ public class RankingArchivingService {
      * - 활성팀 SET: active_intra_teams:yyyy-ww
      */
     @Scheduled(cron = "${ranking.cron.archive.weekly:0 0 0 ? * MON}", zone = "${ranking.cron.zone:Asia/Seoul}")
+    @SchedulerLock(name = "archiveWeeklyRankings", lockAtMostFor = "50m", lockAtLeastFor = "10m")
     @Transactional
     public void archiveWeeklyIntraTeamRankings() {
         log.info("[archive-weekly] start");
