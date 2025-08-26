@@ -17,13 +17,12 @@ public abstract class AbstractDateBasedChecker extends AbstractChallengeChecker 
     private final MemberChallengeDayRepository memberChallengeDayRepository;
 
     protected AbstractDateBasedChecker(
-            int threshold,
             ChallengeRepository challengeRepository,
             ChallengeCheckService challengeCheckService,
             MemberChallengeDayRepository memberChallengeDayRepository,
             ApplicationEventPublisher publisher
     ) {
-        super(threshold, challengeRepository, challengeCheckService);
+        super(challengeRepository, challengeCheckService);
         this.memberChallengeDayRepository = memberChallengeDayRepository;
         this.publisher = publisher;
     }

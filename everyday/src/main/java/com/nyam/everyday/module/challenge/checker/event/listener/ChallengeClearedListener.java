@@ -44,7 +44,7 @@ public class ChallengeClearedListener {
   @Transactional(propagation = REQUIRES_NEW)
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onChallengeClearedEvent(ChallengeClearedEvent event) {
-    log.info("챌린지 클리어 리스너 동작");
+//    log.info("{} 챌린지 클리어 리스너 동작", event.getChallenge().getTitle());
     Member member = event.getMember();
     Challenge challenge = event.getChallenge();
 

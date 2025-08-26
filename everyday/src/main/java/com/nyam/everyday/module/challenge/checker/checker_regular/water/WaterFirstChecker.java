@@ -1,4 +1,4 @@
-package com.nyam.everyday.module.challenge.checker.regular_checker.water;
+package com.nyam.everyday.module.challenge.checker.checker_regular.water;
 
 import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.module.challenge.checker.AbstractDateBasedChecker;
@@ -30,7 +30,7 @@ public class WaterFirstChecker extends AbstractDateBasedChecker {
           ApplicationEventPublisher publisher,
           MemberDailySummaryRepository memberDailySummaryRepository
   ) {
-    super(1, challengeRepository, challengeCheckService, memberChallengeDayRepository,publisher);
+    super(challengeRepository, challengeCheckService, memberChallengeDayRepository,publisher);
     this.memberDailySummaryRepository = memberDailySummaryRepository;
   }
 

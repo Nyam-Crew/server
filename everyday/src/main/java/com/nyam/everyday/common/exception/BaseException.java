@@ -36,6 +36,8 @@ public class BaseException extends RuntimeException {
   public static final BaseException BOOKMARK_NOT_FOUND  =  new BaseException(ErrorCode.BOOKMARK_NOT_FOUND);
   public static final BaseException MEMBER_DAILY_SUMMARY_NOT_FOUND =  new BaseException(ErrorCode.MEMBER_DAILY_SUMMARY_NOT_FOUND);
   public static final BaseException COMMENT_ALREADY_DELETED = new BaseException(ErrorCode.COMMENT_ALREADY_DELETED);
+  public static final BaseException CHALLENGE_NOT_FOUND = new BaseException(ErrorCode.CHALLENGE_NOT_FOUND);
+  public static final BaseException MCS_ALREADY_EXISTS = new BaseException(ErrorCode.MCS_ALREADY_EXISTS);
 
   private final ErrorCode errorCode;
 

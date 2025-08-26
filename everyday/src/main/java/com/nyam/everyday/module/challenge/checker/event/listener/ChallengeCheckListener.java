@@ -27,7 +27,7 @@ public class ChallengeCheckListener {
   @Async("challengeExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onChallengeCheck(ChallengeCheckEvent challengeCheckEvent) {
-    log.info("챌린지체크 리스너 동작");
+//    log.info("{} 타입 챌린지체크 리스너 동작", challengeCheckEvent.getChallengeTag());
     Long memberId = challengeCheckEvent.getMemberId();
     ChallengeTag tag = challengeCheckEvent.getChallengeTag();
     LocalDate targetDate = challengeCheckEvent.getTargetDate();

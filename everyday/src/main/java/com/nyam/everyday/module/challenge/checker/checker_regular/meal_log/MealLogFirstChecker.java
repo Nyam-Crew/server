@@ -1,4 +1,4 @@
-package com.nyam.everyday.module.challenge.checker.regular_checker.meal_log;
+package com.nyam.everyday.module.challenge.checker.checker_regular.meal_log;
 
 import com.nyam.everyday.module.challenge.checker.AbstractCountBasedChecker;
 import com.nyam.everyday.module.challenge.checker.service.ChallengeCheckService;
@@ -22,7 +22,7 @@ public class MealLogFirstChecker extends AbstractCountBasedChecker {
           ApplicationEventPublisher publisher,
           MealLogRepository mealLogRepository
   ) {
-    super(1, challengeRepository, challengeCheckService, publisher);
+    super(challengeRepository, challengeCheckService, publisher);
     this.mealLogRepository = mealLogRepository;
   }
 

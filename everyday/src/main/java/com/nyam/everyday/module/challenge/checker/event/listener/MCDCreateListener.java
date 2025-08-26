@@ -27,10 +27,11 @@ public class MCDCreateListener {
   @Async("challengeExecutor")
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void onMCDCreateEvent(MCDCreateEvent event) {
-    log.info("MCD 리스너 동작");
     Member member = event.getMember();
     Challenge challenge = event.getChallenge();
     LocalDate targetDate = event.getTargetDate();
+
+//    log.info("{} MCD 리스너 동작", challenge.getTitle());
 
     // 해당 일자에 해당하는 MemberChallengeDay를 만든다.
     memberChallengeDayService.addMemberChallengeDay(member, challenge, targetDate);

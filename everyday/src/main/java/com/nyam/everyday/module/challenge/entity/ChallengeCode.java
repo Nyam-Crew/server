@@ -20,7 +20,8 @@ public enum ChallengeCode {
   MEAL_LOG_BALANCED_DAY,            // 균형 잡힌 하루 식단
 
   // ============ LOGIN ==============
-  LOGIN_FIRST,                  // 첫 접속
+  LOGIN_FIRST,              // 첫 접속
+  LOGIN_STREAK_3DAYS,       // 3일 연속 로그인
   LOGIN_30DAYS,             // 30일 이상 접속
 
   // ============ COMMENT ============
@@ -53,7 +54,7 @@ public enum ChallengeCode {
 
   // ============ STAMP ================
   STAMP_FIRST,                  // 처음으로 도장 받기
-  STAMP_STREAK_3,               // 도장을 3일 연속 받는다
+  STAMP_3_TIMES,               // 도장을 3일 연속 받는다
   STAMP_10_TIMES,               // 도장을 10번 받는다
 
   // ============ WEIGHT ===============

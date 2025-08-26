@@ -1,18 +1,13 @@
-package com.nyam.everyday.module.challenge.checker.regular_checker.post;
+package com.nyam.everyday.module.challenge.checker.checker_regular.post;
 
 import com.nyam.everyday.module.board.repository.BoardRepository;
 import com.nyam.everyday.module.challenge.checker.AbstractCountBasedChecker;
-import com.nyam.everyday.module.challenge.checker.ChallengeChecker;
-import com.nyam.everyday.module.challenge.checker.event.event.ProgressRecomputeEvent;
 import com.nyam.everyday.module.challenge.checker.service.ChallengeCheckService;
 import com.nyam.everyday.module.challenge.entity.Challenge;
-import com.nyam.everyday.module.challenge.entity.ChallengeCheckType;
 import com.nyam.everyday.module.challenge.entity.ChallengeCode;
 import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.challenge.repository.ChallengeRepository;
 import com.nyam.everyday.module.member.entity.Member;
-import java.time.LocalDate;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +22,7 @@ public class PostRecipeFirstChecker extends AbstractCountBasedChecker {
           ApplicationEventPublisher publisher,
           BoardRepository boardRepository
   ) {
-    super(1, challengeRepository, challengeCheckService, publisher);
+    super(challengeRepository, challengeCheckService, publisher);
     this.boardRepository = boardRepository;
   }
 

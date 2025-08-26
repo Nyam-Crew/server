@@ -70,7 +70,7 @@ public class RoomSubscribeAuthInterceptor implements ChannelInterceptor {
     // 이번 프레임이 "구독 요청"일 때만 검사합니다. (SEND/CONNECT 등은 패스)
     if (StompCommand.SUBSCRIBE.equals(acc.getCommand())) {
 
-      log.info("[RoomSubscribeAuthInterceptor] : 구독 요청 받음");
+//      log.info("[RoomSubscribeAuthInterceptor] : 구독 요청 받음");
 
       // 사용자가 구독하려는 목적지(토픽) 경로. 예) "/topic/room/1"
       String dest = acc.getDestination();
@@ -85,7 +85,7 @@ public class RoomSubscribeAuthInterceptor implements ChannelInterceptor {
         // 목적지에서 방 번호만 깔끔하게 추출합니다. 예) "/topic/room/1" → "1"
         String teamId = dest.substring("/topic/chat/".length());
 
-        log.info("[RoomSubscribeAuthInterceptor] : 구독 요청 수신, 유저번호 : {}, 연결을 요청한 방 번호 : {}", memberId, teamId);
+//        log.info("[RoomSubscribeAuthInterceptor] : 구독 요청 수신, 유저번호 : {}, 연결을 요청한 방 번호 : {}", memberId, teamId);
 
         // 핵심 권한 체크: 사용자 ID가 있고, 그 사용자가 해당 방의 멤버인지 확인합니다.
         boolean allowed = chatRoomService.authCheck(Long.parseLong(memberId),
@@ -94,7 +94,7 @@ public class RoomSubscribeAuthInterceptor implements ChannelInterceptor {
         /// 권한체크임시주기
         allowed = true;
 
-        log.info("[RoomSubscribeAuthInterceptor] : 권한 체크 함수 실행 완료. 결과는 {}", allowed);
+//        log.info("[RoomSubscribeAuthInterceptor] : 권한 체크 함수 실행 완료. 결과는 {}", allowed);
 
         // 멤버가 아니면 구독을 막습니다. 클라이언트는 STOMP ERROR 프레임을 받고, 구독은 완료되지 않습니다.
         if (!allowed) {
@@ -104,7 +104,7 @@ public class RoomSubscribeAuthInterceptor implements ChannelInterceptor {
       }
 
       // 권한에 문제가 없으면 원본 메시지를 그대로 반환하여 구독을 진행합니다.
-      log.info("[RoomSubscribeAuthInterceptor] : 구독 요청을 수락했습니다.");
+//      log.info("[RoomSubscribeAuthInterceptor] : 구독 요청을 수락했습니다.");
     }
 
     return message;

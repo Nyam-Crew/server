@@ -1,13 +1,9 @@
-package com.nyam.everyday.module.challenge.checker.regular_checker.water;
+package com.nyam.everyday.module.challenge.checker.checker_regular.water;
 
 import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.module.challenge.checker.AbstractDateBasedChecker;
-import com.nyam.everyday.module.challenge.checker.ChallengeChecker;
-import com.nyam.everyday.module.challenge.checker.event.event.MCDCreateEvent;
-import com.nyam.everyday.module.challenge.checker.event.event.MCDDeleteEvent;
 import com.nyam.everyday.module.challenge.checker.service.ChallengeCheckService;
 import com.nyam.everyday.module.challenge.entity.Challenge;
-import com.nyam.everyday.module.challenge.entity.ChallengeCheckType;
 import com.nyam.everyday.module.challenge.entity.ChallengeCode;
 import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.challenge.repository.ChallengeRepository;
@@ -18,7 +14,6 @@ import com.nyam.everyday.module.summary.repository.MemberDailySummaryRepository;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.time.LocalDate;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +29,7 @@ public class Water1L30DaysChecker extends AbstractDateBasedChecker {
           ApplicationEventPublisher publisher,
           MemberDailySummaryRepository memberDailySummaryRepository
   ) {
-    super(30, challengeRepository, challengeCheckService, memberChallengeDayRepository, publisher);
+    super(challengeRepository, challengeCheckService, memberChallengeDayRepository, publisher);
     this.memberDailySummaryRepository = memberDailySummaryRepository;
   }
 

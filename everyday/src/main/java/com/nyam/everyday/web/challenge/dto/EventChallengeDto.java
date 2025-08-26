@@ -6,8 +6,8 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class ChallengeDto {
-
+public class EventChallengeDto {
+  private Long challengeId;
   private String title;
   private String description;
   private boolean cleared;
@@ -15,4 +15,5 @@ public class ChallengeDto {
   private Long progressCount;
   private LocalDate startDate;
   private LocalDate endDate;
+  private boolean attending;
 }

@@ -1,44 +1,47 @@
-package com.nyam.everyday.module.challenge.checker.regular_checker.like;
+package com.nyam.everyday.module.challenge.checker.checker_regular.profile;
 
-import com.nyam.everyday.module.boardLike.repository.BoardLikeRepository;
 import com.nyam.everyday.module.challenge.checker.AbstractCountBasedChecker;
 import com.nyam.everyday.module.challenge.checker.service.ChallengeCheckService;
 import com.nyam.everyday.module.challenge.entity.Challenge;
 import com.nyam.everyday.module.challenge.entity.ChallengeCode;
 import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.challenge.repository.ChallengeRepository;
+import com.nyam.everyday.module.member.entity.Gender;
 import com.nyam.everyday.module.member.entity.Member;
+import java.math.BigDecimal;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
+
 @Component
-public class LikeFirstChecker extends AbstractCountBasedChecker {
+public class ProfileCompleteChecker extends AbstractCountBasedChecker {
 
-  private final BoardLikeRepository boardLikeRepository;
-
-  protected LikeFirstChecker(
+  protected ProfileCompleteChecker(
           ChallengeRepository challengeRepository,
           ChallengeCheckService challengeCheckService,
-          ApplicationEventPublisher publisher,
-          BoardLikeRepository boardLikeRepository
-  ) {
-    super(1, challengeRepository, challengeCheckService, publisher);
-    this.boardLikeRepository = boardLikeRepository;
+          ApplicationEventPublisher publisher) {
+    super(challengeRepository, challengeCheckService, publisher);
   }
 
   @Override
   public ChallengeCode getChallengeCode() {
-    return ChallengeCode.LIKE_FIRST;
+    return ChallengeCode.PROFILE_COMPLETE;
   }
 
   @Override
   public ChallengeTag getChallengeTag() {
-    return ChallengeTag.LIKE;
+    return ChallengeTag.PROFILE;
   }
+
 
   @Override
   public long getProgress(Member member, Challenge challenge) {
-    // 내가 누른 좋아요 갯수를 세서 반환한다
-    return boardLikeRepository.countByMember_MemberId(member.getMemberId());
+    // 멤버가 모든 정보를 다 채웠어야 OK가 된다.
+    if (member.getGender() == Gender.U) return 0L;
+    if (member.getWeight().equals(BigDecimal.valueOf(0L))) return 0L;
+    if (member.getAge() == 0) return 0L;
+    if (member.getTargetWeight().equals(BigDecimal.valueOf(0L))) return 0L;
+
+    return 1L;
   }
 }

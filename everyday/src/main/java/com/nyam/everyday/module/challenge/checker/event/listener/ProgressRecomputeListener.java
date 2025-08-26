@@ -36,10 +36,11 @@ public class ProgressRecomputeListener {
   @Transactional(propagation = REQUIRES_NEW)
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
   public void progressRecompute(ProgressRecomputeEvent evt) {
-    log.info("ProgressRecompute 동작");
 
     Member member = evt.getMember();
     Challenge challenge = evt.getChallenge();
+
+//    log.info("{} ProgressRecompute 동작", challenge.getTitle());
 
     // 1) 챌린지 기반으로 체커 가져오기
     ChallengeChecker checker = challengeCheckerRegistry.getChecker(challenge);
@@ -52,7 +53,7 @@ public class ProgressRecomputeListener {
     mcs.setProgressCount(progressCount);
 
     // 4) 조건 달성 시에, 달성 이벤트 발행
-    if (checker.isSatisfied(progressCount)) {
+    if (progressCount >= challenge.getTargetCount()) {
       publisher.publishEvent(new ChallengeClearedEvent(member, challenge));
     }
   }

@@ -59,13 +59,13 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     String traceId = UUID.randomUUID().toString().substring(0, 8);
     TraceIdHolder.set(traceId);
 
-    log.info("[{}] JwtTokenFilter 진입: 요청 URI = {}", traceId, request.getRequestURI());
+//    log.info("[{}] JwtTokenFilter 진입: 요청 URI = {}", traceId, request.getRequestURI());
 
     try {
       String accessToken = getTokenFromRequest(request);
 
       if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
-        log.info("[{}] Access Token 유효성 검증 성공.", traceId);
+//        log.info("[{}] Access Token 유효성 검증 성공.", traceId);
 
         Long memberId = jwtTokenProvider.getUserIdFromToken(accessToken);
         Member member = memberRepository.findById(memberId).orElse(null);
@@ -85,7 +85,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
-        log.info("[{}] SecurityContextHolder에 Authentication 설정 완료. 유저: {}", traceId, authenticationToken.getName());
+//        log.info("[{}] SecurityContextHolder에 Authentication 설정 완료. 유저: {}", traceId, authenticationToken.getName());
       } else {
         SecurityContextHolder.clearContext();
       }
@@ -119,7 +119,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
   private UsernamePasswordAuthenticationToken getAuthentication(String token) {
     Long memberId = jwtTokenProvider.getUserIdFromToken(token);
-    log.info("[getAuthentication] 토큰에서 추출된 memberId: {}", memberId);
+//    log.info("[getAuthentication] 토큰에서 추출된 memberId: {}", memberId);
     UserDetails userDetails = customUserDetailsService.loadUserByMemberId(memberId);
     return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
   }

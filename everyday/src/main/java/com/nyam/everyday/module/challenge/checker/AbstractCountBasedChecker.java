@@ -15,12 +15,11 @@ public abstract class AbstractCountBasedChecker extends AbstractChallengeChecker
 
     // 생성자에서 필요한 필드 주입
     protected AbstractCountBasedChecker(
-            int threshold,
             ChallengeRepository challengeRepository,
             ChallengeCheckService challengeCheckService,
             ApplicationEventPublisher publisher
     ) {
-        super(threshold, challengeRepository, challengeCheckService);
+        super(challengeRepository, challengeCheckService);
         this.publisher = publisher;
     }
     
