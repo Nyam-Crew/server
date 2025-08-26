@@ -1,4 +1,4 @@
-package com.nyam.everyday.module.challenge.checker.regular_checker.comment;
+package com.nyam.everyday.module.challenge.checker.checker_regular.comment;
 
 import com.nyam.everyday.module.boardComment.repository.BoardCommentRepository;
 import com.nyam.everyday.module.challenge.checker.AbstractCountBasedChecker;

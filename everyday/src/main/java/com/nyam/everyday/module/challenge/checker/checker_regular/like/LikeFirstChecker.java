@@ -1,5 +1,6 @@
-package com.nyam.everyday.module.challenge.checker.regular_checker.stamp;
+package com.nyam.everyday.module.challenge.checker.checker_regular.like;
 
+import com.nyam.everyday.module.boardLike.repository.BoardLikeRepository;
 import com.nyam.everyday.module.challenge.checker.AbstractCountBasedChecker;
 import com.nyam.everyday.module.challenge.checker.service.ChallengeCheckService;
 import com.nyam.everyday.module.challenge.entity.Challenge;
@@ -7,38 +8,37 @@ import com.nyam.everyday.module.challenge.entity.ChallengeCode;
 import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.challenge.repository.ChallengeRepository;
 import com.nyam.everyday.module.member.entity.Member;
-import com.nyam.everyday.module.mission.repository.DailyMissionStampRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
-public class FirstStampChecker extends AbstractCountBasedChecker {
+public class LikeFirstChecker extends AbstractCountBasedChecker {
 
-  private final DailyMissionStampRepository dailyMissionStampRepository;
+  private final BoardLikeRepository boardLikeRepository;
 
-  protected FirstStampChecker(
-      ChallengeRepository challengeRepository,
-      ChallengeCheckService challengeCheckService,
-      ApplicationEventPublisher publisher,
-      DailyMissionStampRepository dailyMissionStampRepository
+  protected LikeFirstChecker(
+          ChallengeRepository challengeRepository,
+          ChallengeCheckService challengeCheckService,
+          ApplicationEventPublisher publisher,
+          BoardLikeRepository boardLikeRepository
   ) {
     super(challengeRepository, challengeCheckService, publisher);
-    this.dailyMissionStampRepository = dailyMissionStampRepository;
+    this.boardLikeRepository = boardLikeRepository;
   }
 
   @Override
   public ChallengeCode getChallengeCode() {
-    return ChallengeCode.STAMP_FIRST;
+    return ChallengeCode.LIKE_FIRST;
   }
 
   @Override
   public ChallengeTag getChallengeTag() {
-    return ChallengeTag.STAMP;
+    return ChallengeTag.LIKE;
   }
 
   @Override
   public long getProgress(Member member, Challenge challenge) {
-    // 도장 횟수를 반환한다.
-    return dailyMissionStampRepository.getCountByMemberId(member.getMemberId());
+    // 내가 누른 좋아요 갯수를 세서 반환한다
+    return boardLikeRepository.countByMember_MemberId(member.getMemberId());
   }
 }

@@ -1,4 +1,4 @@
-package com.nyam.everyday.module.challenge.checker.regular_checker.login;
+package com.nyam.everyday.module.challenge.checker.checker_regular.meal_log;
 
 import com.nyam.everyday.module.challenge.checker.AbstractCountBasedChecker;
 import com.nyam.everyday.module.challenge.checker.service.ChallengeCheckService;
@@ -6,33 +6,39 @@ import com.nyam.everyday.module.challenge.entity.Challenge;
 import com.nyam.everyday.module.challenge.entity.ChallengeCode;
 import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.challenge.repository.ChallengeRepository;
+import com.nyam.everyday.module.meal.repository.MealLogRepository;
 import com.nyam.everyday.module.member.entity.Member;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LoginStreak3DaysChecker extends AbstractCountBasedChecker {
+public class MealLogFirstChecker extends AbstractCountBasedChecker {
 
-  protected LoginStreak3DaysChecker(
-      ChallengeRepository challengeRepository,
-      ChallengeCheckService challengeCheckService,
-      ApplicationEventPublisher publisher) {
+  private final MealLogRepository mealLogRepository;
+
+  protected MealLogFirstChecker(
+          ChallengeRepository challengeRepository,
+          ChallengeCheckService challengeCheckService,
+          ApplicationEventPublisher publisher,
+          MealLogRepository mealLogRepository
+  ) {
     super(challengeRepository, challengeCheckService, publisher);
+    this.mealLogRepository = mealLogRepository;
   }
 
   @Override
   public ChallengeCode getChallengeCode() {
-    return ChallengeCode.LOGIN_STREAK_3DAYS;
+    return ChallengeCode.MEAL_LOG_FIRST;
   }
 
   @Override
   public ChallengeTag getChallengeTag() {
-    return ChallengeTag.LOGIN;
+    return ChallengeTag.MEAL_LOG;
   }
 
   @Override
   public long getProgress(Member member, Challenge challenge) {
-    // Member의 연속 기록을 그대로 반환
-    return member.getConsecutiveLoginDays();
+    // 식단 기록 갯수 세서 반환
+    return mealLogRepository.getCountByMemberId(member.getMemberId());
   }
 }

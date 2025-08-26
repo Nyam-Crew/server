@@ -1,6 +1,5 @@
-package com.nyam.everyday.module.challenge.checker.regular_checker.like;
+package com.nyam.everyday.module.challenge.checker.checker_regular.login;
 
-import com.nyam.everyday.module.boardLike.repository.BoardLikeRepository;
 import com.nyam.everyday.module.challenge.checker.AbstractCountBasedChecker;
 import com.nyam.everyday.module.challenge.checker.service.ChallengeCheckService;
 import com.nyam.everyday.module.challenge.entity.Challenge;
@@ -12,33 +11,28 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LikeFirstChecker extends AbstractCountBasedChecker {
+public class LoginStreak3DaysChecker extends AbstractCountBasedChecker {
 
-  private final BoardLikeRepository boardLikeRepository;
-
-  protected LikeFirstChecker(
-          ChallengeRepository challengeRepository,
-          ChallengeCheckService challengeCheckService,
-          ApplicationEventPublisher publisher,
-          BoardLikeRepository boardLikeRepository
-  ) {
+  protected LoginStreak3DaysChecker(
+      ChallengeRepository challengeRepository,
+      ChallengeCheckService challengeCheckService,
+      ApplicationEventPublisher publisher) {
     super(challengeRepository, challengeCheckService, publisher);
-    this.boardLikeRepository = boardLikeRepository;
   }
 
   @Override
   public ChallengeCode getChallengeCode() {
-    return ChallengeCode.LIKE_FIRST;
+    return ChallengeCode.LOGIN_STREAK_3DAYS;
   }
 
   @Override
   public ChallengeTag getChallengeTag() {
-    return ChallengeTag.LIKE;
+    return ChallengeTag.LOGIN;
   }
 
   @Override
   public long getProgress(Member member, Challenge challenge) {
-    // 내가 누른 좋아요 갯수를 세서 반환한다
-    return boardLikeRepository.countByMember_MemberId(member.getMemberId());
+    // Member의 연속 기록을 그대로 반환
+    return member.getConsecutiveLoginDays();
   }
 }

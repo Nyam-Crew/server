@@ -1,19 +1,14 @@
-package com.nyam.everyday.module.challenge.checker.regular_checker.profile;
+package com.nyam.everyday.module.challenge.checker.checker_regular.profile;
 
 import com.nyam.everyday.module.challenge.checker.AbstractCountBasedChecker;
-import com.nyam.everyday.module.challenge.checker.ChallengeChecker;
-import com.nyam.everyday.module.challenge.checker.event.event.ProgressRecomputeEvent;
 import com.nyam.everyday.module.challenge.checker.service.ChallengeCheckService;
 import com.nyam.everyday.module.challenge.entity.Challenge;
-import com.nyam.everyday.module.challenge.entity.ChallengeCheckType;
 import com.nyam.everyday.module.challenge.entity.ChallengeCode;
 import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.challenge.repository.ChallengeRepository;
 import com.nyam.everyday.module.member.entity.Gender;
 import com.nyam.everyday.module.member.entity.Member;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 

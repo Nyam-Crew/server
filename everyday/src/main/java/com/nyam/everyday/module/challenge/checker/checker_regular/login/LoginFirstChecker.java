@@ -1,4 +1,4 @@
-package com.nyam.everyday.module.challenge.checker.regular_checker.login;
+package com.nyam.everyday.module.challenge.checker.checker_regular.login;
 
 import com.nyam.everyday.module.challenge.checker.AbstractDateBasedChecker;
 import com.nyam.everyday.module.challenge.checker.service.ChallengeCheckService;
@@ -8,26 +8,28 @@ import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.challenge.repository.ChallengeRepository;
 import com.nyam.everyday.module.challenge.repository.MemberChallengeDayRepository;
 import com.nyam.everyday.module.member.entity.Member;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
+@Slf4j
 @Component
-public class Login30DaysChecker extends AbstractDateBasedChecker {
+public class LoginFirstChecker extends AbstractDateBasedChecker {
 
-  protected Login30DaysChecker(
-          MemberChallengeDayRepository memberChallengeDayRepository,
-          ApplicationEventPublisher publisher,
+  protected LoginFirstChecker(
           ChallengeRepository challengeRepository,
-          ChallengeCheckService challengeCheckService
+          ChallengeCheckService challengeCheckService,
+          MemberChallengeDayRepository memberChallengeDayRepository,
+          ApplicationEventPublisher publisher
   ) {
     super(challengeRepository, challengeCheckService, memberChallengeDayRepository, publisher);
   }
 
   @Override
   public ChallengeCode getChallengeCode() {
-    return ChallengeCode.LOGIN_30DAYS;
+    return ChallengeCode.LOGIN_FIRST;
   }
 
   @Override
@@ -37,9 +39,10 @@ public class Login30DaysChecker extends AbstractDateBasedChecker {
 
   @Override
   protected void doCheckAndPublish(Member member, Challenge challenge, LocalDate targetDate) {
-    // 이 사람이 오늘 잘 로그인했으면, MCD 추가
+    // 이 사람이 잘 로그인했는가?
     if (member.getLastLoginDate().toLocalDate().equals(LocalDate.now())) {
-      publishMCDCreateEvent(member, challenge,  targetDate);
+      // MCD 생성 이벤트 발행
+      publishMCDCreateEvent(member, challenge, targetDate);
     }
   }
 }

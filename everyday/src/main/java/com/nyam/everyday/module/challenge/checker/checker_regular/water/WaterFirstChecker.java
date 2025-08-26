@@ -1,4 +1,4 @@
-package com.nyam.everyday.module.challenge.checker.regular_checker.water;
+package com.nyam.everyday.module.challenge.checker.checker_regular.water;
 
 import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.module.challenge.checker.AbstractDateBasedChecker;
