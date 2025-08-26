@@ -3,14 +3,10 @@ package com.nyam.everyday.config.websocket.interceptor;
 import com.nyam.everyday.security.jwt.JwtTokenProvider;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -69,7 +65,7 @@ public class CustomHandshakeInterceptor implements HandshakeInterceptor {
 
       // 쿠키에서 값 꺼내기
       String token = extractAccessTokenFromCookies(req.getCookies(), "accessToken").orElse(null);
-      log.info("[BeforeHandshake] : 쿠키에서 값 꺼내기 성공 : {}", token);
+//      log.info("[BeforeHandshake] : 쿠키에서 값 꺼내기 성공 : {}", token);
 
       // 토큰 없으면, 연결 거부
       if (token == null) {
@@ -84,7 +80,7 @@ public class CustomHandshakeInterceptor implements HandshakeInterceptor {
       }
 
       Long memberId = jwtTokenProvider.getUserIdFromToken(token);
-      log.info("[BeforeHandshake] : 인증에 성공했습니다. userId는 {}", memberId);
+//      log.info("[BeforeHandshake] : 인증에 성공했습니다. userId는 {}", memberId);
       // HandshakeHandler에서 principal을 만들 수 있도록, 값을 담아둔다.
       attributes.put("memberId", memberId);
       return true;
