@@ -99,4 +99,12 @@ public class RankingController {
     rankingService.clearIntraTeamRanking(teamId, year, week);
     return ResponseEntity.ok().build();
   }
+
+  @DeleteMapping("/teams/{teamId}/all")
+  @Operation(summary = "[관리] 특정 팀의 모든 랭킹 데이터 삭제", description = "팀 삭제 시 호출. 해당 팀의 모든 실시간 랭킹 데이터를 Redis에서 삭제합니다.")
+  public ResponseEntity<Void> deleteTeamRanking(
+      @Parameter(description = "삭제할 팀 ID") @PathVariable Long teamId) {
+    rankingService.deleteTeamRanking(teamId);
+    return ResponseEntity.ok().build();
+  }
 }
