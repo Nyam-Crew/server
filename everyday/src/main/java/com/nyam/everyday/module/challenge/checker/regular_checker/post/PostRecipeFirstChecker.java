@@ -27,7 +27,7 @@ public class PostRecipeFirstChecker extends AbstractCountBasedChecker {
           ApplicationEventPublisher publisher,
           BoardRepository boardRepository
   ) {
-    super(1, challengeRepository, challengeCheckService, publisher);
+    super(challengeRepository, challengeCheckService, publisher);
     this.boardRepository = boardRepository;
   }
 

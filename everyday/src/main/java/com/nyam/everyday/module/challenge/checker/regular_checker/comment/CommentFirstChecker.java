@@ -22,7 +22,7 @@ public class CommentFirstChecker extends AbstractCountBasedChecker {
             ApplicationEventPublisher publisher,
             BoardCommentRepository boardCommentRepository
     ) {
-        super(1, challengeRepository, challengeCheckService, publisher);
+        super(challengeRepository, challengeCheckService, publisher);
         this.boardCommentRepository = boardCommentRepository;
     }
 

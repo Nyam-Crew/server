@@ -22,7 +22,7 @@ public class LikeFirstChecker extends AbstractCountBasedChecker {
           ApplicationEventPublisher publisher,
           BoardLikeRepository boardLikeRepository
   ) {
-    super(1, challengeRepository, challengeCheckService, publisher);
+    super(challengeRepository, challengeCheckService, publisher);
     this.boardLikeRepository = boardLikeRepository;
   }
 

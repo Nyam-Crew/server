@@ -30,7 +30,7 @@ public class WaterFirstChecker extends AbstractDateBasedChecker {
           ApplicationEventPublisher publisher,
           MemberDailySummaryRepository memberDailySummaryRepository
   ) {
-    super(1, challengeRepository, challengeCheckService, memberChallengeDayRepository,publisher);
+    super(challengeRepository, challengeCheckService, memberChallengeDayRepository,publisher);
     this.memberDailySummaryRepository = memberDailySummaryRepository;
   }
 

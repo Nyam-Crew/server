@@ -34,7 +34,7 @@ public class Water1L30DaysChecker extends AbstractDateBasedChecker {
           ApplicationEventPublisher publisher,
           MemberDailySummaryRepository memberDailySummaryRepository
   ) {
-    super(30, challengeRepository, challengeCheckService, memberChallengeDayRepository, publisher);
+    super(challengeRepository, challengeCheckService, memberChallengeDayRepository, publisher);
     this.memberDailySummaryRepository = memberDailySummaryRepository;
   }
 

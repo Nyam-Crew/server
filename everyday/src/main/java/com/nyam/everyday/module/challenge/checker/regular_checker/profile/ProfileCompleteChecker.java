@@ -25,7 +25,7 @@ public class ProfileCompleteChecker extends AbstractCountBasedChecker {
           ChallengeRepository challengeRepository,
           ChallengeCheckService challengeCheckService,
           ApplicationEventPublisher publisher) {
-    super(1, challengeRepository, challengeCheckService, publisher);
+    super(challengeRepository, challengeCheckService, publisher);
   }
 
   @Override

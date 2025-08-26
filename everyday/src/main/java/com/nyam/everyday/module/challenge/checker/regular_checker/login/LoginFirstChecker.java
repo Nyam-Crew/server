@@ -24,7 +24,7 @@ public class LoginFirstChecker extends AbstractDateBasedChecker {
           MemberChallengeDayRepository memberChallengeDayRepository,
           ApplicationEventPublisher publisher
   ) {
-    super(1, challengeRepository, challengeCheckService, memberChallengeDayRepository, publisher);
+    super(challengeRepository, challengeCheckService, memberChallengeDayRepository, publisher);
   }
 
   @Override

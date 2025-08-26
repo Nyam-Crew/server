@@ -22,7 +22,7 @@ public class MealLogFirstChecker extends AbstractCountBasedChecker {
           ApplicationEventPublisher publisher,
           MealLogRepository mealLogRepository
   ) {
-    super(1, challengeRepository, challengeCheckService, publisher);
+    super(challengeRepository, challengeCheckService, publisher);
     this.mealLogRepository = mealLogRepository;
   }
 

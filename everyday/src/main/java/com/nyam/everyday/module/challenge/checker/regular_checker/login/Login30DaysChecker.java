@@ -22,7 +22,7 @@ public class Login30DaysChecker extends AbstractDateBasedChecker {
           ChallengeRepository challengeRepository,
           ChallengeCheckService challengeCheckService
   ) {
-    super(30, challengeRepository, challengeCheckService, memberChallengeDayRepository, publisher);
+    super(challengeRepository, challengeCheckService, memberChallengeDayRepository, publisher);
   }
 
   @Override
