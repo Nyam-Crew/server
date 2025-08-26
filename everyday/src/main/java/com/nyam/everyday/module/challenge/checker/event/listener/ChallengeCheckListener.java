@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -23,9 +24,10 @@ public class ChallengeCheckListener {
   private final MemberRepository memberRepository;
   private final ChallengeCheckerRegistry challengeCheckerRegistry;
 
+  @Async("challengeExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onChallengeCheck(ChallengeCheckEvent challengeCheckEvent) {
-    log.info("챌린지체크 리스너 동작");
+//    log.info("{} 타입 챌린지체크 리스너 동작", challengeCheckEvent.getChallengeTag());
     Long memberId = challengeCheckEvent.getMemberId();
     ChallengeTag tag = challengeCheckEvent.getChallengeTag();
     LocalDate targetDate = challengeCheckEvent.getTargetDate();

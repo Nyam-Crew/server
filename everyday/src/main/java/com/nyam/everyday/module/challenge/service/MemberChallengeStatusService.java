@@ -1,13 +1,16 @@
 package com.nyam.everyday.module.challenge.service;
 
+import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.module.challenge.entity.Challenge;
 import com.nyam.everyday.module.challenge.entity.MemberChallengeStatus;
 import com.nyam.everyday.module.challenge.repository.MemberChallengeStatusRepository;
 import com.nyam.everyday.module.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class MemberChallengeStatusService {
 
@@ -36,13 +39,38 @@ public class MemberChallengeStatusService {
     return memberChallengeStatus;
   }
 
+  @Transactional(readOnly = true)
   // 어떤 유저가 특정 챌린지를 완료했는지 체크한다.
   public boolean getIsCleared(Long memberId, Long challengeId) {
     return memberChallengeStatusRepository.getIsCleared(memberId, challengeId).orElse(false);
   }
 
+  @Transactional(readOnly = true)
   // 어떤 유저의 챌린지 진행도를 체크한다
   public Long getProgressCount(Long memberId, Long challengeId) {
     return memberChallengeStatusRepository.getProgressCount(memberId, challengeId).orElse(0L);
+  }
+
+  @Transactional(readOnly = true)
+  // 특정 유저가 챌린지에 참여중인지 체크한다
+  public boolean isAttending(Long memberId, Long challengeId) {
+    MemberChallengeStatus mcs = memberChallengeStatusRepository.getMCSByMemberChallenge(memberId, challengeId).orElse(null);
+    return mcs != null;
+  }
+
+  // 특정 유저를 챌린지에 참여시킨다 (MCS 추가)
+  public void attendToEventChallenge(Member member, Challenge challenge) {
+    MemberChallengeStatus mcs = MemberChallengeStatus.builder()
+        .member(member)
+        .challenge(challenge)
+        .build();
+
+    // 이미 있는 값인지 한번 조회
+    if (memberChallengeStatusRepository.getMCSByMemberChallenge(member.getMemberId(),
+        challenge.getId()).isPresent()) {
+      throw BaseException.MCS_ALREADY_EXISTS;
+    }
+
+    memberChallengeStatusRepository.save(mcs);
   }
 }

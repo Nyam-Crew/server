@@ -1,0 +1,18 @@
+services:
+  k6:
+    image: grafana/k6:latest
+    container_name: k6-web-dashboard
+    restart: unless-stopped
+    ports:
+      # k6가 자체적으로 제공하는 웹 대시보드를 위한 포트입니다.
+      - "5665:5665"
+    volumes:
+      - ./scripts:/scripts
+    working_dir: /scripts
+    environment:
+      # k6 웹 대시보드 기능을 활성화합니다.
+      - K6_WEB_DASHBOARD=true
+      - K6_WEB_DASHBOARD_PERIOD=1s # 1초마다 데이터 갱신
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    entrypoint: ["sleep", "infinity"]

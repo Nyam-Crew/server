@@ -1,22 +1,23 @@
 package com.nyam.everyday.module.challenge.checker.event.listener;
 
-import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
-
 import com.nyam.everyday.module.challenge.checker.ChallengeChecker;
 import com.nyam.everyday.module.challenge.checker.event.event.ChallengeClearedEvent;
 import com.nyam.everyday.module.challenge.checker.event.event.ProgressRecomputeEvent;
 import com.nyam.everyday.module.challenge.checker.registry.ChallengeCheckerRegistry;
-import com.nyam.everyday.module.challenge.checker.service.ProgressComputeService;
 import com.nyam.everyday.module.challenge.entity.Challenge;
-import com.nyam.everyday.module.challenge.entity.ChallengeCheckType;
+import com.nyam.everyday.module.challenge.entity.MemberChallengeStatus;
+import com.nyam.everyday.module.challenge.service.MemberChallengeStatusService;
 import com.nyam.everyday.module.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+
+import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
 
 
 /**
@@ -27,42 +28,33 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @RequiredArgsConstructor
 public class ProgressRecomputeListener {
 
-  private final ProgressComputeService progressComputeService;
   private final ChallengeCheckerRegistry challengeCheckerRegistry;
+  private final MemberChallengeStatusService memberChallengeStatusService;
   private final ApplicationEventPublisher publisher;
 
+  @Async("challengeExecutor")
   @Transactional(propagation = REQUIRES_NEW)
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
-  public void progressRecompute(ProgressRecomputeEvent progressRecomputeEvent) {
-    log.info("ProgressRecompute 동작");
-    Member member = progressRecomputeEvent.getMember();
-    Challenge challenge = progressRecomputeEvent.getChallenge();
+  public void progressRecompute(ProgressRecomputeEvent evt) {
 
-    // 챌린지 체커를 가져온다
+    Member member = evt.getMember();
+    Challenge challenge = evt.getChallenge();
+
+//    log.info("{} ProgressRecompute 동작", challenge.getTitle());
+
+    // 1) 챌린지 기반으로 체커 가져오기
     ChallengeChecker checker = challengeCheckerRegistry.getChecker(challenge);
 
-    // 챌린지에는 두 종류가 있음. 먼저 일수 기반 챌린지의 경우, 몇일이나 달성했는지 세면 된다
-    if (checker.getChallengeCheckType() == ChallengeCheckType.BY_DAY) {
-      // 특정 챌린지, 유저 기반으로 해당 유저가 며칠이나 해당 챌린지를 달성했는지 다시 계산하고, 그 값을 업데이트한다.
-      Integer progressCount = progressComputeService.computeProgressCountByDay(member, challenge);
+    // 2) 체커 기반으로 진행도 조회
+    long progressCount = checker.getProgress(member, challenge);
 
-      // 체커가 조건을 달성했는지 확인함
-      if (checker.isSatisfied(progressCount)) {
-        // 챌린지 달성 이벤트 발행
-        publisher.publishEvent(new ChallengeClearedEvent(member, challenge));
-      }
-    }
+    // 3) 진행도 update
+    MemberChallengeStatus mcs = memberChallengeStatusService.getOrCreateMCS(member, challenge);
+    mcs.setProgressCount(progressCount);
 
-    // 횟수 기반 챌린지의 경우, 체커 내부에 Progress 체킹 로직이 있다. 이를 기반으로 체크한다
-    else {
-      // 유저가 특정 행동을 얼마나 했는지를 내부에서 계산한다. (글 작성, 좋아요 누르기 등)
-      Integer progressCount = progressComputeService.computeProgressCountByCount(member, challenge);
-
-      // 체커 기반으로 조건을 달성했는지 확인한다
-      if (checker.isSatisfied(progressCount)) {
-        // 챌린지 달성 이벤트 발행
-        publisher.publishEvent(new ChallengeClearedEvent(member, challenge));
-      }
+    // 4) 조건 달성 시에, 달성 이벤트 발행
+    if (progressCount >= challenge.getTargetCount()) {
+      publisher.publishEvent(new ChallengeClearedEvent(member, challenge));
     }
   }
 }

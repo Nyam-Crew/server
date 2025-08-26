@@ -62,7 +62,7 @@ public class MemberController {
   @Operation(summary = "로그인한 회원 정보", description = "로그인한 회원의 정보를 조회합니다.")
   public ResponseEntity<MemberResponseDto> getMember(@AuthenticationPrincipal CustomUserDetails userDetails) {
     Long id = userDetails.getId();
-    log.info("[getMember] memberId : {}", id);
+//    log.info("[getMember] memberId : {}", id);
     return ResponseEntity.ok(memberService.getMemberById(id));
   }
 

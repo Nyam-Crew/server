@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,12 +24,14 @@ public class MCDCreateListener {
   private final ApplicationEventPublisher publisher;
 
   @EventListener
+  @Async("challengeExecutor")
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void onMCDCreateEvent(MCDCreateEvent event) {
-    log.info("MCD 리스너 동작");
     Member member = event.getMember();
     Challenge challenge = event.getChallenge();
     LocalDate targetDate = event.getTargetDate();
+
+//    log.info("{} MCD 리스너 동작", challenge.getTitle());
 
     // 해당 일자에 해당하는 MemberChallengeDay를 만든다.
     memberChallengeDayService.addMemberChallengeDay(member, challenge, targetDate);

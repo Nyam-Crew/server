@@ -21,6 +21,7 @@ public class CommentResponseDto {
   private LocalDateTime createdDate;
   private LocalDateTime modifiedDate;
   private boolean edited;
+  private Long childCount;
 
 
 }

@@ -20,6 +20,7 @@ import java.time.Duration;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
@@ -39,11 +40,11 @@ public class ChallengeClearedListener {
   // --- ▼ [수정] 피드 TTL을 30일에서 24시간으로 변경 ---
   private static final Duration FEED_TTL = Duration.ofHours(24);
 
-
+  @Async("challengeExecutor")
   @Transactional(propagation = REQUIRES_NEW)
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onChallengeClearedEvent(ChallengeClearedEvent event) {
-    log.info("챌린지 클리어 리스너 동작");
+//    log.info("{} 챌린지 클리어 리스너 동작", event.getChallenge().getTitle());
     Member member = event.getMember();
     Challenge challenge = event.getChallenge();
 

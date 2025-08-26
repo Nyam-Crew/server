@@ -46,7 +46,7 @@ public class MemberChallengeStatus extends BaseEntity {
   @Column(nullable = false)
   @Builder.Default
   @Setter
-  private Integer progressCount = 0;
+  private Long progressCount = 0L;
 
   // 클리어 처리할 떄 사용
   public void setAsCleared() {

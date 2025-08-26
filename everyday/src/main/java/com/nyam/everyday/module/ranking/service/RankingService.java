@@ -485,4 +485,37 @@ public class RankingService {
     redisTemplate.delete(k);
     log.info("Cleared intra-team ranking for key: {}", k);
   }
+
+  @Transactional
+  public void deleteTeamRanking(Long teamId) {
+    ZonedDateTime now = ZonedDateTime.now(clock).withZoneSameInstant(keys.zoneId());
+    String monthly = keys.monthlySuffix(now);
+    String weekly = keys.weeklySuffix(now);
+    String teamIdStr = String.valueOf(teamId);
+
+    final String interKey = keys.interTeamMonthlyKey(monthly);
+    final String sumKey = keys.teamScoreSumMonthlyKey(monthly);
+    final String intraKey = keys.intraTeamWeeklyKey(teamId, weekly);
+    final String activeKey = keys.activeIntraTeamWeeklyKey(weekly);
+    final String memberCountHash = keys.teamMemberCountMonthlyHash(monthly);
+
+    redisTemplate.executePipelined(new SessionCallback<Object>() {
+      @Override
+      public Object execute(RedisOperations operations) {
+        // 1. 월간 팀간 랭킹(inter-team)에서 제거
+        operations.opsForZSet().remove(interKey, teamIdStr);
+        // 2. 월간 팀 점수 합계(team-sum)에서 제거
+        operations.opsForZSet().remove(sumKey, teamIdStr);
+        // 3. 주간 팀내 랭킹(intra-team) 키 자체를 삭제
+        operations.delete(intraKey);
+        // 4. 활성 팀(active-team) SET에서 제거
+        operations.opsForSet().remove(activeKey, teamIdStr);
+        // 5. 월초 팀 멤버 수 스냅샷(hash)에서 제거
+        operations.opsForHash().delete(memberCountHash, teamIdStr);
+        return null;
+      }
+    });
+
+    log.info("Deleted all real-time ranking data for teamId: {}", teamId);
+  }
 }

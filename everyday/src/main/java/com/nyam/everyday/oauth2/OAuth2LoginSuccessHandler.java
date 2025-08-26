@@ -56,7 +56,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
       //로그인 성공 시, 로그인 연속 출석 정보 업데이트
       memberService.updateLoginInfo(memberId);
 
-      // ✅출석 점수 부여 로직 호출
+      // 출석 점수 부여 로직 호출
       // memberId로 Member 객체를 찾아서 전달합니다.
       Member member = memberRepository.findById(memberId)
               .orElse(null);
@@ -68,7 +68,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
     accessTokenCookie.setHttpOnly(true);
     accessTokenCookie.setPath("/");
-    accessTokenCookie.setMaxAge(60 * 15);
+    accessTokenCookie.setMaxAge(60 * 20);
     response.addCookie(accessTokenCookie);
 
     Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);

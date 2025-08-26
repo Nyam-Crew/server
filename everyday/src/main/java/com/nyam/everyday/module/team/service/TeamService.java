@@ -7,6 +7,7 @@ import com.nyam.everyday.module.awsS3.dto.AwsS3Response;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.module.ranking.repository.TeamGlobalRankingRepository;
+import com.nyam.everyday.module.ranking.service.RankingService;
 import com.nyam.everyday.module.team.enums.ParticipationStatus;
 import com.nyam.everyday.module.team.entity.Team;
 import com.nyam.everyday.module.team.entity.TeamMemberStatus;
@@ -55,6 +56,7 @@ public class TeamService {
     private final TeamGlobalRankingRepository teamGlobalRankingRepository;
     private final TeamNoticeRepository teamNoticeRepository;
     private final TeamNotificationRepository teamNotificationRepository;
+    private final RankingService rankingService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -369,6 +371,9 @@ public class TeamService {
 
         entityManager.flush();
         entityManager.clear();
+
+        // 실시간 랭킹 팀 정보 삭제
+        rankingService.deleteTeamRanking(teamId);
 
         // 2) 부모 삭제
         teamRepository.deleteById(teamId);

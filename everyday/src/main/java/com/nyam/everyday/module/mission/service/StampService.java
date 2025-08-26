@@ -1,8 +1,11 @@
 package com.nyam.everyday.module.mission.service;
 
+import com.nyam.everyday.module.challenge.checker.event.event.ChallengeCheckEvent;
+import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.mission.entity.DailyMissionStamp;
 import com.nyam.everyday.module.mission.repository.DailyMissionStampRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +16,8 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 public class StampService {
+
+    private final ApplicationEventPublisher publisher;
     private final DailyMissionStampRepository stampRepository;
     private final Clock clock;
 
@@ -35,5 +40,7 @@ public class StampService {
             s.setCompletedCount(completedCount);
             s.setAchieved(achieved);
         }
+
+        publisher.publishEvent(new ChallengeCheckEvent(memberId, ChallengeTag.STAMP, date));
     }
 }

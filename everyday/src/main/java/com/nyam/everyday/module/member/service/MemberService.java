@@ -41,7 +41,6 @@ public class MemberService {
   public MemberResponseDto getMemberById(Long id) {
     Member member = memberRepository.findById(id)
         .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "id " + id + "에 해당하는 사용자가 없습니다."));
-
     return getMemberResponseDto(member);
   }
 
@@ -155,7 +154,7 @@ public class MemberService {
     LocalDateTime now = LocalDateTime.now();
     LocalDateTime lastLogin = member.getLastLoginDate();
 
-    if (lastLogin == null) {
+    if (lastLogin == null || member.getConsecutiveLoginDays() == 0) {
       // 1. 첫 로그인이거나, 기능 추가 후 첫 로그인인 경우
       member.setConsecutiveLoginDays(1);
       log.info("첫 로그인 memberId : {}", memberId);
@@ -170,7 +169,6 @@ public class MemberService {
           // 1. 마지막 로그인이 어제인 경우 (연속 로그인)
           member.setConsecutiveLoginDays(member.getConsecutiveLoginDays() + 1);
           log.info("연속 로그인 memberId : {}, 연속 날짜 : {}", memberId, member.getConsecutiveLoginDays());
-          // TODO 연속 날짜 뱃지 대상인지 체크 로직 추가해야함 (ex. 7일 이상 연속출석)
         } else {
           // 2. 연속 로그인이 끊긴 경우
           member.setConsecutiveLoginDays(1);
@@ -191,4 +189,12 @@ public class MemberService {
         .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "id " + memberId + "에 해당하는 사용자가 없습니다."));
     member.setMemberStatus(Status.DEACTIVATED);
   }
+
+  public Member getMemberByMemberId(Long memberId) {
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND, "memberId " + memberId + "에 해당하는 사용자가 없습니다."));
+    return member;
+  }
+
 }
+

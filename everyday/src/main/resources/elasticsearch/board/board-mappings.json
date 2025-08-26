@@ -1,0 +1,47 @@
+{
+  "dynamic": "false",
+  "properties": {
+    "boardId":      { "type": "long" },
+    "title":        {
+      "type": "text",
+      "analyzer": "board_ko_search",
+      "search_analyzer": "board_ko_search",
+      "fields": {
+        "keyword": { "type": "keyword" },
+        "ngram": {
+          "type": "text",
+          "analyzer": "board_ko_ngram",
+          "search_analyzer": "board_ko_search"
+        }
+      }
+    },
+    "content":      {
+      "type": "text",
+      "analyzer": "board_ko_search",
+      "search_analyzer": "board_ko_search",
+      "fields": {
+        "ngram": {
+          "type": "text",
+          "analyzer": "board_ko_ngram",
+          "search_analyzer": "board_ko_search"
+        }
+      }
+    },
+    "nickname":     {
+      "type": "keyword",
+      "fields": {
+        "search": { "type": "text", "analyzer": "board_ko_search", "search_analyzer": "board_ko_search" },
+        "ngram": {
+          "type": "text",
+          "analyzer": "board_ko_ngram",
+          "search_analyzer": "board_ko_search"
+        }
+      }
+    },
+    "boardType":    { "type": "keyword" },
+    "createdDate":  { "type": "date" },
+    "viewCount":    { "type": "long" },
+    "likeCount":    { "type": "long" },
+    "commentCount": { "type": "long" }
+  }
+}
