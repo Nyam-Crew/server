@@ -1,7 +1,6 @@
 package com.nyam.everyday.module.challenge.checker;
 
 import com.nyam.everyday.module.challenge.entity.Challenge;
-import com.nyam.everyday.module.challenge.entity.ChallengeCheckType;
 import com.nyam.everyday.module.challenge.entity.ChallengeCode;
 import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.member.entity.Member;
@@ -19,9 +18,6 @@ public interface ChallengeChecker {
   // 타입 반환 함수 (어떤 태그의 챌린지인지 확인하기 위함)
   // ChallengeRegistry 에서 체커의 Map을 구현할 때 사용된다.
   ChallengeTag getChallengeTag();
-
-  // 임계치 이상이면 True 반환할 것
-  boolean isSatisfied(long progressCount);
 
   // ChallengeCheckListener가 공통적으로 호출하는 Entry Point
   void check(Member member, LocalDate targetDate);

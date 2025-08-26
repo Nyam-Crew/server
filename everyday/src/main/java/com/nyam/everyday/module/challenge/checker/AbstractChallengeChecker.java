@@ -9,23 +9,15 @@ import java.time.LocalDate;
 
 public abstract class AbstractChallengeChecker implements ChallengeChecker {
 
-    private final int threshold;
     private final ChallengeRepository challengeRepository;
     private final ChallengeCheckService challengeCheckService;
 
     protected AbstractChallengeChecker(
-            int threshold,
             ChallengeRepository challengeRepository,
             ChallengeCheckService challengeCheckService
     ) {
-        this.threshold = threshold;
         this.challengeRepository = challengeRepository;
         this.challengeCheckService = challengeCheckService;
-    }
-
-    @Override
-    public boolean isSatisfied(long progressCount) {
-        return progressCount >= threshold;
     }
 
     @Override
