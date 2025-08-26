@@ -166,5 +166,10 @@ public class ChatMessageService {
       throw BaseException.ACCESS_DENIED;
     }
   }
+
+  public void deleteMessagesByTeamId(Long teamId) {
+    Query query = new Query(Criteria.where("teamId").is(teamId));
+    mongoTemplate.remove(query, ChatMessage.class);
+  }
 }
 
