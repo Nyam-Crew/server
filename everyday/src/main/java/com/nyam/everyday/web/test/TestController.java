@@ -57,12 +57,6 @@ public class TestController {
     private String reason;
   }
 
-  @Data
-  public static class ChatDeleteDto {
-
-    private Long teamId;
-  }
-
   @DeleteMapping("/chat/{teamId}")
   public ResponseEntity<Void> removeTeamChatting(@PathVariable(name = "teamId") Long teamId) {
     chatMessageService.deleteMessagesByTeamId(teamId);
