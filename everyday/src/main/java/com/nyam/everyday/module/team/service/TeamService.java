@@ -52,18 +52,19 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final MemberRepository memberRepository;
     private final TeamMemberStatusRepository teamMemberStatusRepository;
-    private final TeamActivityFeedRepository teamActivityFeedRepository;
+    //private final TeamActivityFeedRepository teamActivityFeedRepository;
     private final TeamGlobalRankingRepository teamGlobalRankingRepository;
     private final TeamNoticeRepository teamNoticeRepository;
     private final TeamNotificationRepository teamNotificationRepository;
-    private final TeamRankingHistoryRepository teamRankingHistoryRepository;
     private final RankingService rankingService;
+
     @PersistenceContext
     private EntityManager entityManager;
 
     private final TeamMapper teamMapper;
     private final TeamMemberStatusMapper teamMemberStatusMapper;
     private final AwsS3Service awsS3Service;
+    private final TeamActivityFeedRedisService teamActivityFeedRedisService;
     // private final RedisRankingService redisRankingService;
     // private final ChatService chatService;
 
@@ -73,6 +74,7 @@ public class TeamService {
         Member owner = memberRepository.findById(memberId).orElseThrow(()
                 -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
 
+        //Todo. [Refactor] 추후 사용자가 이미지를 넣어주지 않으면 S3 기본이미지를 넣어보자.
         String imageUrl = null;
         if (imageFile != null && !imageFile.isEmpty()) {
             AwsS3Response response = awsS3Service.uploadFile(imageFile);
@@ -215,22 +217,30 @@ public class TeamService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new BaseException(ErrorCode.GROUP_NOT_FOUND));
 
-        Optional<TeamMemberStatus> existing = teamMemberStatusRepository
-                .findByTeam_TeamIdAndMember_MemberId(teamId, memberId);
-
-        if (existing.isPresent()) {
-            TeamMemberStatus status = existing.get();
-            if (status.getStatus() == ParticipationStatus.APPROVED) {
-                throw new BaseException(ErrorCode.ALREADY_JOINED_GROUP);
-            } else if (status.getStatus() == ParticipationStatus.PENDING) {
-                throw new BaseException(ErrorCode.ALREADY_EXIST_JOIN);
-            }
-        }
-
         if (team.getTeamCurrentMembers() >= team.getTeamMaxMembers()) {
             throw new BaseException(ErrorCode.TEAM_CAPACITY_FULL);
         }
 
+        Optional<TeamMemberStatus> existing =
+                teamMemberStatusRepository.findByTeam_TeamIdAndMember_MemberId(teamId, memberId);
+
+        if (existing.isPresent()) {
+            TeamMemberStatus status = existing.get();
+
+            if (status.getStatus() == ParticipationStatus.APPROVED) {
+                throw new BaseException(ErrorCode.ALREADY_JOINED_GROUP);
+            } else if (status.getStatus() == ParticipationStatus.PENDING) {
+                throw new BaseException(ErrorCode.ALREADY_EXIST_JOIN);
+            } else if (status.getStatus() == ParticipationStatus.LEFT
+                    || status.getStatus() == ParticipationStatus.REJECTED) {
+                status.reapplyFromLeftOrRejectedToPending(); // ← 새 도메인 메서드 호출
+                return;
+            } else {
+                throw new BaseException(ErrorCode.INVALID_REQUEST);
+            }
+        }
+
+        // 전혀 기록이 없는 첫 신청이면 새로 insert
         TeamMemberStatus request = TeamMemberStatus.builder()
                 .team(team)
                 .member(memberRepository.findById(memberId)
@@ -269,7 +279,7 @@ public class TeamService {
         }
 
         List<TeamMemberStatus> pendingMembers = teamMemberStatusRepository
-                .findAllByTeam_TeamIdAndStatus(teamId, ParticipationStatus.PENDING);
+                .findAllByTeam_TeamIdAndStatusWithMember(teamId, ParticipationStatus.PENDING);
 
         return teamMemberStatusMapper.toStatusDtoList(pendingMembers);
     }
@@ -344,17 +354,17 @@ public class TeamService {
             throw new BaseException(ErrorCode.INVALID_REQUEST, "확인용 팀명이 일치하지 않습니다.");
         }
 
-        // todo.외부 리소스 정리
-        //if (team.getTeamImg() != null) awsS3Service.deleteFileByUrl(team.getTeamImg());
-        // redisRankingService.evictTeamKeys(teamId);
-        // chatService.deleteAllByTeamId(teamId);
+        // todo.외부 리소스 정리 -> 팀채팅과 특정 팀의 랭킹 삭제 API 개발되는대로 추가 아래는 임시코드
+//        if (team.getTeamImg() != null) awsS3Service.deleteFileByUrl(team.getTeamImg());
+//         redisRankingService.evictTeamKeys(teamId);
+//         chatService.deleteAllByTeamId(teamId);
+        teamActivityFeedRedisService.purgeTeamFeed(teamId);
 
         entityManager.flush();
         entityManager.clear();
 
-        teamActivityFeedRepository.deleteByTeamId(teamId);
+        //teamActivityFeedRepository.deleteByTeamId(teamId);
         teamGlobalRankingRepository.deleteByTeamId(teamId);
-        teamRankingHistoryRepository.deleteByTeamId(teamId);
         teamNotificationRepository.deleteByTeamId(teamId);
         teamNoticeRepository.deleteByTeamId(teamId);
         teamMemberStatusRepository.deleteByTeamId(teamId);
@@ -368,6 +378,8 @@ public class TeamService {
         // 2) 부모 삭제
         teamRepository.deleteById(teamId);
     }
+
+
     private void assertManagedTeam(Team team) {
         if (team != null && !entityManager.contains(team)) {
             log.warn("Non-managed Team injected! Team#{}", team.getTeamId());

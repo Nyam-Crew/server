@@ -22,6 +22,8 @@ public interface TeamMemberStatusMapper {
 
     @Mapping(target = "teamId", source = "team.teamId")
     @Mapping(target = "memberId", source = "member.memberId")
+    @Mapping(target = "nickname", source = "member.nickname")
+    @Mapping(target = "memberImage", source = "member.memberImg")
     TeamMemberStatusDto toStatusDto(TeamMemberStatus entity);
 
     @Mapping(source = "member.memberId", target = "memberId")

@@ -47,29 +47,29 @@ public class TeamFeedMessageFormatter {
     private static String formatMeal(String nickname, MealType period, BigDecimal kcal, String time) {
         String label = (period != null ? period.getLabel() : "식단");
         String kcalTxt = (kcal != null ? kcal + "kcal" : "");
-        return "%s %s기록 %s 먹었어요 %s".formatted(nickname, label, kcalTxt, time).trim();
+        return "%s기록 %s 먹었어요".formatted(label, kcalTxt).trim();
     }
 
     /** 물: "닉네임 물섭취기록 0.5L 마셨어요 등록된 시간" */
     private static String formatWater(String nickname, Integer amountMl, String time) {
         String literTxt = (amountMl != null ? toLiterText(amountMl) : "");
-        return "%s 물섭취기록 %s 마셨어요 %s".formatted(nickname, literTxt, time).trim();
+        return "물섭취기록 %s 마셨어요".formatted(literTxt).trim();
     }
 
     /** 체중: "닉네임 체중기록 0.5kg 감량했어요|증가했어요 등록 시간" */
     private static String formatWeight(String nickname, Double deltaKg, String time) {
         if (deltaKg == null || Math.abs(deltaKg) < 1e-6) {
-            return "%s 체중기록 변화 없음 %s".formatted(nickname, time);
+            return "체중기록 변화 없음";
         }
         double abs = Math.abs(deltaKg);
         String dir = (deltaKg < 0) ? "감량했어요" : "증가했어요";
-        return "%s 체중기록 %.1fkg %s %s".formatted(nickname, abs, dir, time);
+        return "체중기록 %.1fkg %s".formatted(abs, dir);
     }
 
     /** 챌린지: "닉네임 챌린지달성 xx 챌린지를 완료했어요 등록시간" */
     private static String formatChallenge(String nickname, String challengeName, String time) {
         String name = nullToEmpty(challengeName);
-        return "%s 챌린지달성 %s 챌린지를 완료했어요 %s".formatted(nickname, name, time).trim();
+        return "챌린지달성 %s를 완료했어요".formatted(name).trim();
     }
 
     private static String timeText(LocalDateTime dt) {

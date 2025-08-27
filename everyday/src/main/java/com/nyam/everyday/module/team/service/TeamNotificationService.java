@@ -120,6 +120,8 @@ public class TeamNotificationService {
             return;
         }
 
+        final String finalContent = String.format("[%s] %s", team.getTeamTitle(), content);
+
         boolean immediate = false;
         if (type == TeamNotificationType.NOTICE) {
             immediate = true;
@@ -138,7 +140,7 @@ public class TeamNotificationService {
                         .team(team)
                         .member(recipient)
                         .notificationType(type)
-                        .teamNotyContent(content)
+                        .teamNotyContent(finalContent)
                         .deliveryStatus(DeliveryStatus.PENDING) // 기본 상태 PENDING으로 설정
                         .build())
                 .collect(Collectors.toList());
@@ -152,16 +154,30 @@ public class TeamNotificationService {
         teamNotificationRepository.saveAll(notifications);
 
         if (immediate) {
+            // 1. 팀 알림용 DTO를 생성합니다.
             TeamNotifyDto dto = TeamNotifyDto.builder()
-                    .content("[" + team.getTeamTitle() + "] " + content)
+                    .content(finalContent)
                     .createdAt(LocalDateTime.now())
-                    .notificationId(notifications.get(0).getTeamAlarmId())
+                    .notificationId(notifications.isEmpty() ? null : notifications.get(0).getTeamAlarmId())
                     .type(type)
                     .build();
 
-            log.info("WebSocket으로 팀 알림을 전송합니다. teamId: {}, type: {}, content: '{}'",
-                    teamId, type, dto.getContent());
-            notifyToReactService.NotifyToTeam(dto, teamId);
+            // 2. 알림 타입에 따라 전송 방식을 분기합니다.
+            if (type == TeamNotificationType.NOTICE) {
+                // 공지 알림은 팀 전체에 방송합니다.
+                log.info("WebSocket으로 공지 알림을 전체 방송합니다. teamId: {}, content: '{}'",
+                        teamId, dto.getContent());
+                notifyToReactService.NotifyToTeam(dto, teamId);
+            } else {
+                // 채팅, 피드 등 다른 알림은 필터링된 수신자에게만 개별 전송합니다.
+                log.info("WebSocket으로 개별 알림을 전송합니다. 대상: {}명, teamId: {}, content: '{}'",
+                        recipients.size(), teamId, dto.getContent());
+
+                // 새로 추가된 NotifyToMember(TeamNotifyDto, Long) 메소드를 호출합니다.
+                recipients.forEach(recipient -> {
+                    notifyToReactService.NotifyToMember(dto, recipient.getMemberId());
+                });
+            }
         }
     }
 
@@ -239,6 +255,7 @@ public class TeamNotificationService {
     //=====================================================//
 
     // 1) 최신 알림 조회
+    //Todo. 알림함 알림 조회 개선 필요. 현재 최신순 20개만 볼 수 있도록 되어있어서 나머지 알림들에 대한 읽음처리가 어려움
     @Transactional(readOnly = true)
     public List<TeamNotificationBoxDto> getTeamNotifications(Long memberId) {
         Pageable pageable = PageRequest.of(0, 20);
@@ -249,6 +266,9 @@ public class TeamNotificationService {
                         .content(n.getTeamNotyContent())
                         .createdAt(n.getCreatedDate())
                         .isRead(Boolean.TRUE.equals(n.getIsChecked()))
+                        .notificationId(n.getTeamAlarmId())
+                        .teamId(n.getTeam().getTeamId())
+                        .type(n.getNotificationType())
                         .build())
                 .toList();
     }

@@ -10,6 +10,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisKeyCommands;
+import org.springframework.data.redis.core.Cursor;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -228,7 +233,7 @@ public class TeamActivityFeedRedisService implements TeamActivityFeedService {
     }
 
     @Override
-    public FeedSlice listFeedBefore(Long teamId, Long cursorEpochMs, int size) {
+    public FeedSlice listFeedBefore(Long teamId, Long cursorEpochMs, int size, Long currentMemberId) {
         String idxKey = indexKey(teamId);
 
         double max = (cursorEpochMs == null) ? Double.POSITIVE_INFINITY : (double) (cursorEpochMs - 1L);
@@ -259,6 +264,10 @@ public class TeamActivityFeedRedisService implements TeamActivityFeedService {
                 missing.add(fid);
             } else {
                 TeamActivityFeedItem item = fromJson(json);
+                if (currentMemberId != null && currentMemberId.equals(item.getMemberId())) {
+                    item.setNickname(null); // 내 피드일 경우 닉네임을 지운다
+                }
+
                 if (item.getActivityMessage() == null || item.getActivityMessage().isBlank()) {
                     item.setActivityMessage(TeamFeedMessageFormatter.formatLine(item));
                 }
@@ -332,6 +341,60 @@ public class TeamActivityFeedRedisService implements TeamActivityFeedService {
         boolean hasMore = items.size() == size;
 
         return FeedSlice.builder().items(items).nextCursorEpochMs(nextCursor).hasNext(hasMore).build();
+    }
+
+    private String itemPrefix(Long teamId) {
+        return "team:%d:activity:item:".formatted(teamId);
+    }
+
+    /** teamId의 인덱스 + 아이템 키만 싹 정리 */
+    public void purgeTeamFeed(Long teamId) {
+        final String idxKey = indexKey(teamId);
+
+        // 인덱스(ZSET) 키 삭제
+        redisTemplate.delete(idxKey);
+
+        // 해당 팀 아이템 키만 패턴으로 스캔 삭제
+        deleteByPattern(itemPrefix(teamId) + "*");
+    }
+
+    /** 패턴 스캔 → UNLINK(가능시) → DEL(폴백) */
+    private void deleteByPattern(String pattern) {
+        redisTemplate.execute((RedisCallback<Void>) connection -> {
+            ScanOptions options = ScanOptions.scanOptions()
+                    .match(pattern)
+                    .count(1000)
+                    .build();
+
+            java.util.List<byte[]> keys = new java.util.ArrayList<>();
+
+            try (Cursor<byte[]> cursor = safeScan(connection, options)) {
+                while (cursor.hasNext()) {
+                    keys.add(cursor.next());
+                }
+            }
+
+            if (!keys.isEmpty()) {
+                RedisKeyCommands keyCmd = connection.keyCommands();
+                try {
+                    keyCmd.unlink(keys.toArray(new byte[0][]));
+                } catch (Throwable t) {
+                    keyCmd.del(keys.toArray(new byte[0][]));
+                }
+            }
+            return null;
+        });
+    }
+
+    /** Spring Data Redis 버전별 SCAN 호환 */
+    private Cursor<byte[]> safeScan(RedisConnection connection, ScanOptions options) {
+        try {
+            // Spring Data Redis 3.x+
+            return connection.keyCommands().scan(options);
+        } catch (NoSuchMethodError | UnsupportedOperationException e) {
+            // 구버전 호환
+            return connection.scan(options);
+        }
     }
 
     /* ===================== 유틸 ===================== */

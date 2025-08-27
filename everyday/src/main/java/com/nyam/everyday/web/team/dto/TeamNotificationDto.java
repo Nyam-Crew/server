@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TeamNotificationDto {
 
-    @Schema(name = "알림ID", example = "1")
+    @Schema(name = "알림 ID", example = "1")
     private Long teamAlarmId;
 
     @Schema(name = "알림 발생 그룹", example = "1")

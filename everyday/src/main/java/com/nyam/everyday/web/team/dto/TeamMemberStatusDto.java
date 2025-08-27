@@ -30,6 +30,12 @@ public class TeamMemberStatusDto {
     @Schema(name = "", example = "")
     private Long memberId;
 
+    @Schema(name="", example = "")
+    private String nickname;
+
+    @Schema(name="", example = "")
+    private String memberImage;
+
     @Schema(name = "", example = "")
     private ParticipationStatus status;
 

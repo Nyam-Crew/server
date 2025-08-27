@@ -39,6 +39,7 @@ public class TeamNotificationController {
         return ResponseEntity.ok(result);
     }
 
+    @Operation(summary = "새로운 알림이 있는지 판별합니다. isChecked=false가 1개라도 있으면 true")
     @GetMapping("/status")
     public NotificationStatusDto hasNewTeam(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return teamNotificationService.hasNewTeamNotifications(userDetails.getId());

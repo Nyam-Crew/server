@@ -37,7 +37,8 @@ public class TeamActivityFeedController {
             @AuthenticationPrincipal CustomUserDetails user // 권한 확인이 필요하면 여기서 처리
     ) {
         // 초기 페이지는 cursor=null 로 before API 사용
-        FeedSlice slice = feedService.listFeedBefore(teamId, null, size);
+        Long currentMemberId = (user != null) ? user.getId() : null;
+        FeedSlice slice = feedService.listFeedBefore(teamId, null, size, currentMemberId);
         return ResponseEntity.ok(slice);
     }
 
@@ -52,7 +53,8 @@ public class TeamActivityFeedController {
             @RequestParam(defaultValue = "30") int size,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        FeedSlice slice = feedService.listFeedBefore(teamId, cursorEpochMs, size);
+        Long currentMemberId = (user != null) ? user.getId() : null;
+        FeedSlice slice = feedService.listFeedBefore(teamId, cursorEpochMs, size, currentMemberId);
         return ResponseEntity.ok(slice);
     }
 

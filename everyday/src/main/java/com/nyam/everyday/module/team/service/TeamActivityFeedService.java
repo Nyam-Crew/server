@@ -48,7 +48,7 @@ public interface TeamActivityFeedService {
     List<TeamActivityFeedItem> listFeed(Long teamId, int start, int size);
 
     /** 커서 기반 무한스크롤: cursor(미포함) 이전 항목을 최신순으로 size개 */
-    FeedSlice listFeedBefore(Long teamId, Long cursorEpochMs, int size);
+    FeedSlice listFeedBefore(Long teamId, Long cursorEpochMs, int size, Long currentMemberId);
 
     /** (선택) 위로 당겨서 새로고침: cursor(미포함) 이후 ‘신규’ 항목들을 최신순으로 */
     FeedSlice listFeedAfter(Long teamId, Long cursorEpochMs, int size);
