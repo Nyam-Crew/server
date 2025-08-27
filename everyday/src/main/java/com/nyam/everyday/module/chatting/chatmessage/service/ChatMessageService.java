@@ -21,6 +21,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,8 +38,9 @@ public class ChatMessageService {
   private final MemberRepository memberRepository;
   private final MongoTemplate mongoTemplate;
 
-  // 메세지가 전송되었을 때 처리하기 위한 메서드
-  public ChatMessage handleMessage(ChatMessageSaveRequest request, Long memberId, Long teamId) {
+  // 메세지가 전송되었을 때 처리하기 위한 메서드 (비동기)
+  @Async("chatExecutor")
+  public void handleMessage(ChatMessageSaveRequest request, Long memberId, Long teamId) {
     // 보낸 멤버 정보를 가져오고, 없으면 에러
     log.info("[handleMessage] : 메세지 수신");
     Member member = memberRepository.findByMemberId(memberId)
@@ -83,8 +85,6 @@ public class ChatMessageService {
       log.error("[채팅 알림 생성 실패] 채팅 메시지는 정상 처리되었으나 알림 생성 중 예외 발생. teamId: {}. Error: {}",
               teamId, e.getMessage(), e);
     }
-
-    return saved;
   }
 
   // 특정 채팅방에 처음 접속했을 때 사용한다. 첫 20개를 불러옴.
