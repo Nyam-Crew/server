@@ -28,14 +28,14 @@ public class ChatMessageController {
 
   @PostMapping("/{teamId}")
   @Operation(summary = "채팅 전송받기")
-  public ResponseEntity<ChatMessage> sendMessage(@RequestBody ChatMessageSaveRequest request,
+  public ResponseEntity<Void> sendMessage(@RequestBody ChatMessageSaveRequest request,
       @PathVariable Long teamId,
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
     Long memberId = customUserDetails.getId();
 
-    ChatMessage chatMessage = chatMessageService.handleMessage(request, memberId, teamId);
+    chatMessageService.handleMessage(request, memberId, teamId);
 
-    return ResponseEntity.ok(chatMessage);
+    return ResponseEntity.ok().build();
   }
 
   @GetMapping("/history/{teamId}")
