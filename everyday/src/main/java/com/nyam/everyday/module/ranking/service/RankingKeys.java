@@ -1,6 +1,5 @@
 package com.nyam.everyday.module.ranking.service;
 
-import java.nio.charset.StandardCharsets;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -22,12 +21,19 @@ import org.springframework.stereotype.Component;
 public class RankingKeys {
 
   // ---------------- Constants ----------------
+  // 개인 월간 랭킹
   public static final String USER_RANKING_KEY_PREFIX        = "user_ranking:";         // ZSET(memberId -> totalScore) per month
+  // 팀 내부 주간 랭킹
   public static final String INTRA_TEAM_RANKING_KEY_PREFIX  = "team_ranking:";         // ZSET(memberId -> score) per team/week
+  // 팀간 월간 랭킹 (최종) - 평균점수 기준
   public static final String INTER_TEAM_RANKING_KEY_PREFIX  = "inter_team_ranking:";   // ZSET(teamId -> avgScore) per month
+  // 최종 팀 랭킹(평균 점수)을 계산하기 위한 보조 데이터 - 팀 월간 점수 합계
   public static final String TEAM_SCORE_SUM_KEY_PREFIX      = "team_score_sum:";       // ZSET(teamId -> totalScore) per month
+  // 보조 데이터 - 월초 팀 멤버 수
   public static final String TEAM_MEMBER_COUNT_HASH_PREFIX  = "team_member_count:";    // HASH(teamId -> count) per month
+  // 주간 활성 팀 - 해당 주에 활동(점수 획득)이 있었던 팀을 기록
   public static final String ACTIVE_INTRA_TEAM_KEY_PREFIX   = "active_intra_teams:";   // SET(teamId) per week
+  // 아카이빙을 위한 스냅샷 prefix (redis 키들을 스냅샷으로 변경 후 DB 저장 후 키 삭제)
   public static final String SNAPSHOT_PREFIX                = "snapshot:";             // rename 스냅샷 접두사
 
   private static final DateTimeFormatter YM_FMT = DateTimeFormatter.ofPattern("yyyy-MM");
