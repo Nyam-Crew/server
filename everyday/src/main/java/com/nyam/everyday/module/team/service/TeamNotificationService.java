@@ -255,6 +255,7 @@ public class TeamNotificationService {
     //=====================================================//
 
     // 1) 최신 알림 조회
+    //Todo. 알림함 알림 조회 개선 필요. 현재 최신순 20개만 볼 수 있도록 되어있어서 나머지 알림들에 대한 읽음처리가 어려움
     @Transactional(readOnly = true)
     public List<TeamNotificationBoxDto> getTeamNotifications(Long memberId) {
         Pageable pageable = PageRequest.of(0, 20);
@@ -265,6 +266,9 @@ public class TeamNotificationService {
                         .content(n.getTeamNotyContent())
                         .createdAt(n.getCreatedDate())
                         .isRead(Boolean.TRUE.equals(n.getIsChecked()))
+                        .notificationId(n.getTeamAlarmId())
+                        .teamId(n.getTeam().getTeamId())
+                        .type(n.getNotificationType())
                         .build())
                 .toList();
     }
