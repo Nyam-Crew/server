@@ -9,9 +9,13 @@ import com.nyam.everyday.module.bookmark.entity.Bookmark;
 import com.nyam.everyday.module.bookmark.repository.BookmarkRepository;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
+import com.nyam.everyday.web.bookmark.dto.ToggleBookmarkResponseDto;
 import com.nyam.everyday.web.bookmark.mapper.BookmarkMapper;
 import com.nyam.everyday.web.bookmark.dto.CreateBookmarkRequestDto;
 import com.nyam.everyday.web.bookmark.dto.CreateBookmarkResponseDto;
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -29,6 +33,29 @@ public class BookmarkService {
   private final BoardRepository boardRepository;
   private final BookmarkMapper bookmarkMapper;
 
+
+  @Transactional
+  public ToggleBookmarkResponseDto toggle(Long memberId, Long boardId){
+    //존재 확인
+    var existing = bookmarkRepository.findByMember_MemberIdAndBoard_BoardId(memberId, boardId);
+
+    boolean bookmarked;
+    if (existing.isPresent()) {
+      bookmarkRepository.delete(existing.get());
+      bookmarked = false;
+    }else {
+      Member memberRef = memberRepository.getReferenceById(memberId);
+      Board boardRef = boardRepository.getReferenceById(boardId);
+
+      Bookmark bookmark = Bookmark.builder()
+          .member(memberRef)
+          .board(boardRef)
+          .build();
+      bookmarkRepository.save(bookmark);
+      bookmarked = true;
+    }
+    return new ToggleBookmarkResponseDto(boardId, bookmarked);
+  }
 
   @Transactional
   public CreateBookmarkResponseDto createBookmark(Long memberId, CreateBookmarkRequestDto dto) {
@@ -84,6 +111,18 @@ public class BookmarkService {
     }
     // 5. 정상 삭제 시 반환값 없음
 
+  }
+  // BookmarkService
+  public Set<Long> findBookmarkedBoardIds(Long memberId, Collection<Long> boardIds) {
+    if (boardIds == null || boardIds.isEmpty()) return Set.of();
+    return bookmarkRepository.findByMember_MemberIdAndBoard_BoardIdIn(memberId, boardIds)
+        .stream()
+        .map(b -> b.getBoard().getBoardId())
+        .collect(Collectors.toSet());
+  }
+
+  public boolean isBookmarked(Long memberId, Long boardId) {
+    return bookmarkRepository.existsByMember_MemberIdAndBoard_BoardId(memberId, boardId);
   }
 
 
