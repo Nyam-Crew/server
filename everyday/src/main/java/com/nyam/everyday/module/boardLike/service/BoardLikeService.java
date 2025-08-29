@@ -1,6 +1,8 @@
 package com.nyam.everyday.module.boardLike.service;
 
 
+// import co.elastic.clients.elasticsearch._types.query_dsl.Like;
+// import com.fasterxml.jackson.databind.ser.Serializers.Base;
 import com.nyam.everyday.common.exception.BaseException;
 import com.nyam.everyday.common.exception.ErrorCode;
 import com.nyam.everyday.module.board.entity.Board;
@@ -12,8 +14,12 @@ import com.nyam.everyday.module.challenge.entity.ChallengeTag;
 import com.nyam.everyday.module.member.entity.Member;
 import com.nyam.everyday.module.member.repository.MemberRepository;
 import com.nyam.everyday.web.boardlike.dto.BoardLikeResponseDto;
-import com.nyam.everyday.web.boardlike.mapper.BoardLikeMapper;
+import com.nyam.everyday.web.boardlike.dto.LikeStatusResponseDto;
+import com.nyam.everyday.web.boardlike.dto.ToggleLikeResponseDto;
+// import com.nyam.everyday.web.boardlike.mapper.BoardLikeMapper;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -27,8 +33,8 @@ public class BoardLikeService {
   private final BoardLikeRepository boardLikeRepository;
   private final BoardRepository boardRepository;
   private final MemberRepository memberRepository;
-  private final BoardLikeMapper boardLikeMapper;
   private final ApplicationEventPublisher publisher;
+
 
 
   //토글 메서드로 진행한 좋아요
@@ -48,75 +54,75 @@ public class BoardLikeService {
       liked = false;
     } else {
       // 없으면 생성
-      BoardLike saved = boardLikeRepository.save(boardLikeMapper.toEntity(board, member));
-      likeId = saved.getBoardLikeId();   // ← 여기서 PK 설정
+      BoardLike saved = BoardLike.builder()
+          .member(member)
+          .board(board)
+          .build();
+      boardLikeRepository.save(saved);
+      likeId = saved.getBoardLikeId();
       liked = true;
+
+      // 생성 시에만 이벤트 발행
+      publisher.publishEvent(new ChallengeCheckEvent(memberId, ChallengeTag.LIKE, LocalDate.now()));
     }
 
     long likeCount = boardLikeRepository.countByBoard(board);
-    board.updateLikeCount(likeCount); // or setLikeCount
-
-    // 좋아요 눌렀으니, 이벤트 발행
-    publisher.publishEvent(new ChallengeCheckEvent(memberId, ChallengeTag.LIKE, LocalDate.now()));
+    board.updateLikeCount(likeCount);
 
     return BoardLikeResponseDto.builder()
-        .likeId(likeId)          // ← 생성된 경우만 값이 들어감, 취소면 null
+        .likeId(likeId)          // 생성된 경우만 값이 들어감, 취소면 null
         .memberId(memberId)
         .boardId(boardId)
-        .liked(liked)
+        .liked(liked)            //  토글 후 상태
         .likeCount(likeCount)
         .build();
   }
 
-  //좋아요 적용 취소 따로 적용한 메서드
-//  // 1.좋아요 등록
-//  public BoardLikeResponseDto createBoardLike(Long boardId, Long memberId) {
-//    Member member  = memberRepository.findById(memberId)
-//        .orElseThrow(()-> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
-//
-//    Board board = boardRepository.findById(boardId)
-//        .orElseThrow(()-> new BaseException(ErrorCode.BOARD_NOT_FOUND));
-//
-//    if (boardLikeRepository.existsByMemberIdAndBoardId(member, board)) {
-//      throw new BaseException(ErrorCode.ALREADY_LIKED);
-//    }
-//
-//    // 2.엔티티 생성(Mapper default 메서드 반영)
-//    BoardLike saved = boardLikeRepository.save(
-//        boardLikeMapper.toEntity(board, member)
-//    );
-//    // 3.카운트 반영
-//    long likeCount = boardLikeRepository.countByBoardId(board);
-//
-//    return BoardLikeResponseDto.builder()
-//        .likeId(saved.getBoardLikeId())
-//        .boardId(board.getBoardId())
-//        .memberId(member.getMemberId())
-//        .liked(true)
-//        .likeCount(likeCount)
-//        .build();
-//  }
-//  // 좋아요 취소
-//  public BoardLikeResponseDto deleteBoardLike(Long boardId, Long memberId) {
-//
-//
-//    Member member = memberRepository.findById(memberId)
-//        .orElseThrow(()-> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
-//
-//    Board board = boardRepository.findById(boardId)
-//        .orElseThrow(()-> new BaseException(ErrorCode.BOARD_NOT_FOUND));
-//
-//    boardLikeRepository.deleteByMemberIdAndBoardId(member, board);
-//
-//    long likeCount = boardLikeRepository.countByBoardId(board);
-//    return BoardLikeResponseDto.builder()
-//        .boardId(boardId)
-//        .memberId(memberId)
-//        .liked(false)
-//        .likeCount(likeCount)
-//        .build();
-//
-//  }
+
+
+  @Transactional
+  public ToggleLikeResponseDto toggle(Long boardId, Long memberId) {
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
+    Board board = boardRepository.findById(boardId)
+        .orElseThrow(() -> new BaseException(ErrorCode.BOARD_NOT_FOUND));
+
+    boolean wasLiked = boardLikeRepository.existsByMemberAndBoard(member, board);
+
+    if (wasLiked) {
+      boardLikeRepository.deleteByMemberAndBoard(member, board);
+    } else {
+      BoardLike like = BoardLike.builder()
+          .member(member)
+          .board(board)
+          .build();
+      boardLikeRepository.save(like);
+
+      // 생성 시에만 이벤트 발행
+      publisher.publishEvent(new ChallengeCheckEvent(memberId, ChallengeTag.LIKE, LocalDate.now()));
+    }
+
+    long total = boardLikeRepository.countByBoard(board);
+    board.updateLikeCount(total);
+
+    boolean nowLiked = !wasLiked;            // 토글 후 상태
+    return new ToggleLikeResponseDto(total, nowLiked); // { totalLikes, isLiked }
+  }
+  @Transactional
+  public LikeStatusResponseDto status(List<Long> boardIds, Long memberId) {
+    if (boardIds == null || boardIds.isEmpty()) {
+      return new LikeStatusResponseDto(Collections.emptyList());
+    }
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
+    List<Board> boards = boardRepository.findAllById(boardIds);
+
+    var liked = boardLikeRepository.findAllByMemberAndBoardIn(member, boards)
+        .stream()
+        .map(b1 -> b1.getBoard().getBoardId())
+        .toList();
+    return new LikeStatusResponseDto(liked);
+  }
 
 
 

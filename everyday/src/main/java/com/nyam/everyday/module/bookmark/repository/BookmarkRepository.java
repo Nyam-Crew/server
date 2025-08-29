@@ -4,6 +4,9 @@ import com.nyam.everyday.module.board.entity.Board;
 import com.nyam.everyday.module.bookmark.dto.BookmarkAndBoardDto;
 import com.nyam.everyday.module.bookmark.entity.Bookmark;
 import com.nyam.everyday.module.member.entity.Member;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -38,4 +41,14 @@ public interface BookmarkRepository extends JpaRepository<Bookmark,Long> {
   Page<BookmarkAndBoardDto> findBookmarkedBoardsByMember(@Param("member") Member member, Pageable pageable);
 
   long deleteByMemberAndBoard(Member member, Board board);
+
+  boolean existsByMember_MemberIdAndBoard_BoardId(Long memberId, Long boardId);
+
+  Optional<Bookmark> findByMember_MemberIdAndBoard_BoardId(Long memberId, Long boardId);
+
+  void deleteByMember_MemberIdAndBoard_BoardId(Long memberId, Long boardId);
+
+
+  // BookmarkRepository
+  List<Bookmark> findByMember_MemberIdAndBoard_BoardIdIn(Long memberId, Collection<Long> boardIds);
 }

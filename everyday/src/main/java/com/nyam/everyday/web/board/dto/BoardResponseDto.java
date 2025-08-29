@@ -22,6 +22,7 @@ public class BoardResponseDto {
   private String boardTitle;
   private String boardType;
   private LocalDateTime createdDate;
+  private String boardContent;
 
 
 
@@ -34,6 +35,7 @@ public class BoardResponseDto {
         .boardTitle(entity.getBoardTitle())
         .boardType(entity.getBoardType())
         .createdDate(entity.getCreatedDate())
+        .boardContent(entity.getBoardContent())
         .build();
   }
 

@@ -49,12 +49,14 @@ public class BoardSearchIndexer {
   public synchronized void index(Board board){
     if (board == null || board.getBoardId() == null) {return;}
     buffer.add(fromEntity(board));
+    flush();
   }
 
   /** 이미 만들어둔 문서를 직접 넣고 싶을 때(선택 API) */
   public synchronized void index(BoardDocument doc) {
     if (doc == null || doc.getBoardId() == null) return;
     buffer.add(doc);
+    flush();
 
   }
   /** 버퍼된 문서들을 벌크 저장 + 즉시 refresh(개발 단계에서는 편리) */
@@ -67,6 +69,7 @@ public class BoardSearchIndexer {
     } catch (Exception e) {
       log.error("[ES] board bulk indexing failed", e);
     } finally {
+      log.info("[ES] bulk indexing {} docs into 'boards'", buffer.size());
       buffer.clear();
     }
   }
