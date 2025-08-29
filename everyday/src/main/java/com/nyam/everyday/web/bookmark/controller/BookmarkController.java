@@ -7,11 +7,17 @@ import com.nyam.everyday.security.core.CustomUserDetails;
 import com.nyam.everyday.web.bookmark.dto.CreateBookmarkRequestDto;
 import com.nyam.everyday.web.bookmark.dto.CreateBookmarkResponseDto;
 import com.nyam.everyday.web.bookmark.dto.MyBookmarkListResponseDto;
+import com.nyam.everyday.web.bookmark.dto.ToggleBookmarkRequestDto;
+import com.nyam.everyday.web.bookmark.dto.ToggleBookmarkResponseDto;
 import com.nyam.everyday.web.bookmark.mapper.BookmarkMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +33,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Bookmark-Controller", description = "북마크 관리")
@@ -81,6 +88,36 @@ public class BookmarkController {
                       @PathVariable Long boardId){
     bookmarkService.deleteBookmark(userDetails.getId(), boardId);
     return ResponseEntity.noContent().build();
+  }
+
+  @Operation(summary = "북마크 토글", description = "이미 북마크면 해제, 아니면 등록")
+  @PostMapping("/toggle")
+  public ResponseEntity<ToggleBookmarkResponseDto> toggle(
+      @Valid @RequestBody ToggleBookmarkRequestDto req,
+      @AuthenticationPrincipal CustomUserDetails userDetails
+  ){
+    if(userDetails == null){
+      return  ResponseEntity.status(401).build();
+    }
+    ToggleBookmarkResponseDto res = bookmarkService.toggle(userDetails.getId(), req.getBoardId());
+    return ResponseEntity.status(HttpStatus.OK).body(res);
+  }
+
+  //
+  @Operation(summary = "북마크 상태조회",description ="게시글에 내가 북마크를 했다면 체크 표시 진행" )
+  @GetMapping("/status")
+  public ResponseEntity<?> getBookmarkStatus(
+      @RequestParam(required = false) List<Long> boardIds,
+      @AuthenticationPrincipal CustomUserDetails userDetails
+  ) {
+    if (userDetails == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+    if (boardIds == null || boardIds.isEmpty()) {
+      // 단건 조회를 지원하고 싶다면 ?boardId= 로 받거나, 빈 목록이면 빈 배열 반환
+      return ResponseEntity.ok(Map.of("bookmarked", List.of()));
+    }
+    Set<Long> bookmarked = bookmarkService.findBookmarkedBoardIds(userDetails.getId(), boardIds);
+    return ResponseEntity.ok(Map.of("bookmarked", bookmarked));
   }
 
 }
